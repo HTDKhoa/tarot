@@ -369,11 +369,21 @@ img {
   color: #fff4d6;
 }
 
-.support-card {
-  border: 2px solid #f0b9a0;
-  background: rgba(60, 20, 20, 0.5);
-  padding: 0.8rem;
-  width: 100%;
+/* thẻ hỗ trợ khi khủng hoảng: đứng riêng trên hộp thoại, không phụ thuộc chữ chạy xong */
+.support-card.pixel-frame {
+  border-color: #f0b9a0;
+  background: linear-gradient(180deg, rgba(70, 24, 28, 0.95), rgba(40, 14, 20, 0.96));
+  padding: 1rem 1.2rem;
+  width: min(94vw, 780px);
+  flex: none;
+}
+.support-card a {
+  font-weight: 600;
+}
+.support-lines {
+  list-style: square;
+  padding-left: 1.2rem;
+  margin-bottom: 0.6rem;
 }
 .support-card p {
   margin-bottom: 0.6rem;

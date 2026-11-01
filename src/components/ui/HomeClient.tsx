@@ -1,6 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
-import { storageGet, storageSet } from "@/lib/storage";
+import { sessionGet, sessionSet, storageGet, storageSet } from "@/lib/storage";
+import { EMERGENCY, SUPPORT_LINES } from "@/lib/safety";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Dialogue } from "./Dialogue";
@@ -27,6 +28,10 @@ interface Ctx {
 
 const FAN_SIZE = 13;
 
+/** Đã dừng vì khủng hoảng thì khóa trải bài tới hết phiên (đóng tab). */
+const CRISIS_KEY = "nguyet_crisis";
+const CRISIS_RETURN: ReaderLine[] = [{ tag: "gentle", text: "Đèn vẫn sáng. Hôm nay ta cất bài rồi. Ta chỉ muốn biết cậu đang an toàn." }];
+
 export default function HomeClient() {
   const stage = useScene((s) => s.stage);
   const fade = useScene((s) => s.fade);
@@ -44,6 +49,7 @@ export default function HomeClient() {
 
   // Máy chủ thiếu cấu hình (production): đóng cửa, không cho vào nhà.
   const [closed, setClosed] = useState(false);
+  const [crisisLocked, setCrisisLocked] = useState(false);
 
   const loadMe = useCallback(async () => {
     const r = await fetch("/api/me", { cache: "no-store" }).catch(() => null);
@@ -61,6 +67,11 @@ export default function HomeClient() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadMe();
     setVisited(storageGet("nguyet_visited") === "1");
+    if (sessionGet(CRISIS_KEY) === "1") {
+      setCrisisLocked(true);
+      setPhase("crisis");
+      setScript((s) => ({ id: s.id + 1, lines: CRISIS_RETURN }));
+    }
     const params = new URLSearchParams(location.search);
     if (params.get("vao") === "1") {
       sceneStore.set({ stage: "inside" });
@@ -88,8 +99,8 @@ export default function HomeClient() {
     sceneStore.set({ fade: 1 });
     setTimeout(() => {
       resetTable();
-      setLines([]);
-      setPhase("menu");
+      setLines(crisisLocked ? CRISIS_RETURN : []);
+      setPhase(crisisLocked ? "crisis" : "menu");
       sceneStore.set({ stage: "forest", fade: 0, tag: "neutral" });
     }, 450);
   };
@@ -116,6 +127,7 @@ export default function HomeClient() {
   };
 
   const startReading = () => {
+    if (crisisLocked) return;
     if (me?.configured && !me.user) {
       say([{ tag: "tease", text: "Khoan đã. Muốn ta trải bài thì cậu ghi tên vào sổ khách trước. Ta cần nhớ ai đã ngồi ở bàn này." }], "login");
       return;
@@ -129,8 +141,13 @@ export default function HomeClient() {
     setLines([]);
     try {
       const r = await fetch("/api/reading", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question, topic, spread }) });
-      const j = await r.json();
-      if (j.crisis) return say(j.lines, "crisis");
+      const j = await r.json().catch(() => ({}));
+      if (j.crisis) {
+        sessionSet(CRISIS_KEY, "1");
+        setCrisisLocked(true);
+        resetTable();
+        return say(j.lines, "crisis");
+      }
       if (r.status === 401) return say([{ tag: "tease", text: j.error }], "login");
       if (j.error === "quota") return say([{ tag: "concern", text: j.message }], "message");
       if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc. Cậu thử lại nhé." }], "message");
@@ -201,6 +218,7 @@ export default function HomeClient() {
   };
 
   const daily = async () => {
+    if (crisisLocked) return;
     resetTable();
     setBusy(true);
     setLines([]);
@@ -275,6 +293,8 @@ export default function HomeClient() {
             </div>
           )}
 
+          {phase === "crisis" && <SupportCard onLeave={leave} />}
+
           <div className="dialogue-zone">
             {phase === "form" ? (
               <QuestionForm onSubmit={submitQuestion} onCancel={backToMenu} busy={busy} />
@@ -322,18 +342,34 @@ export default function HomeClient() {
                     <button className="btn-pixel btn-ghost" onClick={backToMenu}>Quay lại</button>
                   </>
                 )}
-                {phase === "crisis" && (
-                  <div className="support-card">
-                    <p>Nếu cậu đang gặp nguy hiểm, hãy gọi <a href="tel:115">115</a> hoặc tới cơ sở y tế gần nhất. Hãy nói chuyện với một người cậu tin tưởng ngay lúc này.</p>
-                    <button className="btn-pixel btn-ghost" onClick={backToMenu}>Ta vẫn ở đây</button>
-                  </div>
-                )}
               </Dialogue>
             )}
           </div>
         </div>
       )}
     </main>
+  );
+}
+
+/** Thẻ hỗ trợ khi khủng hoảng: hiện ngay, cố định, chỉ có một lối ra là "Ra về". */
+function SupportCard({ onLeave }: { onLeave: () => void }) {
+  return (
+    <section className="support-card pixel-frame" role="alert" aria-label="Hỗ trợ khẩn cấp">
+      <p>
+        Nếu cậu đang gặp nguy hiểm, hãy gọi <a href={`tel:${EMERGENCY.number}`}>{EMERGENCY.label.toLowerCase()} {EMERGENCY.number}</a> hoặc tới cơ sở y tế gần nhất. Hãy nói chuyện với một người cậu tin tưởng ngay lúc này.
+      </p>
+      {SUPPORT_LINES.length > 0 && (
+        <ul className="support-lines">
+          {SUPPORT_LINES.map((l) => (
+            <li key={l.number}>
+              {l.label}: <a href={`tel:${l.number}`}>{l.number}</a>
+              {l.hours && ` (${l.hours})`}
+            </li>
+          ))}
+        </ul>
+      )}
+      <button className="btn-pixel btn-ghost" onClick={onLeave}>Ra về</button>
+    </section>
   );
 }
 

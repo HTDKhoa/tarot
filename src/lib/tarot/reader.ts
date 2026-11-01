@@ -56,8 +56,9 @@ export function crisisLines(): ReaderLine[] {
       text: "Ta cất bài đi đã. Những gì cậu vừa viết quan trọng hơn mọi lá bài trên bàn này.",
     },
     {
+      // Số khẩn cấp nằm trên thẻ hỗ trợ cố định của giao diện, không nhắc lại ở đây.
       tag: "gentle",
-      text: "Cậu có đang an toàn không, ngay lúc này? Nếu có ai đó cậu tin, hãy gọi cho họ bây giờ. Nếu cậu đang gặp nguy hiểm, hãy gọi cấp cứu 115. Ta vẫn ở đây.",
+      text: "Cậu có đang an toàn không, ngay lúc này? Nếu có ai đó cậu tin, hãy gọi cho họ bây giờ. Ta vẫn ở đây.",
     },
   ];
 }
