@@ -31,6 +31,40 @@ function cardTitle(card: CardData, reversed: boolean) {
   return `${card.name_en}${reversed ? ", lá ngược" : ""}`;
 }
 
+/**
+ * Dữ liệu lá (tarot_vi.json) cố ý viết giọng trung tính, gọi khách là "người hỏi", để AI dùng sau này.
+ * Khi Nguyệt nói thì gọi khách là "cậu", và đổi dấu chấm phẩy thành câu ngắn.
+ */
+function speak(text: string): string {
+  return text
+    .replaceAll("Người hỏi", "Cậu")
+    .replaceAll("người hỏi", "cậu")
+    .replace(/;\s*(\S)/gu, (_, c: string) => `. ${c.toLocaleUpperCase("vi")}`);
+}
+
+/** Mỗi lượt thoại tối đa chừng này từ (một câu dài hơn thì vẫn đứng riêng một lượt). */
+const MAX_WORDS_PER_TURN = 28;
+const wordCount = (s: string) => s.split(/\s+/).filter(Boolean).length;
+
+/**
+ * Tách một đoạn thành nhiều lượt thoại, mỗi lượt gồm vài câu trọn vẹn.
+ * `first` (ví dụ revealPosition) chỉ gắn vào lượt đầu, để lá được lật đúng lúc bắt đầu nói.
+ */
+function turns(text: string, tag: EmotionTag, first?: Partial<ReaderLine>): ReaderLine[] {
+  const sentences = speak(text).split(/(?<=[.!?…])\s+(?=[\p{Lu}"“])/u);
+  const chunks: string[] = [];
+  let buf = "";
+  for (const s of sentences) {
+    const next = buf ? `${buf} ${s}` : s;
+    if (buf && wordCount(next) > MAX_WORDS_PER_TURN) {
+      chunks.push(buf);
+      buf = s;
+    } else buf = next;
+  }
+  if (buf) chunks.push(buf);
+  return chunks.map((t, i) => ({ tag, text: t, ...(i === 0 ? first : undefined) }));
+}
+
 export function greeting(opts: { name?: string | null; hour: number; returning: boolean }): ReaderLine[] {
   const who = opts.name ? `${opts.name}` : "cậu";
   const time =
@@ -108,13 +142,9 @@ export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offe
     const card = getCard(d.cardId);
     const o = orient(d);
     const label = spread.positions[i];
-    lines.push({
-      tag: "reveal",
-      revealPosition: i,
-      text: `${label}: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`,
-    });
-    lines.push({ tag: tagFor(card, d.reversed), text: `${card.y_nghia[o]} ${card.chu_de[topic][o]}` });
-    if (i === opinionIdx) lines.push({ tag: d.reversed ? "concern" : "tease", text: `Còn đây là ý riêng của ta. ${card.nguyet}` });
+    lines.push(...turns(`${label}: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: i }));
+    lines.push(...turns(`${card.y_nghia[o]} ${card.chu_de[topic][o]}`, tagFor(card, d.reversed)));
+    if (i === opinionIdx) lines.push(...turns(`Còn đây là ý riêng của ta. ${card.nguyet}`, d.reversed ? "concern" : "tease"));
   });
 
   const reversedCount = draws.filter((d) => d.reversed).length;
@@ -142,8 +172,8 @@ export function composeClarifier(d: Draw, topic: Topic, index: number): ReaderLi
   const card = getCard(d.cardId);
   const o = orient(d);
   const lines: ReaderLine[] = [
-    { tag: "reveal", revealPosition: -1, text: `Lá làm rõ: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}` },
-    { tag: tagFor(card, d.reversed), text: `${card.chu_de[topic][o]} ${card.loi_khuyen[o]}` },
+    ...turns(`Lá làm rõ: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: -1 }),
+    ...turns(`${card.chu_de[topic][o]} ${card.loi_khuyen[o]}`, tagFor(card, d.reversed)),
   ];
   if (index + 1 >= MAX_CLARIFIERS) {
     lines.push({ tag: "neutral", text: "Bàn đã đủ chật rồi. Rút thêm chỉ làm nó rối hơn. Để ta gom lại cho cậu nghe." });
@@ -158,11 +188,11 @@ export function composeClosing(input: { topic: Topic; draws: Draw[]; clarifiers:
   const words = all.map((d) => getCard(d.cardId).tu_khoa[orient(d)][0]);
   const last = input.clarifiers.at(-1) ?? input.draws.at(-1)!;
   const lastCard = getCard(last.cardId);
-  const advice = lastCard.loi_khuyen[orient(last)];
+  const advice = speak(lastCard.loi_khuyen[orient(last)]);
   const summary = `Các lá nói về: ${words.join(", ")}. Lời dặn: ${advice}`;
   const lines: ReaderLine[] = [
     { tag: "think", text: `Gom lại thì bàn này nói về ${words.slice(0, -1).join(", ")}${words.length > 1 ? " và " : ""}${words.at(-1)}.` },
-    { tag: "warm", text: `Nếu cậu chỉ nhớ một điều, thì hãy nhớ: ${advice.charAt(0).toLowerCase()}${advice.slice(1)}` },
+    ...turns(`Nếu cậu chỉ nhớ một điều, thì hãy nhớ: ${advice.charAt(0).toLowerCase()}${advice.slice(1)}`, "warm"),
     {
       tag: "farewell",
       text: pick([
@@ -179,7 +209,7 @@ export function composeDaily(d: Draw): ReaderLine[] {
   const card = getCard(d.cardId);
   const o = orient(d);
   return [
-    { tag: "reveal", revealPosition: 0, text: `Lá của cậu hôm nay: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}` },
-    { tag: tagFor(card, d.reversed), text: `${card.y_nghia[o]} ${card.loi_khuyen[o]}` },
+    ...turns(`Lá của cậu hôm nay: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: 0 }),
+    ...turns(`${card.y_nghia[o]} ${card.loi_khuyen[o]}`, tagFor(card, d.reversed)),
   ];
 }
