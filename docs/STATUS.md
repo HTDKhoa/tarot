@@ -10,7 +10,7 @@ Demo online (một file HTML, chạy trong trình duyệt): https://claude.ai/ar
 - Pixel art: `public/assets`, script vẽ lại ở `art/`.
 - Luồng đọc bài: câu hỏi + chủ đề + kiểu trải (1 lá; Quá khứ–Hiện tại–Hướng đi; Tình huống–Trở ngại–Lời khuyên) → khách chọn lá từ dải bài → lật từng lá theo lời thoại → chỉ mời bốc thêm khi có lý do (tối đa 3) → trang "Bàn hôm nay" trong sổ. Hai góc máy (mặt Nguyệt / mặt bàn): trải bài diễn ra trên mặt bàn với tay Nguyệt, lá theo đúng hình trải, cuốn sổ của Bấc (câu hỏi, lời Nguyệt theo từng lá, trang tổng kết) và ô chân dung trong hộp thoại. Lá bài của ngày cố định theo người/ngày.
 - Giọng: dữ liệu lá giữ giọng trung tính; `reader.ts` đổi "người hỏi" thành "cậu" và tách thành các lượt ≤ 28 từ.
-- An toàn: lọc từ khóa (`src/lib/safety.ts`); khủng hoảng thì khóa trải bài tới hết phiên (sessionStorage), thẻ hỗ trợ cố định chỉ có nút "Ra về".
+- An toàn: lọc từ khóa (`src/lib/safety.ts`); khủng hoảng thì khóa trải bài tới hết phiên (sessionStorage), câu hỏi khủng hoảng bị chặn ngay ở trình duyệt (cùng hàm với máy chủ) nên không hạ máy, không xào bài; thẻ hỗ trợ cố định có "Ngồi thêm một lúc" và "Ra về".
 - Supabase: schema + RLS (migrations 0001–0004), Google OAuth, nhật ký (danh sách, chi tiết, ghi chú, "đã xảy ra chưa", xóa phiên, xóa toàn bộ dữ liệu), hạn mức theo tháng giờ VN đếm ở `reading_usage`. Khách không ghi được lá bài / lời thoại; mọi ghi phía server dùng secret key và kiểm lỗi.
 - payOS: tạo link VietQR; webhook kiểm chữ ký, kích hoạt gói bằng hàm SQL `activate_payment` trong một transaction, lỗi thì trả 500 để payOS gửi lại.
 - Production thiếu biến Supabase thì đóng cửa và ghi log rõ ràng; muốn cố ý chạy demo thì đặt `DEMO_MODE=1`.

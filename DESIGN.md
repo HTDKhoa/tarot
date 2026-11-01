@@ -353,7 +353,7 @@ Các thành phần trầm và tiết chế: chúng là đồ vật nhỏ trong n
 
 ### Cards / Containers
 - **Khung pixel** (hộp thoại, thẻ gói, mục và ghi chú nhật ký): góc vuông, viền 3 px vàng nến, mặt chuyển dọc từ xanh mũ trùm nhạt xuống gần xanh mũ trùm (gần như đặc), bóng theo Viền khung pixel. Đệm 1.2rem; hộp thoại 1.4rem trên.
-- **Thẻ hỗ trợ khủng hoảng:** cùng khung nhưng viền tro hồng và mặt đỏ trầm; luôn hiện ngay, không chờ chữ chạy.
+- **Thẻ hỗ trợ khủng hoảng:** cùng khung nhưng viền tro hồng và mặt đỏ trầm; luôn hiện ngay, không chờ chữ chạy, và hiện trước cả nghi thức: câu hỏi khủng hoảng thì máy không hạ xuống bàn, không xào bài. Hai lối: "Ngồi thêm một lúc" (nút chính, Nguyệt ở lại bầu bạn từng câu ngắn, bài vẫn khóa) và "Ra về" (ghost).
 - **Xác nhận xóa:** viền 2 px gạch hồng, nền gạch trầm mờ 55%.
 
 ### Inputs / Fields

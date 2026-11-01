@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import { sessionGet, sessionSet, storageGet, storageSet } from "@/lib/storage";
-import { EMERGENCY, SUPPORT_LINES } from "@/lib/safety";
+import { EMERGENCY, SUPPORT_LINES, isCrisis } from "@/lib/safety";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dialogue } from "./Dialogue";
@@ -63,6 +63,12 @@ const isInteractive = (t: EventTarget | null) => t instanceof Element && !!t.clo
 /** Đã dừng vì khủng hoảng thì khóa trải bài tới hết phiên (đóng tab). */
 const CRISIS_KEY = "nguyet_crisis";
 const CRISIS_RETURN: ReaderLine[] = [{ tag: "gentle", text: "Đèn vẫn sáng. Hôm nay ta cất bài rồi. Ta chỉ muốn biết cậu đang an toàn." }];
+/** "Ngồi thêm một lúc": Nguyệt ở lại bầu bạn, không bài, không khuyên; lần lượt từng câu. */
+const CRISIS_STAY: ReaderLine[] = [
+  { tag: "gentle", text: "Ừ, ngồi đi. Ta không cất đèn đâu." },
+  { tag: "gentle", text: "Không cần nói gì cũng được. Ta vẫn ngồi đây với cậu." },
+  { tag: "gentle", text: "Nếu thấy nặng quá, gọi cho một người cậu tin. Ta vẫn ở đây khi cậu quay lại." },
+];
 
 export default function HomeClient() {
   const stage = useScene((s) => s.stage);
@@ -96,6 +102,7 @@ export default function HomeClient() {
   // Máy chủ thiếu cấu hình (production): đóng cửa, không cho vào nhà.
   const [closed, setClosed] = useState(false);
   const [crisisLocked, setCrisisLocked] = useState(false);
+  const [stayIndex, setStayIndex] = useState(0);
 
   const loadMe = useCallback(async () => {
     const r = await fetch("/api/me", { cache: "no-store" }).catch(() => null);
@@ -190,7 +197,33 @@ export default function HomeClient() {
     say([{ tag: "think", text: "Kể ta nghe điều cậu đang băn khoăn. Viết thật lòng, càng cụ thể ta càng đọc rõ." }], "form");
   };
 
+  /** Khủng hoảng: ở góc mặt Nguyệt, khóa bài tới hết phiên, thẻ hỗ trợ hiện ngay; lời của Nguyệt lấy từ máy chủ. */
+  const enterCrisis = async (question: string, topic: Topic, spread: SpreadId) => {
+    toFace();
+    sessionSet(CRISIS_KEY, "1");
+    setCrisisLocked(true);
+    resetTable();
+    setStayIndex(0);
+    say([], "crisis");
+    try {
+      const r = await fetch("/api/reading", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question, topic, spread }) });
+      const j = await r.json();
+      say(j.crisis && Array.isArray(j.lines) ? j.lines : CRISIS_RETURN, "crisis");
+    } catch {
+      say(CRISIS_RETURN, "crisis");
+    }
+  };
+
+  // "Ngồi thêm một lúc": mỗi lần bấm, Nguyệt nói câu kế; hết câu thì lặp câu cuối
+  const stay = () => {
+    say([CRISIS_STAY[Math.min(stayIndex, CRISIS_STAY.length - 1)]], "crisis");
+    setStayIndex((i) => i + 1);
+  };
+
   const submitQuestion = async (question: string, topic: Topic, spread: SpreadId) => {
+    // An toàn trước vai diễn: câu hỏi có dấu hiệu khủng hoảng thì không hạ máy, không xào bài, thẻ hỗ trợ hiện ngay.
+    // Kiểm bằng đúng hàm máy chủ dùng; máy chủ vẫn kiểm lại (và có thể bắt thêm) ở dưới.
+    if (isCrisis(question)) return enterCrisis(question, topic, spread);
     setBusy(true);
     setLines([]);
     // Bấm "Xào bài" thì máy hạ xuống bàn ngay, Nguyệt xào bài trong lúc chờ máy chủ rút lá.
@@ -450,7 +483,7 @@ export default function HomeClient() {
             </TableView>
           )}
 
-          {phase === "crisis" && <SupportCard onLeave={leave} />}
+          {phase === "crisis" && <SupportCard onStay={stay} onLeave={leave} />}
 
           <div className="dialogue-zone">
             {phase === "form" ? (
@@ -521,8 +554,8 @@ export default function HomeClient() {
   );
 }
 
-/** Thẻ hỗ trợ khi khủng hoảng: hiện ngay, cố định, chỉ có một lối ra là "Ra về". */
-function SupportCard({ onLeave }: { onLeave: () => void }) {
+/** Thẻ hỗ trợ khi khủng hoảng: hiện ngay, cố định. Hai lối: ngồi lại với Nguyệt (không bài), hoặc ra về. */
+function SupportCard({ onStay, onLeave }: { onStay: () => void; onLeave: () => void }) {
   return (
     <section className="support-card pixel-frame" role="alert" aria-label="Hỗ trợ khẩn cấp">
       <p>
@@ -538,7 +571,14 @@ function SupportCard({ onLeave }: { onLeave: () => void }) {
           ))}
         </ul>
       )}
-      <button className="btn-pixel btn-ghost" onClick={onLeave}>Ra về</button>
+      <div className="support-actions">
+        <button className="btn-pixel" onClick={onStay}>
+          Ngồi thêm một lúc
+        </button>
+        <button className="btn-pixel btn-ghost" onClick={onLeave}>
+          Ra về
+        </button>
+      </div>
     </section>
   );
 }
