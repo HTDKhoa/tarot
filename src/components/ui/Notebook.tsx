@@ -130,21 +130,24 @@ export function Notebook({ question, cards, log, recap, open, docked, toRecap, o
               <h3>Cậu hỏi</h3>
               <p className="notebook-question">{question}</p>
             </section>
-            <section>
-              <h3>Lời Nguyệt</h3>
-              {log.map((e) =>
-                e.line.revealPosition !== undefined && e.card !== null && cards[e.card] ? (
-                  <div key={e.key} data-entry>
-                    <h4>{cardTitle(cards[e.card])}</h4>
-                    {withoutTitle(e.line.text) && <p>{withoutTitle(e.line.text)}</p>}
-                  </div>
-                ) : (
-                  <p key={e.key} data-entry>
-                    {e.line.text}
-                  </p>
-                ),
-              )}
-            </section>
+            {/* chưa có câu nào (đang xào bài) thì chưa mở mục này, tránh một tiêu đề trống */}
+            {log.length > 0 && (
+              <section>
+                <h3>Lời Nguyệt</h3>
+                {log.map((e) =>
+                  e.line.revealPosition !== undefined && e.card !== null && cards[e.card] ? (
+                    <div key={e.key} data-entry>
+                      <h4>{cardTitle(cards[e.card])}</h4>
+                      {withoutTitle(e.line.text) && <p>{withoutTitle(e.line.text)}</p>}
+                    </div>
+                  ) : (
+                    <p key={e.key} data-entry>
+                      {e.line.text}
+                    </p>
+                  ),
+                )}
+              </section>
+            )}
             {recap && (
               <section ref={recapRef} className="notebook-recap" aria-label="Trang tổng kết">
                 <h3>Bàn hôm nay</h3>
