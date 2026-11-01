@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getUser } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { drawCards } from "@/lib/tarot/draw";
 import { SPREADS, MAX_CLARIFIERS, type SpreadId } from "@/lib/tarot/spreads";
 import { composeReading, crisisLines } from "@/lib/tarot/reader";
@@ -58,13 +59,23 @@ export async function POST(req: Request) {
       .insert({ user_id: user.id, question, topic, spread: spreadId })
       .select("id")
       .single();
-    if (error) return NextResponse.json({ error: "Không lưu được phiên đọc bài." }, { status: 500 });
-    readingId = data.id;
-    await supabase.from("reading_cards").insert(
-      draws.map((d, i) => ({ reading_id: readingId, position: i, card_id: d.cardId, reversed: d.reversed })),
-    );
-    await supabase.from("messages").insert({ reading_id: readingId, role: "user", text: question });
-    await saveLines(supabase, readingId!, lines);
+    if (error) {
+      console.error("[reading] không tạo được phiên", error.message);
+      return NextResponse.json({ error: "Không lưu được phiên đọc bài." }, { status: 500 });
+    }
+    const id: string = data.id;
+    // Lá bài và lời thoại chỉ server được ghi (RLS chặn khách), nên dùng client secret key.
+    const admin = createAdminClient();
+    const failed =
+      (await admin.from("reading_cards").insert(draws.map((d, i) => ({ reading_id: id, position: i, card_id: d.cardId, reversed: d.reversed })))).error ??
+      (await admin.from("messages").insert({ reading_id: id, role: "user", text: question })).error ??
+      (await saveLines(admin, id, lines));
+    if (failed) {
+      console.error("[reading] không lưu được lá bài / lời thoại", failed.message);
+      await admin.from("readings").delete().eq("id", id);
+      return NextResponse.json({ error: "Không lưu được phiên đọc bài." }, { status: 500 });
+    }
+    readingId = id;
   }
 
   return NextResponse.json({

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getUser } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { drawCards, type Draw } from "@/lib/tarot/draw";
 import { SPREADS, MAX_CLARIFIERS, type SpreadId } from "@/lib/tarot/spreads";
 import { composeClarifier } from "@/lib/tarot/reader";
@@ -60,10 +61,18 @@ export async function POST(req: Request) {
   const [card] = toDrawnCards([d], spread.positions, true, position);
 
   if (supabase && parsed.data.readingId) {
-    await supabase
+    // Phiên đã được xác nhận là của khách ở trên (đọc qua RLS); ghi bằng client secret key.
+    const admin = createAdminClient();
+    const { error } = await admin
       .from("reading_cards")
       .insert({ reading_id: parsed.data.readingId, position, card_id: d.cardId, reversed: d.reversed, clarifier: true });
-    await saveLines(supabase, parsed.data.readingId, lines);
+    // Trùng vị trí nghĩa là một yêu cầu bốc thêm khác vừa ghi trước: không trả lá chưa được lưu.
+    if (error) {
+      console.error("[clarify] không lưu được lá làm rõ", error.message);
+      return NextResponse.json({ error: "Bàn vừa có thay đổi. Cậu thử lại nhé." }, { status: 409 });
+    }
+    const lineError = await saveLines(admin, parsed.data.readingId, lines);
+    if (lineError) console.error("[clarify] không lưu được lời thoại", lineError.message);
   }
 
   return NextResponse.json({ card, draw: supabase ? undefined : d, lines, clarifiersLeft: MAX_CLARIFIERS - clarifiers.length - 1 });

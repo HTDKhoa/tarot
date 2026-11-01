@@ -37,7 +37,9 @@ export function toDrawnCards(draws: Draw[], labels: string[], clarifier = false,
   }));
 }
 
-export async function saveLines(supabase: SupabaseClient, readingId: string, lines: ReaderLine[]) {
-  if (!lines.length) return;
-  await supabase.from("messages").insert(lines.map((l) => ({ reading_id: readingId, role: "nguyet", tag: l.tag, text: l.text })));
+/** Ghi lời thoại của Nguyệt. `admin` là client secret key: khách không có quyền ghi bảng messages. */
+export async function saveLines(admin: SupabaseClient, readingId: string, lines: ReaderLine[]) {
+  if (!lines.length) return null;
+  const { error } = await admin.from("messages").insert(lines.map((l) => ({ reading_id: readingId, role: "nguyet", tag: l.tag, text: l.text })));
+  return error;
 }

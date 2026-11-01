@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getUser } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Draw } from "@/lib/tarot/draw";
 import { composeClosing } from "@/lib/tarot/reader";
 import type { Topic } from "@/lib/tarot/types";
@@ -48,11 +49,18 @@ export async function POST(req: Request) {
   const { lines, summary, advice } = composeClosing({ topic, draws, clarifiers });
 
   if (supabase && parsed.data.readingId) {
-    await saveLines(supabase, parsed.data.readingId, lines);
-    await supabase
+    // Khách chỉ được sửa note/happened; trạng thái và tóm tắt do server ghi bằng client secret key.
+    const admin = createAdminClient();
+    const { error } = await admin
       .from("readings")
       .update({ status: "closed", summary, advice, closed_at: new Date().toISOString() })
       .eq("id", parsed.data.readingId);
+    if (error) {
+      console.error("[finish] không khép được phiên", error.message);
+      return NextResponse.json({ error: "Không lưu được phần tổng kết. Cậu thử lại nhé." }, { status: 500 });
+    }
+    const lineError = await saveLines(admin, parsed.data.readingId, lines);
+    if (lineError) console.error("[finish] không lưu được lời thoại", lineError.message);
   }
   return NextResponse.json({ lines, summary, advice });
 }
