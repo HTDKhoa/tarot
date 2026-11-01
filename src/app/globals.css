@@ -112,7 +112,8 @@ img {
 .btn-pixel:focus-visible,
 .chip:focus-visible,
 .tarot-card:focus-visible,
-.dialogue-next:focus-visible {
+.dialogue-next:focus-visible,
+.dialogue-skip:focus-visible {
   outline: 2px dashed var(--gold-hi);
   outline-offset: 3px;
 }
@@ -498,6 +499,33 @@ img {
   border: 0;
   cursor: pointer;
   animation: bob 0.9s steps(2) infinite;
+}
+/* tiến độ theo lá và lối tắt "Sang lá kế": một hàng dưới chữ, cùng hàng với ▼, trong tầm ngón cái */
+.dialogue-steps {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 36px;
+  margin-top: 0.3rem;
+  padding-right: 2.6rem;
+  font-family: var(--font-pixel);
+  font-size: 1.15rem;
+  color: var(--muted);
+}
+.dialogue-skip {
+  min-height: 36px;
+  padding: 0 0.3rem;
+  font: inherit;
+  color: var(--cream);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid rgba(185, 176, 201, 0.4);
+  cursor: pointer;
+}
+.dialogue-skip:hover {
+  color: var(--gold-hi);
+  border-bottom-color: var(--gold-hi);
 }
 .dialogue-next.is-typing {
   opacity: 0.4;
@@ -1262,7 +1290,9 @@ img {
 /* ---------- màn cảm ứng: mọi thứ bấm được có vùng chạm tối thiểu 44px ---------- */
 @media (pointer: coarse) {
   .btn-pixel,
-  .chip {
+  .chip,
+  .dialogue-steps,
+  .dialogue-skip {
     min-height: 44px;
   }
   .chip {

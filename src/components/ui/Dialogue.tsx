@@ -24,6 +24,9 @@ const SPEED_MS = 22;
  *
  * Trình đọc màn hình không nghe chữ chạy: mỗi câu được báo trọn một lần qua một vùng ẩn,
  * còn nút ▼ "Câu tiếp" là đường đi bằng bàn phím. Người dùng chọn giảm chuyển động thì chữ hiện ngay.
+ *
+ * Bộ câu lật nhiều lá (mỗi câu có `revealPosition` mở một lá) thì hiện "Lá 2/3" và lối tắt "Sang lá kế":
+ * các câu bị bỏ qua vẫn đi qua `onLine` nên vẫn được ghi vào sổ, không mất chữ nào.
  */
 export function Dialogue({ lines, onLine, onDone, children, busy, portrait }: Props) {
   const [idx, setIdx] = useState(0);
@@ -35,6 +38,10 @@ export function Dialogue({ lines, onLine, onDone, children, busy, portrait }: Pr
   const full = line?.text ?? "";
   const typing = !reduce && shown < full.length;
   const finished = lines.length === 0 || (idx >= lines.length - 1 && !typing);
+  // các câu mở lá: chương của bộ câu
+  const starts = lines.flatMap((l, i) => (l.revealPosition !== undefined ? [i] : []));
+  const chapter = starts.filter((s) => s <= idx).length;
+  const nextStart = starts.find((s) => s > idx);
 
   useEffect(() => {
     if (!line) return;
@@ -81,6 +88,13 @@ export function Dialogue({ lines, onLine, onDone, children, busy, portrait }: Pr
     }
   };
 
+  const skipCard = () => {
+    if (nextStart === undefined) return;
+    for (let i = idx + 1; i < nextStart; i++) onLine?.(lines[i], i);
+    setIdx(nextStart);
+    setShown(0);
+  };
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.key === "Enter" || e.key === " ") && !(e.target instanceof HTMLTextAreaElement) && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLButtonElement)) {
@@ -108,6 +122,18 @@ export function Dialogue({ lines, onLine, onDone, children, busy, portrait }: Pr
       <p className="sr-only" aria-live="polite" aria-atomic>
         {busy && !line ? "Nguyệt đang xào bài." : line ? `Nguyệt: ${full}` : ""}
       </p>
+      {starts.length > 1 && chapter > 0 && !finished && (
+        <div className="dialogue-steps">
+          <span className="dialogue-step">
+            Lá {chapter}/{starts.length}
+          </span>
+          {nextStart !== undefined && (
+            <button type="button" className="dialogue-skip" onClick={skipCard} aria-label="Sang lá kế. Phần còn lại của lá này đã ghi vào sổ">
+              Sang lá kế <span aria-hidden>▸</span>
+            </button>
+          )}
+        </div>
+      )}
       {!finished && line && (
         <button type="button" className={`dialogue-next ${typing ? "is-typing" : ""}`} onClick={advance} aria-label={typing ? "Hiện hết câu" : "Câu tiếp"}>
           ▼

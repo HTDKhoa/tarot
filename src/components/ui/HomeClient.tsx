@@ -280,8 +280,8 @@ export default function HomeClient() {
       setActive(pos);
       currentCard.current = pos;
     }
-    // ghi vào sổ mọi câu của phiên trải bài (không ghi lá của ngày)
-    if (ctx && phase !== "daily") {
+    // ghi vào sổ mọi câu của phiên trải bài (không ghi lá của ngày), trừ câu thủ tục lúc xào/trải ("Ta xào xong rồi…")
+    if (ctx && phase !== "daily" && line.tag !== "shuffle") {
       const key = `${script.id}:${index}`;
       const entry: LogEntry = { key, line, card: currentCard.current };
       setLog((l) => (l.some((e) => e.key === key) ? l : [...l, entry]));
