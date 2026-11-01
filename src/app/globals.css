@@ -17,6 +17,20 @@
   --leather: #5a3c2e;
   --font-pixel: "VT323", ui-monospace, monospace;
   --font-body: "Be Vietnam Pro", system-ui, sans-serif;
+
+  /* các màu còn lại của DESIGN.md, tên biến theo slug trong DESIGN.md */
+  --hood-navy-lit: #2a3463;
+  --card-face: #2a2140;
+  --candle-cream: #fff4d6;
+  --ember-brown: #5a3d16;
+  --ember-brown-lit: #74501d;
+  --ember-deep: #4a3214;
+  --moonlit-blue: #9ec3ff;
+  --brick-ember: #d98a75;
+  --brick-deep: #3a1616;
+  --brick-deep-lit: #522020;
+  --brick-cream: #ffe1d6;
+  --rose-ash: #f0b9a0;
 }
 
 @theme inline {
@@ -85,7 +99,7 @@ img {
   transition: transform 0.06s, background 0.15s;
 }
 .btn-pixel:hover:not(:disabled) {
-  background: #2a3463;
+  background: var(--hood-navy-lit);
 }
 .btn-pixel:active:not(:disabled) {
   transform: translateY(2px);
@@ -103,12 +117,12 @@ img {
   outline-offset: 3px;
 }
 .btn-gold {
-  background: #5a3d16;
+  background: var(--ember-brown);
   border-color: var(--gold-hi);
-  color: #fff4d6;
+  color: var(--candle-cream);
 }
 .btn-gold:hover:not(:disabled) {
-  background: #74501d;
+  background: var(--ember-brown-lit);
 }
 .btn-ghost {
   background: transparent;
@@ -116,15 +130,15 @@ img {
 }
 /* hành động không hoàn tác được (xóa dữ liệu) */
 .btn-danger {
-  background: #3a1616;
-  border-color: #d98a75;
-  color: #ffe1d6;
+  background: var(--brick-deep);
+  border-color: var(--brick-ember);
+  color: var(--brick-cream);
 }
 .btn-danger:hover:not(:disabled) {
-  background: #522020;
+  background: var(--brick-deep-lit);
 }
 .delete-confirm {
-  border: 2px solid #d98a75;
+  border: 2px solid var(--brick-ember);
   background: rgba(58, 22, 22, 0.55);
   padding: 0.8rem 1rem;
 }
@@ -136,10 +150,20 @@ img {
   flex-wrap: wrap;
   gap: 0.6rem;
 }
-.delete-error {
-  color: #f0b9a0;
+/* lỗi ngay dưới nút (xóa dữ liệu, tạo đơn thanh toán): tro hồng, không đỏ báo động */
+.delete-error,
+.form-error {
+  color: var(--rose-ash);
   font-size: 0.9rem;
   margin: 0.6rem 0 0;
+}
+.form-error {
+  font-size: 0.85rem;
+  margin-top: 0.4rem;
+}
+.btn-block {
+  width: 100%;
+  justify-content: center;
 }
 
 .title-pixel {
@@ -481,13 +505,13 @@ img {
 }
 .chip.is-on {
   border-color: var(--gold-hi);
-  background: #4a3214;
-  color: #fff4d6;
+  background: var(--ember-deep);
+  color: var(--candle-cream);
 }
 
 /* thẻ hỗ trợ khi khủng hoảng: đứng riêng trên hộp thoại, không phụ thuộc chữ chạy xong */
 .support-card.pixel-frame {
-  border-color: #f0b9a0;
+  border-color: var(--rose-ash);
   background: linear-gradient(180deg, rgba(70, 24, 28, 0.95), rgba(40, 14, 20, 0.96));
   padding: 1rem 1.2rem;
   width: min(94vw, 780px);
@@ -571,7 +595,7 @@ img {
 }
 .tarot-front {
   opacity: 0;
-  background-color: #2a2140;
+  background-color: var(--card-face);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -626,7 +650,7 @@ img {
   justify-content: center;
   font-family: var(--font-pixel);
   font-size: calc(var(--w) * 0.13);
-  color: #3a2410;
+  color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
 }
@@ -646,7 +670,7 @@ img {
   font-size: 1.2rem;
 }
 .tarot-rev {
-  color: #9ec3ff;
+  color: var(--moonlit-blue);
 }
 
 /* dải bài để khách tự chọn */
@@ -819,7 +843,7 @@ img {
   height: calc(var(--w) * 80 / 48);
   background-size: 100% 100%;
   image-rendering: pixelated;
-  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.45), 0 -3px 0 #160c1c inset;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.45), 0 -3px 0 var(--ink-dark) inset;
 }
 .half-b {
   margin-left: calc(var(--w) * -0.55);
@@ -1054,7 +1078,7 @@ img {
   min-height: 100%;
   background:
     radial-gradient(ellipse at 50% -10%, rgba(255, 180, 90, 0.12), transparent 60%),
-    linear-gradient(180deg, #0d0b1a 0%, #08060d 100%);
+    linear-gradient(180deg, #0d0b1a 0%, var(--night) 100%);
 }
 .page-inner {
   width: min(92vw, 880px);
@@ -1084,4 +1108,47 @@ img {
 .prose-dark ul {
   list-style: square;
   padding-left: 1.2rem;
+}
+
+/* ---------- trang Gói ---------- */
+.plan-current {
+  padding: 0.8rem 1rem;
+  margin-bottom: 1.5rem;
+}
+.plan-grid {
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.plan-card {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.plan-card.is-highlight {
+  border-color: var(--gold-hi);
+}
+.plan-name {
+  font-size: 1.8rem;
+}
+.plan-price {
+  font-family: var(--font-pixel);
+  font-size: 2.2rem;
+  line-height: 1;
+}
+.plan-note {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.plan-features {
+  list-style: square;
+  padding-left: 1.1rem;
+  flex: 1;
+}
+.plan-features li {
+  margin: 0.3rem 0;
+}
+.plan-faq {
+  margin-top: 2rem;
 }

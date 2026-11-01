@@ -26,10 +26,14 @@ export function BuyButton({ plan, loggedIn }: { plan: "month" | "year"; loggedIn
   };
   return (
     <div>
-      <button className="btn-pixel btn-gold" onClick={buy} disabled={busy} style={{ width: "100%", justifyContent: "center" }}>
+      <button className="btn-pixel btn-gold btn-block" onClick={buy} disabled={busy}>
         {busy ? "Đang tạo mã…" : loggedIn ? "Thanh toán bằng VietQR" : "Đăng nhập để mua"}
       </button>
-      {err && <p style={{ color: "#f0b9a0", fontSize: "0.85rem", marginTop: "0.4rem" }}>{err}</p>}
+      {err && (
+        <p className="form-error" role="alert">
+          {err}
+        </p>
+      )}
     </div>
   );
 }

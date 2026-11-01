@@ -16,11 +16,11 @@ export default async function PricingPage() {
   return (
     <PageShell title="Ghé thường xuyên" lead="Ngọn đèn luôn sáng cho khách ghé chơi. Nếu cậu muốn ngồi lâu hơn, đây là các gói.">
       {status && status.plan !== "free" && (
-        <p className="pixel-frame" style={{ padding: "0.8rem 1rem", marginBottom: "1.5rem" }}>
+        <p className="pixel-frame plan-current">
           Cậu đang dùng <b>{PLANS[status.plan].name}</b>, còn hạn tới {new Date(status.expiresAt!).toLocaleDateString("vi-VN")}. Mua thêm sẽ cộng dồn ngày.
         </p>
       )}
-      <div style={{ display: "grid", gap: "1.2rem", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
+      <div className="plan-grid">
         <PlanCard name={PLANS.free.name} price="0đ" note="Mãi mãi" features={["Lá bài của ngày, không giới hạn", `${PLANS.free.readingsPerMonth} lần trải bài mỗi tháng`, "Nhật ký lưu các phiên"]} />
         <PlanCard
           name={PLANS.month.name}
@@ -38,7 +38,7 @@ export default async function PricingPage() {
           action={<BuyButton plan="year" loggedIn={!!user} />}
         />
       </div>
-      <div className="prose-dark" style={{ marginTop: "2rem" }}>
+      <div className="prose-dark plan-faq">
         <h2>Thanh toán thế nào?</h2>
         <p>Quét mã VietQR bằng app ngân hàng bất kỳ. Gói kích hoạt ngay khi tiền về, không tự gia hạn, không lưu thẻ. Hết hạn thì cậu tự quay về gói khách ghé chơi, nhật ký vẫn còn nguyên.</p>
       </div>
@@ -48,13 +48,13 @@ export default async function PricingPage() {
 
 function PlanCard({ name, price, note, features, action, highlight }: { name: string; price: string; note: string; features: string[]; action?: React.ReactNode; highlight?: boolean }) {
   return (
-    <section className="pixel-frame" style={{ padding: "1.2rem", display: "flex", flexDirection: "column", gap: "0.6rem", borderColor: highlight ? "var(--gold-hi)" : undefined }}>
-      <h2 className="title-pixel" style={{ fontSize: "1.8rem" }}>{name}</h2>
-      <div style={{ fontFamily: "var(--font-pixel)", fontSize: "2.2rem", lineHeight: 1 }}>{price}</div>
-      <div style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{note}</div>
-      <ul style={{ listStyle: "square", paddingLeft: "1.1rem", flex: 1 }}>
+    <section className={`pixel-frame plan-card ${highlight ? "is-highlight" : ""}`}>
+      <h2 className="title-pixel plan-name">{name}</h2>
+      <div className="plan-price">{price}</div>
+      <div className="plan-note">{note}</div>
+      <ul className="plan-features">
         {features.map((f) => (
-          <li key={f} style={{ margin: "0.3rem 0" }}>{f}</li>
+          <li key={f}>{f}</li>
         ))}
       </ul>
       {action}

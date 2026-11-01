@@ -9,6 +9,7 @@ export const EYE_GLOW: Record<EmotionTag, { color: string; strength: number }> =
   reveal: { color: "#fff2c4", strength: 3.4 },
   warm: { color: "#ffd27a", strength: 2.8 },
   tease: { color: "#ffe9b0", strength: 2.2 },
+  // three.js không đọc được biến CSS nên giữ mã màu; trùng moonlit-blue (Xanh Trăng) trong DESIGN.md
   concern: { color: "#9ec3ff", strength: 1.8 },
   surprise: { color: "#ffffff", strength: 4.0 },
   solemn: { color: "#b9b4ff", strength: 1.5 },
