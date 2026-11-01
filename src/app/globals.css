@@ -259,6 +259,52 @@ img {
   opacity: 1;
   color: var(--gold-hi);
 }
+/* điện thoại: nút Menu và khung liên kết thả xuống, cùng chất khung pixel */
+.topnav .menu-button {
+  padding: 0 0.6rem;
+  border: 2px solid rgba(185, 176, 201, 0.5);
+}
+.topmenu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.2rem);
+  right: 0.8rem;
+  min-width: 12rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0.4rem;
+}
+.topmenu a,
+.topmenu button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 0.7rem;
+  color: var(--cream);
+  text-decoration: none;
+  text-align: left;
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.topmenu a:hover,
+.topmenu button:hover {
+  color: var(--gold-hi);
+  background: rgba(243, 214, 139, 0.08);
+}
+.topmenu a:focus-visible,
+.topmenu button:focus-visible,
+.menu-button:focus-visible,
+.topnav a:focus-visible,
+.topnav button:focus-visible {
+  outline: 2px dashed var(--gold-hi);
+  outline-offset: 2px;
+}
+.topmenu form {
+  display: contents;
+}
 .demo-badge {
   border: 1px solid var(--gold);
   color: var(--gold-hi);
@@ -572,8 +618,11 @@ img {
 .tarot-card:not(:disabled) {
   cursor: pointer;
 }
-.tarot-card:not(:disabled):hover {
-  transform: translateY(-6px);
+/* nhấc lá khi rê chuột; màn cảm ứng không có hover nên bỏ, tránh lá bị kẹt ở trạng thái nhấc */
+@media (hover: hover) {
+  .tarot-card:not(:disabled):hover {
+    transform: translateY(-6px);
+  }
 }
 /* Lật bài: co bề ngang về 0 rồi mở ra, đổi mặt đúng ở giữa (ổn định hơn rotateY trên mọi trình duyệt). */
 .tarot-card.is-revealed {
@@ -1063,11 +1112,25 @@ img {
   .forest-hero h1 {
     font-size: 2.6rem;
   }
+  /* dải bài hai vòng cung: vòng sau lùi lên, vòng trước đè nửa dưới; mỗi lá lộ ra ~48px bề ngang */
+  .fan-zone {
+    height: calc(clamp(54px, 9vw, 88px) * 80 / 48 + 40px + 64px);
+  }
+  /* bước giữa hai lá tính theo bề rộng màn: vòng cung 7 lá luôn nằm trọn trong màn, kể cả màn 320px */
+  .fan-zone {
+    --step: min(46px, calc((96vw - 84px) / 6));
+  }
   .fan-card {
-    transform: translateX(calc(-50% + var(--offset) * 3.4)) rotate(var(--angle));
+    transform: translateX(calc(-50% + var(--k2) * var(--step))) rotate(var(--angle2));
+  }
+  .fan-card.is-back {
+    bottom: 64px;
+  }
+  .fan-card.is-front {
+    z-index: 1;
   }
   .fan-card.is-picked {
-    transform: translateX(calc(-50% + var(--offset) * 3.4)) translateY(-22px) rotate(var(--angle));
+    transform: translateX(calc(-50% + var(--k2) * var(--step))) translateY(-18px) rotate(var(--angle2));
   }
   /* điện thoại: thương hiệu và liên kết cùng Label nhỏ, khoảng cách hẹp để thanh vừa một hàng */
   .topbar {
@@ -1157,4 +1220,42 @@ img {
 }
 .plan-faq {
   margin-top: 2rem;
+}
+
+/* ---------- màn cảm ứng: mọi thứ bấm được có vùng chạm tối thiểu 44px ---------- */
+@media (pointer: coarse) {
+  .btn-pixel,
+  .chip {
+    min-height: 44px;
+  }
+  .chip {
+    padding-block: 0;
+    display: inline-flex;
+    align-items: center;
+  }
+  /* thanh trên cùng: chữ giữ cỡ, vùng chạm nới ra bằng đệm; thanh co đệm dọc để không cao thêm */
+  .topbar {
+    padding-block: max(0.15rem, env(safe-area-inset-top)) 0.15rem;
+  }
+  .brand,
+  .topnav a,
+  .topnav button {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .brand {
+    gap: 0.3em;
+  }
+  .topnav a,
+  .topnav button,
+  .topmenu a,
+  .topmenu button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  /* link nằm giữa câu: đệm trong dòng nới vùng chạm mà không đẩy dòng chữ */
+  .hero-note a {
+    padding: 0.7rem 0.2rem;
+  }
 }

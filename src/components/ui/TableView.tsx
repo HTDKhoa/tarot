@@ -5,6 +5,8 @@ import type { DrawnCard } from "@/lib/tarot/types";
 import { TarotCard } from "./TarotCard";
 
 const FAN_SIZE = 13;
+/** số lá ở vòng cung phía sau khi dải bài tách hai hàng trên điện thoại */
+const BACK_ROW = 7;
 
 /** Hình trải trên khăn: một lá ở giữa, ba lá thành hàng, hay tam giác (Trở ngại ở đỉnh). */
 const SHAPE: Record<SpreadId | "daily", string> = {
@@ -100,8 +102,19 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
           {Array.from({ length: FAN_SIZE }, (_, i) => {
             const mid = (FAN_SIZE - 1) / 2;
             const order = picked.indexOf(i);
+            // điện thoại: hai vòng cung (7 lá sau, 6 lá trước) để mỗi lá lộ ra đủ rộng cho ngón tay
+            const back = i < BACK_ROW;
+            const n = back ? BACK_ROW : FAN_SIZE - BACK_ROW;
+            const j = back ? i : i - BACK_ROW;
+            const mid2 = (n - 1) / 2;
+            const vars = {
+              "--angle": `${(i - mid) * 5}deg`,
+              "--offset": `${(i - mid) * 7}%`,
+              "--angle2": `${(j - mid2) * 4}deg`,
+              "--k2": j - mid2,
+            } as React.CSSProperties;
             return (
-              <div key={i} className={`fan-card ${order >= 0 ? "is-picked" : ""}`} style={{ "--angle": `${(i - mid) * 5}deg`, "--offset": `${(i - mid) * 7}%` } as React.CSSProperties}>
+              <div key={i} className={`fan-card ${back ? "is-back" : "is-front"} ${order >= 0 ? "is-picked" : ""}`} style={vars}>
                 <TarotCard
                   revealed={false}
                   size="sm"

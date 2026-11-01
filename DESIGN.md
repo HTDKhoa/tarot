@@ -362,7 +362,8 @@ Các thành phần trầm và tiết chế: chúng là đồ vật nhỏ trong n
 - **Bộ đếm:** VT323 khói sương ngay cạnh nút gửi (63/500).
 
 ### Navigation
-- **Thanh trên cùng:** VT323 Label 1.35rem (Label nhỏ 1.15rem trên mobile); thương hiệu màu ngọn lửa kèm biểu tượng trăng ☾; liên kết kem giấy cũ mờ 85%, hover sáng hẳn và chuyển ngọn lửa. Huy hiệu "Demo" là viền vàng 1 px.
+- **Thanh trên cùng:** VT323 Label 1.35rem (Label nhỏ 1.15rem trên mobile); thương hiệu màu ngọn lửa kèm biểu tượng trăng ☾; liên kết kem giấy cũ mờ 85%, hover sáng hẳn và chuyển ngọn lửa. Huy hiệu "Demo" là viền vàng 1 px. Dưới 640 px các liên kết gộp vào nút "Menu" (viền khói sương), mở một khung pixel thả xuống với mỗi mục cao 44 px; chạm ra ngoài hoặc Esc để đóng.
+- **Màn cảm ứng** (`pointer: coarse`): mọi thứ bấm được có vùng chạm tối thiểu 44 px (nút, chip, liên kết và nút trên thanh trên cùng); liên kết nằm giữa câu được nới vùng chạm bằng đệm trong dòng.
 
 ### Hộp thoại (signature)
 Khung pixel rộng min(94vw, 780px) với thẻ tên tím mận nhô lên mép trái. Lời Nguyệt chạy từng ký tự (22 ms mỗi ký tự); chạm vào chữ, Enter hoặc Space để hiện hết câu hoặc sang câu sau. Mũi tên ▼ ngọn lửa là một nút thật ở góc dưới phải khung (vùng chạm 44px), nhấp nhô theo `steps(2)` khi còn câu tiếp và mờ đi khi chữ đang chạy. Nút hành động chỉ hiện khi đã nói xong; lúc đó focus chuyển tới nút đầu tiên, còn khi chưa xong thì focus nằm ở ▼. Hộp thoại không giành focus khi khách đang ở chỗ khác (sổ, ô nhập). Lúc chờ rút lá, khung hiện "Nguyệt đang xào bài…" nghiêng, màu khói sương. Trình đọc màn hình không nghe chữ chạy: mỗi câu được báo trọn một lần ("Nguyệt: …") qua một vùng `aria-live` ẩn. Người dùng chọn giảm chuyển động thì chữ hiện ngay, máy không lia và bỏ cảnh đi tới cửa.
@@ -373,7 +374,7 @@ Mặt sau là ảnh pixel đèn lồng trên nền xanh đêm; mặt trước l�
 **Luật Tên Lá.** Mọi chữ khách đọc trên bàn, trong sổ và nhật ký gọi lá bằng tên tiếng Anh. Tên Việt chỉ xuất hiện trong lời Nguyệt, luôn kèm tên Anh trong ngoặc, theo cách gọi phổ biến (The Empress là Nữ Hoàng, lá Queen là Hoàng Hậu, The Chariot là Cỗ Xe Chiến Thắng; `viName` trong `src/lib/tarot/cards.ts`).
 
 ### Dải bài (signature)
-13 lá úp xếp hình quạt (mỗi lá lệch 5°, xoay quanh điểm dưới đáy). Lá được chọn nhấc lên 28 px (22 px trên mobile) và thắp quầng nến.
+13 lá úp xếp hình quạt (mỗi lá lệch 5°, xoay quanh điểm dưới đáy). Dưới 640 px quạt tách thành hai vòng cung chồng nhẹ (7 lá phía sau lùi lên, 6 lá phía trước), bước giữa hai lá tính theo bề rộng màn để mỗi lá lộ ra đủ cho ngón tay (≥45 px ở màn 320 px). Lá được chọn nhấc lên 28 px (18 px trên mobile) và thắp quầng nến; trên màn có chuột, lá nhấc nhẹ khi rê qua.
 
 ### Nút đổi góc máy
 Một nút duy nhất giữa đỉnh màn, ngay dưới thanh trên cùng, hiện suốt lúc trải bài và sau khi xong nếu còn lá trên bàn. Chữ VT323 1.2rem, nền đêm mờ 62%, viền 2 px khói sương mờ 50%, cao tối thiểu 44 px, không bóng. Hover chuyển chữ sang ngọn lửa và viền sang vàng nến; focus là nét đứt chung. Nhãn đổi theo góc đang đứng: "▼ Xem bàn" ở mặt Nguyệt, "▲ Nhìn Nguyệt" ở mặt bàn.
