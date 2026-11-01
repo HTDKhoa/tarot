@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { sessionGet, sessionSet, storageGet, storageSet } from "@/lib/storage";
 import { EMERGENCY, SUPPORT_LINES, isCrisis } from "@/lib/safety";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Dialogue } from "./Dialogue";
 import { TableView } from "./TableView";
 import { Notebook, type LogEntry } from "./Notebook";
@@ -18,7 +18,7 @@ import { TOPIC_LABELS, type DrawnCard, type ReaderLine, type Topic } from "@/lib
 // Cảnh 3D (hoặc ảnh tĩnh nếu không có WebGL) chỉ chạy ở trình duyệt.
 const SceneStage = dynamic(() => import("../scene/SceneStage"), { ssr: false });
 
-type Phase = "menu" | "form" | "picking" | "reading" | "deciding" | "closing" | "summary" | "shuffling" | "done" | "daily" | "crisis" | "message" | "login";
+type Phase = "menu" | "form" | "picking" | "reading" | "deciding" | "closing" | "summary" | "shuffling" | "done" | "daily" | "crisis" | "message" | "quota" | "login";
 interface Draw { cardId: number; reversed: boolean }
 interface Ctx {
   question: string;
@@ -63,6 +63,8 @@ const isInteractive = (t: EventTarget | null) => t instanceof Element && !!t.clo
 /** Đã dừng vì khủng hoảng thì khóa trải bài tới hết phiên (đóng tab). */
 const CRISIS_KEY = "nguyet_crisis";
 const CRISIS_RETURN: ReaderLine[] = [{ tag: "gentle", text: "Đèn vẫn sáng. Hôm nay ta cất bài rồi. Ta chỉ muốn biết cậu đang an toàn." }];
+/** Lời mời viết câu hỏi: Nguyệt nói câu này ngay trên ô nhập, form không thay giọng của nàng bằng tiêu đề. */
+const FORM_INVITE = "Kể ta nghe điều cậu đang băn khoăn. Viết thật lòng, càng cụ thể ta càng đọc rõ.";
 /** "Ngồi thêm một lúc": Nguyệt ở lại bầu bạn, không bài, không khuyên; lần lượt từng câu. */
 const CRISIS_STAY: ReaderLine[] = [
   { tag: "gentle", text: "Ừ, ngồi đi. Ta không cất đèn đâu." },
@@ -194,7 +196,7 @@ export default function HomeClient() {
     }
     resetTable();
     toFace();
-    say([{ tag: "think", text: "Kể ta nghe điều cậu đang băn khoăn. Viết thật lòng, càng cụ thể ta càng đọc rõ." }], "form");
+    say([{ tag: "think", text: FORM_INVITE }], "form");
   };
 
   /** Khủng hoảng: ở góc mặt Nguyệt, khóa bài tới hết phiên, thẻ hỗ trợ hiện ngay; lời của Nguyệt lấy từ máy chủ. */
@@ -247,7 +249,7 @@ export default function HomeClient() {
       // nghi thức: Nguyệt xào bài ít nhất một lúc rồi mới trải dải bài, kể cả khi máy chủ trả rất nhanh
       if (r.ok) await shuffleTime(startedAt);
       if (r.status === 401) return say([{ tag: "tease", text: j.error }], "login");
-      if (j.error === "quota") return say([{ tag: "concern", text: j.message }], "message");
+      if (j.error === "quota") return say([{ tag: "concern", text: j.message }], "quota");
       if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc. Cậu thử lại nhé." }], "message");
       setCtx({ question, readingId: j.readingId, demo: j.demo, topic, spread, draws: j.draws ?? [], clarifiers: [], clarifiersLeft: j.clarifiersLeft });
       setCards(j.cards);
@@ -487,7 +489,7 @@ export default function HomeClient() {
 
           <div className="dialogue-zone">
             {phase === "form" ? (
-              <QuestionForm onSubmit={submitQuestion} onCancel={backToMenu} busy={busy} />
+              <QuestionForm onSubmit={submitQuestion} onCancel={backToMenu} busy={busy} quotaText={quotaText} />
             ) : (
               <Dialogue key={greetingNow ? "greet" : script.id} lines={lines} onLine={onLine} onDone={onDone} busy={busy} portrait={onTable ? <Portrait /> : undefined}>
                 {phase === "menu" && (
@@ -539,11 +541,14 @@ export default function HomeClient() {
                     <button className="btn-pixel btn-ghost" onClick={backToMenu}>Quay lại</button>
                   </>
                 )}
-                {phase === "message" && (
+                {phase === "quota" && (
                   <>
                     <Link className="btn-pixel btn-gold" href="/goi">Xem các gói</Link>
                     <button className="btn-pixel btn-ghost" onClick={backToMenu}>Quay lại</button>
                   </>
+                )}
+                {phase === "message" && (
+                  <button className="btn-pixel btn-gold" onClick={backToMenu}>Quay lại</button>
                 )}
               </Dialogue>
             )}
@@ -583,48 +588,109 @@ function SupportCard({ onStay, onLeave }: { onStay: () => void; onLeave: () => v
   );
 }
 
-function QuestionForm({ onSubmit, onCancel, busy }: { onSubmit: (q: string, t: Topic, s: SpreadId) => void; onCancel: () => void; busy: boolean }) {
+/**
+ * Form câu hỏi nằm trong khung hộp thoại và vẫn là lượt nói của Nguyệt: thẻ tên "Nguyệt", lời mời của nàng làm nhãn ô nhập.
+ * Hai hàng chip có nhãn nhìn thấy được; mô tả cách trải đang chọn hiện ngay dưới.
+ */
+function QuestionForm({ onSubmit, onCancel, busy, quotaText }: { onSubmit: (q: string, t: Topic, s: SpreadId) => void; onCancel: () => void; busy: boolean; quotaText: string | null }) {
   const [q, setQ] = useState("");
   const [topic, setTopic] = useState<Topic>("ban_than");
   const [spread, setSpread] = useState<SpreadId>("past_present_path");
   const topics = useMemo(() => Object.entries(TOPIC_LABELS) as [Topic, string][], []);
+  const spreads = useMemo(() => Object.values(SPREADS).map((s) => [s.id, s.name] as [SpreadId, string]), []);
+  const formRef = useRef<HTMLFormElement>(null);
+  const areaRef = useRef<HTMLTextAreaElement>(null);
+  const tooShort = q.trim().length < 3;
+
+  // Chuột/bàn phím: vào thẳng ô nhập. Cảm ứng: không bật bàn phím ảo (nó che chip và nút "Xào bài"),
+  // focus vào khung form để trình đọc màn hình vẫn đọc lời mời.
+  useEffect(() => {
+    if (window.matchMedia("(pointer: fine)").matches) areaRef.current?.focus();
+    else formRef.current?.focus({ preventScroll: true });
+  }, []);
+
   return (
     <form
+      ref={formRef}
+      tabIndex={-1}
       className="dialogue pixel-frame question-form"
+      aria-labelledby="form-loi-moi"
       onSubmit={(e) => {
         e.preventDefault();
-        if (q.trim().length >= 3 && !busy) onSubmit(q.trim(), topic, spread);
+        if (!tooShort && !busy) onSubmit(q.trim(), topic, spread);
       }}
     >
-      <div className="dialogue-name">Câu hỏi của cậu</div>
+      <div className="dialogue-name" aria-hidden>
+        Nguyệt
+      </div>
+      <label id="form-loi-moi" htmlFor="form-cau-hoi" className="question-invite">
+        {FORM_INVITE}
+      </label>
       <textarea
+        ref={areaRef}
+        id="form-cau-hoi"
         value={q}
         onChange={(e) => setQ(e.target.value)}
         maxLength={500}
         rows={3}
         placeholder="Ví dụ: Mình có nên nhận lời chuyển sang công việc mới không?"
-        autoFocus
-        aria-label="Câu hỏi"
       />
-      <div className="chip-row" role="radiogroup" aria-label="Chủ đề">
-        {topics.map(([k, label]) => (
-          <button key={k} type="button" role="radio" aria-checked={topic === k} className={`chip ${topic === k ? "is-on" : ""}`} onClick={() => setTopic(k)}>
-            {label}
-          </button>
-        ))}
-      </div>
-      <div className="chip-row" role="radiogroup" aria-label="Kiểu trải bài">
-        {Object.values(SPREADS).map((s) => (
-          <button key={s.id} type="button" role="radio" aria-checked={spread === s.id} className={`chip ${spread === s.id ? "is-on" : ""}`} onClick={() => setSpread(s.id)} title={s.description}>
-            {s.name}
-          </button>
-        ))}
-      </div>
+      <ChipGroup id="form-chu-de" label="Về chuyện" options={topics} value={topic} onChange={setTopic} />
+      <ChipGroup id="form-cach-trai" label="Cách trải" options={spreads} value={spread} onChange={setSpread} note={SPREADS[spread].description} />
       <div className="dialogue-actions">
-        <button className="btn-pixel btn-gold" type="submit" disabled={busy || q.trim().length < 3}>{busy ? "Đang xào bài…" : "Xào bài"}</button>
-        <button className="btn-pixel btn-ghost" type="button" onClick={onCancel}>Thôi</button>
-        <span className="hint">{q.length}/500</span>
+        <button className="btn-pixel btn-gold" type="submit" disabled={busy || tooShort} aria-describedby="form-goi-y">
+          {busy ? "Đang xào bài…" : "Xào bài"}
+        </button>
+        <button className="btn-pixel btn-ghost" type="button" onClick={onCancel}>
+          Thôi
+        </button>
+        {/* nút bị khóa thì nói lý do; viết đủ rồi thì đếm chữ */}
+        <span id="form-goi-y" className="hint">
+          {tooShort ? "Viết vài chữ trước đã" : `${q.length}/500`}
+        </span>
+        {quotaText && <span className="quota-chip">Tốn 1 lượt · còn {quotaText}</span>}
       </div>
     </form>
+  );
+}
+
+/** Một hàng chip chọn một: nhãn nhìn thấy được, phím mũi tên đi giữa các chip như radio thật. */
+function ChipGroup<T extends string>({ id, label, options, value, onChange, note }: { id: string; label: string; options: [T, string][]; value: T; onChange: (v: T) => void; note?: string }) {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const move = (e: ReactKeyboardEvent, i: number) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    const to = e.key === "Home" ? 0 : e.key === "End" ? options.length - 1 : step ? (i + step + options.length) % options.length : -1;
+    if (to < 0) return;
+    e.preventDefault();
+    onChange(options[to][0]);
+    rowRef.current?.querySelectorAll<HTMLElement>(".chip")[to]?.focus();
+  };
+  return (
+    <div className="chip-group">
+      <div ref={rowRef} className="chip-row" role="radiogroup" aria-labelledby={`${id}-nhan`} aria-describedby={note ? `${id}-mo-ta` : undefined}>
+        <span id={`${id}-nhan`} className="chip-label">
+          {label}
+        </span>
+        {options.map(([k, text], i) => (
+          <button
+            key={k}
+            type="button"
+            role="radio"
+            aria-checked={value === k}
+            tabIndex={value === k ? 0 : -1}
+            className={`chip ${value === k ? "is-on" : ""}`}
+            onClick={() => onChange(k)}
+            onKeyDown={(e) => move(e, i)}
+          >
+            {text}
+          </button>
+        ))}
+      </div>
+      {note && (
+        <p id={`${id}-mo-ta`} className="chip-note">
+          {note}
+        </p>
+      )}
+    </div>
   );
 }

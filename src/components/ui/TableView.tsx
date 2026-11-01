@@ -76,7 +76,7 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
 
   if (shuffling) {
     return (
-      <div className={field()} aria-label="Nguyệt đang xào bài">
+      <div className={field()} role="img" aria-label="Nguyệt đang xào bài">
         {/* hai nửa bộ bài, mỗi nửa dưới một bàn tay, tách ra rồi gập vào nhau */}
         <div className="table-shuffle" aria-hidden>
           {["half-a", "half-b"].map((h) => (
@@ -98,7 +98,8 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
         <p className="table-count" aria-live="polite">
           Đã chọn {picked.length}/{cards.length}
         </p>
-        <div className="fan-zone" aria-label="Dải bài úp">
+        {/* data-focus-next: hộp thoại nói xong mà không có nút thì focus về lá đầu tiên của dải, không rơi về body */}
+        <div className="fan-zone" role="group" aria-label="Dải bài úp" data-focus-next>
           {Array.from({ length: FAN_SIZE }, (_, i) => {
             const mid = (FAN_SIZE - 1) / 2;
             const order = picked.indexOf(i);
@@ -140,7 +141,7 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
         ))}
       </div>
       {extra.length > 0 && (
-        <div className="table-spread spread-clarifiers" aria-label="Lá làm rõ">
+        <div className="table-spread spread-clarifiers" role="group" aria-label="Lá làm rõ">
           {extra.map(({ c, i }) => (
             // hàng làm rõ nằm sát dưới chú thích hàng trên: tay đưa vào sẽ che chữ, nên chỉ thắp lá bằng ánh nến
             <Slot key={`${c.card.id}-${i}`} c={c} i={i} revealed={revealed.has(i)} active={active === i} hand={false} />

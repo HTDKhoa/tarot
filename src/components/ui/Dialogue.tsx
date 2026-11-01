@@ -65,8 +65,10 @@ export function Dialogue({ lines, onLine, onDone, children, busy, portrait }: Pr
     const root = rootRef.current;
     const active = document.activeElement;
     if (!root || (active && active !== document.body && !root.contains(active))) return;
+    // nói xong mà không có nút (lúc chọn lá): sang chỗ cảnh đánh dấu data-focus-next, ví dụ dải bài
     const target = finished
-      ? root.querySelector<HTMLElement>(".dialogue-actions button, .dialogue-actions a")
+      ? (root.querySelector<HTMLElement>(".dialogue-actions button, .dialogue-actions a") ??
+        document.querySelector<HTMLElement>("[data-focus-next] button:not([disabled])"))
       : root.querySelector<HTMLElement>(".dialogue-next");
     target?.focus({ preventScroll: true });
   }, [finished, idx]);

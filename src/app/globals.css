@@ -538,11 +538,43 @@ img {
   outline: none;
   border-color: var(--gold);
 }
+/* form câu hỏi: lời mời của Nguyệt làm nhãn ô nhập, cùng cỡ chữ với lời thoại */
+.question-form:focus {
+  outline: none;
+}
+.question-invite {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-size: clamp(0.98rem, 2.3vw, 1.08rem);
+  line-height: 1.6;
+  color: var(--cream);
+}
+.chip-group {
+  margin-top: 0.6rem;
+}
 .chip-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.4rem;
-  margin-top: 0.6rem;
+}
+/* nhãn hàng chip: khói sương, cùng giọng VT323 với chip, đứng đầu hàng */
+.chip-label {
+  min-width: 5.2em;
+  font-family: var(--font-pixel);
+  font-size: 1.15rem;
+  color: var(--muted);
+}
+.chip-note {
+  margin-top: 0.35rem;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+@media (min-width: 641px) {
+  /* màn rộng: mô tả thẳng hàng với chip, không thẳng với nhãn */
+  .chip-note {
+    padding-left: calc(5.2 * 1.15rem + 0.4rem);
+  }
 }
 .chip {
   font-family: var(--font-pixel);
