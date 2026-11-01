@@ -18,7 +18,7 @@ import { TOPIC_LABELS, type DrawnCard, type ReaderLine, type Topic } from "@/lib
 // Cảnh 3D (hoặc ảnh tĩnh nếu không có WebGL) chỉ chạy ở trình duyệt.
 const SceneStage = dynamic(() => import("../scene/SceneStage"), { ssr: false });
 
-type Phase = "menu" | "form" | "picking" | "reading" | "deciding" | "closing" | "summary" | "done" | "daily" | "crisis" | "message" | "login";
+type Phase = "menu" | "form" | "picking" | "reading" | "deciding" | "closing" | "summary" | "shuffling" | "done" | "daily" | "crisis" | "message" | "login";
 interface Draw { cardId: number; reversed: boolean }
 interface Ctx {
   question: string;
@@ -33,7 +33,7 @@ interface Ctx {
 
 
 /** Các bước diễn ra trên mặt bàn: máy tự hạ xuống bàn khi bắt đầu, khách đổi góc được bất cứ lúc nào. */
-const TABLE_PHASES: Phase[] = ["picking", "reading", "deciding", "closing", "summary", "daily"];
+const TABLE_PHASES: Phase[] = ["shuffling", "picking", "reading", "deciding", "closing", "summary", "daily"];
 const toTable = () => sceneStore.set({ stage: "table" });
 const toFace = () => {
   if (sceneStore.get().stage === "table") sceneStore.set({ stage: "inside" });
@@ -50,6 +50,13 @@ function verticalStep(dir: "up" | "down", o: { notebookOpen: boolean; docked: bo
   } else if (!onTable) toTable();
   else if (o.hasNotebook && !o.docked) o.setNotebookOpen(true);
 }
+/** Cảnh xào bài kéo dài tối thiểu chừng này (bỏ qua khi người dùng chọn giảm chuyển động). */
+const SHUFFLE_MS = 1600;
+const shuffleTime = (since: number) => {
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return Promise.resolve();
+  const left = SHUFFLE_MS - (performance.now() - since);
+  return left > 0 ? new Promise((r) => setTimeout(r, left)) : Promise.resolve();
+};
 /** Vuốt / cuộn bắt đầu trên một nút, ô nhập hay vùng cuộn thì không tính là đổi góc máy. */
 const isInteractive = (t: EventTarget | null) => t instanceof Element && !!t.closest("button, a, textarea, input, select, [data-scrollable]");
 
@@ -185,6 +192,9 @@ export default function HomeClient() {
     setLines([]);
     // Bấm "Xào bài" thì máy hạ xuống bàn ngay, Nguyệt xào bài trong lúc chờ máy chủ rút lá.
     toTable();
+    // form gập lại, hộp thoại báo Nguyệt đang xào bài trong lúc hai tay xào trên bàn
+    setPhase("shuffling");
+    const startedAt = performance.now();
     try {
       const r = await fetch("/api/reading", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question, topic, spread }) });
       const j = await r.json().catch(() => ({}));
@@ -197,6 +207,8 @@ export default function HomeClient() {
         return say(j.lines, "crisis");
       }
       if (!r.ok) toFace();
+      // nghi thức: Nguyệt xào bài ít nhất một lúc rồi mới trải dải bài, kể cả khi máy chủ trả rất nhanh
+      if (r.ok) await shuffleTime(startedAt);
       if (r.status === 401) return say([{ tag: "tease", text: j.error }], "login");
       if (j.error === "quota") return say([{ tag: "concern", text: j.message }], "message");
       if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc. Cậu thử lại nhé." }], "message");
@@ -206,6 +218,10 @@ export default function HomeClient() {
       setPicked([]);
       say([{ tag: "shuffle", text: `Ta xào xong rồi. Cậu chọn ${j.cards.length === 1 ? "một lá" : `${j.cards.length} lá`} trong dải bài này, theo cảm giác của cậu.` }], "picking");
       loadMe();
+    } catch {
+      // mất mạng giữa chừng: ngẩng lên, Nguyệt báo và cho quay lại
+      toFace();
+      say([{ tag: "concern", text: "Có gì đó trục trặc. Cậu thử lại nhé." }], "message");
     } finally {
       setBusy(false);
     }
@@ -324,6 +340,17 @@ export default function HomeClient() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [canToggle, notebookOpen, docked, hasNotebook]);
+  // Sổ nằm mở bên phải (desktop): camera lệch phải nửa bề rộng cột sổ, để vòng đọc bài nằm giữa phần bàn còn lại.
+  useEffect(() => {
+    const update = () => {
+      const vw = window.innerWidth;
+      const col = Math.min(vw * 0.3, 360) + 24;
+      sceneStore.set({ shiftX: docked && hasNotebook ? col / 2 / vw : 0 });
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [docked, hasNotebook]);
   const nav = { notebookOpen, docked, hasNotebook, setNotebookOpen };
   const gestures = canToggle
     ? {
@@ -403,7 +430,6 @@ export default function HomeClient() {
                   cards={cards}
                   log={log}
                   recap={recap}
-                  active={active}
                   open={notebookOpen}
                   docked={docked}
                   toRecap={phase === "summary"}

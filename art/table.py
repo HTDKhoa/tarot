@@ -11,9 +11,12 @@ import characters
 
 
 # ------------------------------------------------------------------ mặt bàn
-def tabletop(W, H, seed):
-    """Khăn tím mận phủ gần kín mặt bàn gỗ; viền thêu vàng, sao thêu, vòng đọc bài chấm vàng.
-    Ánh nến đến từ góc trên phải nên phía đó sáng hơn (dither Bayer), mép xa tối dần."""
+def tabletop(W, H, seed, CW=None):
+    """Khăn tím mận trên mặt bàn gỗ; viền thêu vàng, sao thêu, vòng đọc bài chấm vàng.
+    CW: bề rộng phần khăn + lề (căn giữa); phần gỗ thừa hai bên để máy lia ngang khi sổ nằm
+    ở góc bàn mà không lộ mép ảnh. Ánh nến đến từ góc trên phải khăn (dither Bayer)."""
+    CW = CW or W
+    ox = (W - CW) // 2
     img = new(W, H, 'w0')
     px = img.load()
     # gỗ: ván dọc theo chiều ngang, vân bằng dither
@@ -27,10 +30,10 @@ def tabletop(W, H, seed):
                 col = 'out'
             px[x, y] = c(col)
     # khăn
-    m = 22 if W > H else 16
-    x0, y0, x1, y1 = m, m, W - 1 - m, H - 1 - m
-    lx, ly = W * 0.82, H * 0.12          # nguồn sáng: ngọn nến
-    diag = math.hypot(W, H)
+    m = 22 if CW > H else 16
+    x0, y0, x1, y1 = ox + m, m, ox + CW - 1 - m, H - 1 - m
+    lx, ly = ox + CW * 0.82, H * 0.12    # nguồn sáng: ngọn nến
+    diag = math.hypot(CW, H)
     for y in range(y0, y1 + 1):
         for x in range(x0, x1 + 1):
             light = 1 - math.hypot(x - lx, y - ly) / diag      # 0..1
@@ -54,9 +57,9 @@ def tabletop(W, H, seed):
         put(img, x, y1 + 2, 'au0' if x % 8 == 2 else 'p0')
     # sao thêu rải, chừa vùng giữa cho lá bài
     r = rng(seed)
-    for _ in range(int(W * H / 2600)):
+    for _ in range(int(CW * H / 2600)):
         x, y = r.randint(x0 + 16, x1 - 16), r.randint(y0 + 16, y1 - 16)
-        if abs(x - W / 2) < W * 0.3 and abs(y - H * 0.46) < H * 0.3:
+        if abs(x - W / 2) < CW * 0.3 and abs(y - H * 0.46) < H * 0.3:
             continue
         put(img, x, y, 'au0')
         if r.random() < .35:
@@ -64,14 +67,15 @@ def tabletop(W, H, seed):
                 put(img, x + dx, y + dy, 'au0')
             put(img, x, y, 'au1')
     # vòng đọc bài: elip chấm vàng
-    rx, ry = (W * 0.36, H * 0.33) if W > H else (W * 0.40, H * 0.27)
+    # bản ngang: vòng nhỏ hơn một chút để sổ nằm mở bên phải mà không cắt vòng
+    rx, ry = (CW * 0.30, H * 0.33) if CW > H else (CW * 0.40, H * 0.27)
     cx, cy = W / 2, H * 0.46
     steps = int(2 * math.pi * max(rx, ry) / 4)
     for i in range(steps):
         a = 2 * math.pi * i / steps
         put(img, round(cx + rx * math.cos(a)), round(cy + ry * math.sin(a)), 'au0' if i % 3 else 'au1')
     # trăng khuyết thêu ở mép gần (phía khách)
-    mx, my = int(W / 2), int(y1 - (26 if W > H else 34))
+    mx, my = int(W / 2), int(y1 - (26 if CW > H else 34))
     for y in range(my - 9, my + 10):
         for x in range(mx - 9, mx + 10):
             if (x - mx) ** 2 + (y - my) ** 2 <= 7 ** 2 and (x - mx + 3) ** 2 + (y - my + 2) ** 2 > 6 ** 2:
@@ -86,9 +90,12 @@ def sleeve_and_hand(point=True):
     img = new(W, H)
     d = draw(img)
     # ống tay: loe nhẹ, sao rắc như áo choàng
-    d.polygon([(3, 0), (30, 0), (28, 30), (6, 30)], fill=c('n2'))
-    d.line([(4, 0), (7, 30)], fill=c('n3'))
-    d.line([(29, 0), (27, 30)], fill=c('n1'))
+    # mép trên thẳng 3..30 để nối liền với sleeve_tile, loe dần xuống cổ tay
+    d.polygon([(3, 0), (30, 0), (30, 6), (28, 30), (6, 30), (3, 6)], fill=c('n2'))
+    d.line([(4, 0), (4, 6)], fill=c('n3'))
+    d.line([(4, 6), (7, 30)], fill=c('n3'))
+    d.line([(29, 0), (29, 6)], fill=c('n1'))
+    d.line([(29, 6), (27, 30)], fill=c('n1'))
     for p in [(10, 6), (19, 12), (14, 21), (24, 4), (22, 24)]:
         put(img, *p, 'cr')
     # viền tay áo vàng
@@ -121,6 +128,21 @@ def sleeve_and_hand(point=True):
     d.line([(17, 44), (20, 44)], fill=c('au1'))
     put(img, 19, 44, 'au2')
     return outline(img)
+
+
+def sleeve_tile():
+    """Đoạn ống tay áo 34x8 lặp dọc (repeat-y) phía trên hand_*.png, để cánh tay vươn từ mép xa của bàn."""
+    W, H = 34, 8
+    img = new(W, H)
+    d = draw(img)
+    d.rectangle([3, 0, 30, H - 1], fill=c('n2'))
+    d.line([(4, 0), (4, H - 1)], fill=c('n3'))
+    d.line([(29, 0), (29, H - 1)], fill=c('n1'))
+    for p in [(11, 2), (21, 5), (16, 7)]:
+        put(img, *p, 'cr')
+    d.line([(2, 0), (2, H - 1)], fill=c('out'))
+    d.line([(31, 0), (31, H - 1)], fill=c('out'))
+    return img
 
 
 # ------------------------------------------------------------------ cuốn sổ của Bấc (gập, nhìn từ trên)
@@ -162,17 +184,54 @@ def book():
     return outline(img)
 
 
-def page_frame():
-    """24x24, cắt 8px mỗi cạnh: viền mực nâu đôi, góc chấm, lõi giấy kem (border-image-slice: 8 fill)."""
-    S = 24
-    img = new(S, S, 'cr')
+BOOK_SLICE = (10, 10, 12, 18)   # trên, phải, dưới, trái (border-image-slice)
+
+
+def book_frame():
+    """40x42, 9-slice cho cuốn sổ mở: bìa da nâu bọc ngoài, góc bọc đồng, chồng mép trang,
+    gáy sổ bên trái có chỉ khâu vàng và bóng gáy trên giấy. Đoạn giữa mỗi cạnh dài bội số 4
+    để chỉ khâu lặp tròn (border-image-repeat: round)."""
+    W, H = 40, 42
+    T, R, B, L = BOOK_SLICE
+    img = new(W, H, 'cr')
+    px = img.load()
+    for y in range(H):
+        for x in range(W):
+            leather = x < L - 6 or x >= W - 5 or y < 5 or y >= H - 6
+            if leather:
+                px[x, y] = c('w1' if bayer(x, y, 0.28) else 'w2')
     d = draw(img)
-    d.rectangle([0, 0, S - 1, S - 1], outline=c('w1'))
-    d.rectangle([1, 1, S - 2, S - 2], outline=c('w3'))
-    d.rectangle([3, 3, S - 4, S - 4], outline=c('o1'))
-    for (x, y) in ((3, 3), (S - 4, 3), (3, S - 4), (S - 4, S - 4)):
-        put(img, x, y, 'w1')
-    # lõi để trơn: border-image kéo giãn lõi ra cả trang, một chấm vân cũng thành mảng lớn
+    d.rectangle([0, 0, W - 1, H - 1], outline=c('out'))
+    # mép bìa sáng hơn ở phía nến (trên, phải)
+    d.line([(1, 1), (W - 2, 1)], fill=c('w3'))
+    d.line([(W - 2, 1), (W - 2, H - 2)], fill=c('w3'))
+    # gáy: dải da đậm, chỉ khâu vàng mỗi 4px
+    d.rectangle([1, 1, 4, H - 2], fill=c('w0'))
+    for y in range(2, H - 2, 4):
+        put(img, 7, y, 'au0')
+        put(img, 7, y + 1, 'au1')
+    # mép trong của bìa
+    d.line([(L - 6, 5), (L - 6, H - 7)], fill=c('out'))
+    d.line([(L - 6, 4), (W - 6, 4)], fill=c('out'))
+    d.line([(W - 6, 4), (W - 6, H - 7)], fill=c('out'))
+    d.line([(L - 6, H - 7), (W - 6, H - 7)], fill=c('out'))
+    # chồng mép trang (dưới dày hơn, phải mỏng)
+    for k, col in enumerate(('o2', 'cr', 'o2')):
+        d.line([(L - 5, H - 8 - k), (W - 7, H - 8 - k)], fill=c(col))
+    for k, col in enumerate(('o2', 'cr')):
+        d.line([(W - 7 - k, 5), (W - 7 - k, H - 9)], fill=c(col))
+    # bóng gáy trên giấy, nhạt dần sang phải
+    for x in range(L - 5, L):
+        f = (L - x) / 6
+        for y in range(5, H - 10):
+            if bayer(x, y, f):
+                px[x, y] = c('o2' if f > .5 else 'o3')
+    # góc bọc đồng ở hai góc ngoài bên phải
+    for (cx, cy, sx, sy) in ((W - 1, 0, -1, 1), (W - 1, H - 1, -1, -1)):
+        for k in range(4):
+            put(img, cx + sx * k, cy + sy, 'au1')
+            put(img, cx + sx, cy + sy * k, 'au1')
+        put(img, cx + sx, cy + sy, 'au2')
     return img
 
 
@@ -192,12 +251,13 @@ def portraits():
 
 
 def build():
-    save(tabletop(640, 360, 7), 'table/tabletop.png', opaque=True)
+    save(tabletop(960, 360, 7, CW=640), 'table/tabletop.png', opaque=True)
     save(tabletop(360, 640, 11), 'table/tabletop_doc.png', opaque=True)
     save(sleeve_and_hand(point=True), 'table/hand_point.png')
     save(sleeve_and_hand(point=False), 'table/hand_rest.png')
     save(book(), 'table/book.png')
-    save(page_frame(), 'table/page_frame.png', opaque=True)
+    save(book_frame(), 'table/book_frame.png', opaque=True)
+    save(sleeve_tile(), 'table/sleeve_tile.png')
     for rel, im in portraits().items():
         save(im, rel)
 

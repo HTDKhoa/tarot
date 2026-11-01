@@ -31,9 +31,30 @@ interface Props {
   children?: React.ReactNode;
 }
 
-/** Tay Nguyệt đưa từ phía bên kia bàn; đầu ngón tay dừng ngay trên mép trên của lá, không che tên hay hình. */
+/**
+ * Cánh tay Nguyệt vươn từ mép xa của bàn: ống tay áo lặp dọc tới mép trên vùng bàn, bàn tay ở cuối.
+ * Bóng đổ lệch xuống trái (nến ở góc trên phải) để tay nằm trên khăn chứ không trôi.
+ */
+function Arm({ hand, className = "" }: { hand: "point" | "rest"; className?: string }) {
+  const sleeve = { backgroundImage: `url("${assetUrl("/assets/table/sleeve_tile.png")}")` };
+  const src = assetUrl(`/assets/table/hand_${hand}.png`);
+  const limb = (
+    <>
+      <span className="arm-sleeve" style={sleeve} />
+      <img src={src} alt="" />
+    </>
+  );
+  return (
+    <span className={`table-arm ${className}`} aria-hidden>
+      <span className="arm-shadow">{limb}</span>
+      <span className="arm-limb">{limb}</span>
+    </span>
+  );
+}
+
+/** Tay chỉ: đầu ngón trỏ dừng ngay trên mép trên của lá, không che tên hay hình. */
 function PointingHand() {
-  return <img className="table-hand" src={assetUrl("/assets/table/hand_point.png")} alt="" aria-hidden />;
+  return <Arm hand="point" className="is-pointing" />;
 }
 
 function Slot({ c, i, revealed, active, hand }: { c: DrawnCard; i: number; revealed: boolean; active: boolean; hand: boolean }) {
@@ -58,8 +79,8 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
         <div className="table-shuffle" aria-hidden>
           {["half-a", "half-b"].map((h) => (
             <div key={h} className={`shuffle-half ${h}`}>
-              <img className="shuffle-hand" src={assetUrl("/assets/table/hand_rest.png")} alt="" />
               <span className="shuffle-deck" style={{ backgroundImage: `url("${assetUrl("/assets/cards/card_back.png")}")` }} />
+              <Arm hand="rest" className="is-shuffling" />
             </div>
           ))}
         </div>

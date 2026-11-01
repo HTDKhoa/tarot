@@ -647,8 +647,10 @@ img {
 }
 /* ---------- cảnh mặt bàn: lá nằm đúng hình trải trên khăn ---------- */
 .play-zone.is-table {
-  /* chừa chỗ cho nút đổi góc máy */
-  top: calc(6.4rem + env(safe-area-inset-top));
+  /* vùng chơi bắt đầu ngay dưới thanh trên cùng để cánh tay Nguyệt vươn từ mép xa của bàn
+     (đi sau nút đổi góc); nội dung vẫn chừa chỗ cho nút bằng padding */
+  top: calc(3.2rem + env(safe-area-inset-top));
+  padding-top: 3.2rem;
 }
 .play-zone.is-table > .table-field {
   flex: 1 1 auto;
@@ -673,9 +675,9 @@ img {
 }
 .table-slot {
   /* cỡ lá theo cả bề ngang lẫn bề cao màn, để ba lá và chú thích luôn vừa trên điện thoại */
-  --w: clamp(72px, min(11vw, 15vh), 136px);
+  --w: clamp(72px, min(21.5vw, 15vh), 136px);
   position: relative;
-  width: max(calc(var(--w) * 1.5), 7rem);
+  width: max(calc(var(--w) * 1.3), 7rem);
   display: flex;
   justify-content: center;
 }
@@ -684,7 +686,7 @@ img {
 }
 /* có thêm hàng lá làm rõ thì hình trải chính nhỏ lại để cả bàn vừa một màn */
 .table-field.has-extra > .table-spread:not(.spread-clarifiers) .table-slot {
-  --w: clamp(64px, min(9vw, 11vh), 112px);
+  --w: clamp(64px, min(17vw, 11vh), 112px);
 }
 /* tam giác: Trở ngại ở đỉnh, Tình huống và Lời khuyên thấp hơn hai bên */
 .spread-triangle .table-slot:not(:nth-child(2)) {
@@ -713,22 +715,50 @@ img {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-/* tay Nguyệt từ phía bên kia bàn: đầu ngón trỏ dừng ngay trên mép trên của lá */
-.table-hand {
+/* cánh tay Nguyệt từ mép xa của bàn: ống tay lặp dọc tới mép trên vùng bàn (vùng chơi cắt phần thừa) */
+.table-arm {
+  --aw: calc(var(--w) * 34 / 48);
   position: absolute;
   z-index: 2;
   left: 50%;
   bottom: calc(100% + 2px);
-  width: calc(var(--w) * 34 / 48);
+  width: var(--aw);
+  height: 120vh;
   transform: translateX(-43%);
-  image-rendering: pixelated;
   pointer-events: none;
-  animation: hand-in 0.45s ease-out;
+  animation: arm-in 0.45s ease-out;
 }
-@keyframes hand-in {
+.arm-limb,
+.arm-shadow {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+/* bóng tay trên khăn: nến ở góc trên phải nên bóng đổ xuống bên trái */
+.arm-shadow {
+  transform: translate(calc(var(--aw) * -0.16), calc(var(--aw) * 0.16));
+  opacity: 0.38;
+  filter: brightness(0);
+}
+.arm-sleeve {
+  flex: 1 1 auto;
+  background-repeat: repeat-y;
+  background-position: bottom center;
+  background-size: 100% auto;
+  image-rendering: pixelated;
+  /* chồng 1px xuống bàn tay để không hở đường nối khi phóng to */
+  margin-bottom: -1px;
+}
+.table-arm img {
+  display: block;
+  width: 100%;
+  image-rendering: pixelated;
+}
+@keyframes arm-in {
   from {
-    transform: translate(-43%, -24%);
-    opacity: 0;
+    transform: translate(-43%, -12%);
   }
 }
 .table-count {
@@ -745,16 +775,15 @@ img {
   align-items: flex-end;
 }
 .shuffle-half {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-.shuffle-hand {
-  width: calc(var(--w) * 34 / 48);
-  margin-bottom: calc(var(--w) * -0.42);
-  position: relative;
-  z-index: 1;
-  image-rendering: pixelated;
+/* bàn tay úp lên nửa trên của bộ bài */
+.table-arm.is-shuffling {
+  bottom: calc(100% - var(--w) * 0.7);
+  animation: none;
 }
 .shuffle-deck {
   width: var(--w);
@@ -785,17 +814,22 @@ img {
 @media (prefers-reduced-motion: reduce) {
   .half-a,
   .half-b,
-  .table-hand {
+  .table-arm {
     animation: none;
   }
 }
 
 /* ---------- cuốn sổ của Bấc ---------- */
 .table-field.has-notebook {
-  padding-right: calc(min(30vw, 360px) + 1.5rem);
+  width: 96vw;
+  padding-right: calc(min(30vw, 360px) + 24px);
 }
+/* điện thoại: chừa chỗ đều trên dưới cho mép sổ, để hình trải nằm giữa vòng chấm */
 .table-field:has(> .notebook-peek) {
-  padding-bottom: 4.5rem;
+  padding-block: 4.5rem;
+}
+.table-field.has-extra:has(> .notebook-peek) {
+  padding-top: 0;
 }
 /* sổ gập ở góc dưới trái, luôn thò mép trang ghi câu hỏi hoặc lá đang đọc */
 .notebook-peek {
@@ -804,8 +838,7 @@ img {
   left: 0;
   bottom: 0;
   display: flex;
-  align-items: flex-end;
-  gap: 0.45rem;
+  align-items: center;
   max-width: min(94%, 24rem);
   min-height: 44px;
   padding: 0;
@@ -815,23 +848,31 @@ img {
   cursor: pointer;
 }
 .notebook-cover {
+  position: relative;
+  z-index: 1;
   flex: none;
   width: 84px;
   image-rendering: pixelated;
 }
+/* trang đầu trượt ra từ dưới bìa: không viền da, chỉ một nét mực mỏng như mép giấy */
 .notebook-edge {
-  margin-bottom: 0.4rem;
-  padding: 0.3rem 0.55rem;
-  font-size: 0.86rem;
-  line-height: 1.35;
+  position: relative;
+  margin-left: -26px;
+  padding: 0.35rem 0.6rem 0.35rem calc(26px + 0.5rem);
   color: var(--ink);
   background: var(--paper);
-  border: 2px solid var(--leather);
+  border: 2px solid rgba(58, 36, 16, 0.45);
+  border-left: 0;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.45);
+}
+.notebook-edge-text {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-size: 0.86rem;
+  line-height: 1.35;
+  max-height: calc(0.86rem * 1.35 * 2);
 }
 .notebook-peek:hover .notebook-edge {
   border-color: var(--gold);
@@ -847,9 +888,11 @@ img {
   z-index: 4;
   display: flex;
   flex-direction: column;
-  border: 12px solid transparent;
-  border-image-slice: 8 fill;
-  border-image-repeat: stretch;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 20px 20px 24px 36px;
+  border-image-slice: 10 10 12 18 fill;
+  border-image-repeat: round;
   image-rendering: pixelated;
   color: var(--ink);
   box-shadow: 0 8px 0 rgba(0, 0, 0, 0.5);
@@ -857,8 +900,9 @@ img {
 .notebook.is-open {
   inset: 0;
 }
+/* desktop: sổ nằm ở góc bàn phía dưới cây nến, ngoài vòng đọc bài */
 .notebook.is-docked {
-  top: 0;
+  top: 15vh;
   right: 0;
   /* chừa chỗ cho ô chân dung nhô lên trên hộp thoại */
   bottom: 1.6rem;
@@ -898,6 +942,9 @@ img {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  background:
+    linear-gradient(rgba(235, 222, 190, 0), var(--paper) 70%) center bottom / 100% 32px no-repeat local,
+    linear-gradient(rgba(58, 36, 16, 0), rgba(58, 36, 16, 0.28)) center bottom / 100% 18px no-repeat scroll;
   padding: 0.5rem 0.4rem 1rem;
   scrollbar-width: thin;
   scrollbar-color: var(--leather) transparent;

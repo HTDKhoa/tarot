@@ -13,9 +13,11 @@ export interface SceneState {
   quality: Quality;
   /** 0..1, dùng cho hiệu ứng mờ dần khi chuyển cảnh */
   fade: number;
+  /** cảnh bàn: lệch camera sang phải, tính theo phần bề ngang màn (sổ mở bên phải thì bàn lùi sang trái) */
+  shiftX: number;
 }
 
-let state: SceneState = { stage: "forest", tag: "neutral", speaking: false, quality: "high", fade: 0 };
+let state: SceneState = { stage: "forest", tag: "neutral", speaking: false, quality: "high", fade: 0, shiftX: 0 };
 const listeners = new Set<() => void>();
 
 export const sceneStore = {

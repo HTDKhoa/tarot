@@ -15,8 +15,6 @@ interface Props {
   cards: DrawnCard[];
   log: LogEntry[];
   recap: { themes: string[]; advice: string } | null;
-  /** đang đọc lá nào (để mép trang thò ra ghi đúng lá đó) */
-  active: number | null;
   open: boolean;
   /** desktop: sổ nằm mở sẵn bên phải khăn */
   docked: boolean;
@@ -38,7 +36,7 @@ function firstSentence(entries: LogEntry[]) {
 }
 
 /** Cuốn sổ của Bấc trên bàn: câu hỏi, lời Nguyệt theo từng lá, và trang tổng kết. Chữ thật, đọc được bằng trình đọc màn hình. */
-export function Notebook({ question, cards, log, recap, active, open, docked, toRecap, onOpenChange }: Props) {
+export function Notebook({ question, cards, log, recap, open, docked, toRecap, onOpenChange }: Props) {
   const panel = useRef<HTMLDivElement>(null);
   const recapRef = useRef<HTMLElement>(null);
   const peekRef = useRef<HTMLButtonElement>(null);
@@ -64,8 +62,6 @@ export function Notebook({ question, cards, log, recap, active, open, docked, to
     return () => window.removeEventListener("keydown", onKey);
   }, [open, docked, onOpenChange]);
 
-  const activeCard = active !== null ? cards[active] : null;
-  const peekText = activeCard ? `Đang đọc: ${cardTitle(activeCard)}` : `Cậu hỏi: ${question}`;
   const byCard = (i: number) => log.filter((e) => e.card === i);
 
   return (
@@ -80,7 +76,10 @@ export function Notebook({ question, cards, log, recap, active, open, docked, to
           onClick={() => onOpenChange(true)}
         >
           <img className="notebook-cover" src={assetUrl("/assets/table/book.png")} alt="" />
-          <span className="notebook-edge">{peekText}</span>
+          {/* trang đầu thò ra từ dưới bìa: luôn ghi câu hỏi của khách */}
+          <span className="notebook-edge">
+            <span className="notebook-edge-text">Cậu hỏi: {question}</span>
+          </span>
           <span className="sr-only">Mở sổ</span>
         </button>
       )}
@@ -92,7 +91,7 @@ export function Notebook({ question, cards, log, recap, active, open, docked, to
           role="region"
           aria-label="Sổ của Bấc"
           // khung giấy đi qua assetUrl để bản demo một file vẫn có ảnh
-          style={{ borderImageSource: `url("${assetUrl("/assets/table/page_frame.png")}")` }}
+          style={{ borderImageSource: `url("${assetUrl("/assets/table/book_frame.png")}")` }}
         >
           <div className="notebook-head">
             <h2 tabIndex={-1}>Sổ của Bấc</h2>
@@ -130,6 +129,12 @@ export function Notebook({ question, cards, log, recap, active, open, docked, to
             {recap && (
               <section ref={recapRef} className="notebook-recap" aria-label="Trang tổng kết">
                 <h3>Bàn hôm nay</h3>
+                {/* lời dặn đứng đầu trang: điều khách mang về, thấy ngay không cần cuộn */}
+                {recap.advice && (
+                  <p className="notebook-advice">
+                    <b>Lời dặn</b> {recap.advice}
+                  </p>
+                )}
                 <ul>
                   {cards.map((c, i) => (
                     <li key={`${c.card.id}-${i}`}>
@@ -141,11 +146,6 @@ export function Notebook({ question, cards, log, recap, active, open, docked, to
                 {recap.themes.length > 0 && (
                   <p>
                     <b>Các lá nói về</b> {recap.themes.join(" · ")}
-                  </p>
-                )}
-                {recap.advice && (
-                  <p className="notebook-advice">
-                    <b>Lời dặn</b> {recap.advice}
                   </p>
                 )}
               </section>

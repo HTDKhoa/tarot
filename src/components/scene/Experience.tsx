@@ -75,7 +75,7 @@ function World({ stage }: { stage: Stage }) {
       <InteriorScene />
       <TableScene portrait={portrait} />
       {onTable ? (
-        <CameraRig focus={[0, tableCenterY(portrait)]} frame={tableFrame(portrait)} zoom={1} />
+        <CameraRig focus={[0, tableCenterY(portrait)]} frame={tableFrame(portrait)} zoom={1} shift />
       ) : (
         <CameraRig focus={[0, -0.17]} zoom={1.25} portraitZoom={0.8} />
       )}

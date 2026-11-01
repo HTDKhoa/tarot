@@ -18,12 +18,15 @@ export function CameraRig({
   zoom = 1,
   portraitZoom,
   frame = [FRAME_W, FRAME_H] as [number, number],
+  shift = false,
 }: {
   focus?: [number, number];
   zoom?: number;
   portraitZoom?: number;
   /** khung ngắm tính bằng pixel ảnh (1 px = PX đơn vị) */
   frame?: [number, number];
+  /** đọc sceneStore.shiftX để lệch khung ngang (cảnh bàn có sổ mở bên phải) */
+  shift?: boolean;
 }) {
   const { camera, size, pointer } = useThree();
   const cam = camera as THREE.PerspectiveCamera;
@@ -52,7 +55,9 @@ export function CameraRig({
     // màn hình dọc: giới hạn biên độ ngang để không lộ mép khung
     const maxX = Math.max(0, (frameW - visH * aspect) / 2) * 0.9;
     const px = THREE.MathUtils.clamp(pointer.x * 0.12, -0.12, 0.12) * (1 - d);
-    const tx = THREE.MathUtils.clamp(focus[0] + px, -maxX - 0.12, maxX + 0.12);
+    // lệch đặt sau phép kẹp: ảnh mặt bàn rộng thêm phần gỗ hai bên nên lệch không lộ mép
+    const offset = shift ? sceneStore.get().shiftX * visH * aspect : 0;
+    const tx = THREE.MathUtils.clamp(focus[0] + px, -maxX - 0.12, maxX + 0.12) + offset;
     const ty = focus[1] + pointer.y * 0.05 * (1 - d) - d * 0.75; // tiến về phía cửa nhà
     cam.position.x = snap ? tx : THREE.MathUtils.damp(cam.position.x, tx, 4, dt);
     cam.position.y = snap ? ty : THREE.MathUtils.damp(cam.position.y, ty, 3.2, dt);
