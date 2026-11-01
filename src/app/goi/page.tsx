@@ -26,7 +26,7 @@ export default async function PricingPage() {
           name={PLANS.month.name}
           price={formatVnd(PLANS.month.price)}
           note="30 ngày"
-          features={[`${PLANS.month.readingsPerMonth} lần trải bài mỗi tháng`, "Mọi kiểu trải bài", "Nhật ký và tổng kết tháng", "Nguyệt nhớ chuyện cũ của cậu (sắp có)"]}
+          features={[`${PLANS.month.readingsPerMonth} lần trải bài mỗi tháng`, "Mọi kiểu trải bài", "Nhật ký lưu các phiên", "Nguyệt nhớ chuyện cũ của cậu (sắp có)"]}
           action={<BuyButton plan="month" loggedIn={!!user} />}
         />
         <PlanCard
