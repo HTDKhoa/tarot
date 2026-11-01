@@ -725,12 +725,6 @@ img {
   pointer-events: none;
   animation: hand-in 0.45s ease-out;
 }
-/* hàng lá làm rõ: chỉ thò đầu ngón tay ra giữa hai hàng, không đè lên chú thích hàng trên */
-.spread-clarifiers .table-hand {
-  height: calc(var(--w) * 0.62);
-  object-fit: cover;
-  object-position: bottom;
-}
 @keyframes hand-in {
   from {
     transform: translate(-43%, -24%);

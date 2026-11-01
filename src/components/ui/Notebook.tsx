@@ -27,6 +27,9 @@ interface Props {
 
 const cardTitle = (c: DrawnCard) => `${c.positionLabel} · ${c.card.name_en}${c.reversed ? " (ngược)" : ""}`;
 
+/** Câu lật lá mở đầu bằng "Vị trí: Tên lá." đã có ở đề mục ngay trên, nên bỏ phần đó cho khỏi lặp. */
+const withoutTitle = (text: string) => text.replace(/^[^:.]+: [^.]+\.\s*/, "");
+
 /** Câu đầu tiên trong lời Nguyệt về một lá, cho trang tổng kết. */
 function firstSentence(entries: LogEntry[]) {
   const said = entries.find((e) => e.line.tag !== "reveal")?.line.text ?? "";
@@ -117,7 +120,7 @@ export function Notebook({ question, cards, log, recap, active, open, docked, to
                 e.line.revealPosition !== undefined && e.card !== null && cards[e.card] ? (
                   <div key={e.key}>
                     <h4>{cardTitle(cards[e.card])}</h4>
-                    <p>{e.line.text}</p>
+                    {withoutTitle(e.line.text) && <p>{withoutTitle(e.line.text)}</p>}
                   </div>
                 ) : (
                   <p key={e.key}>{e.line.text}</p>

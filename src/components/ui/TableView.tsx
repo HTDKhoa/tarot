@@ -36,10 +36,10 @@ function PointingHand() {
   return <img className="table-hand" src={assetUrl("/assets/table/hand_point.png")} alt="" aria-hidden />;
 }
 
-function Slot({ c, i, revealed, active }: { c: DrawnCard; i: number; revealed: boolean; active: boolean }) {
+function Slot({ c, i, revealed, active, hand }: { c: DrawnCard; i: number; revealed: boolean; active: boolean; hand: boolean }) {
   return (
     <div className={`table-slot ${active ? "is-active" : ""}`} data-pos={i}>
-      {active && <PointingHand />}
+      {active && hand && <PointingHand />}
       <TarotCard drawn={c} revealed={revealed} label={c.positionLabel} highlight={active} size="table" />
     </div>
   );
@@ -93,13 +93,14 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
     <div className={field(extra.length ? "has-extra" : "")}>
       <div className={`table-spread ${SHAPE[spread]}`}>
         {main.map(({ c, i }) => (
-          <Slot key={`${c.card.id}-${i}`} c={c} i={i} revealed={revealed.has(i)} active={active === i} />
+          <Slot key={`${c.card.id}-${i}`} c={c} i={i} revealed={revealed.has(i)} active={active === i} hand />
         ))}
       </div>
       {extra.length > 0 && (
         <div className="table-spread spread-clarifiers" aria-label="Lá làm rõ">
           {extra.map(({ c, i }) => (
-            <Slot key={`${c.card.id}-${i}`} c={c} i={i} revealed={revealed.has(i)} active={active === i} />
+            // hàng làm rõ nằm sát dưới chú thích hàng trên: tay đưa vào sẽ che chữ, nên chỉ thắp lá bằng ánh nến
+            <Slot key={`${c.card.id}-${i}`} c={c} i={i} revealed={revealed.has(i)} active={active === i} hand={false} />
           ))}
         </div>
       )}
