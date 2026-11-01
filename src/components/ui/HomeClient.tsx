@@ -5,7 +5,7 @@ import { EMERGENCY, SUPPORT_LINES } from "@/lib/safety";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dialogue } from "./Dialogue";
-import { TarotCard } from "./TarotCard";
+import { TableView } from "./TableView";
 import { TopBar, type Me } from "./TopBar";
 import { sceneStore, useScene } from "@/lib/store";
 import { createClient } from "@/lib/supabase/client";
@@ -27,7 +27,6 @@ interface Ctx {
   clarifiersLeft: number;
 }
 
-const FAN_SIZE = 13;
 
 /** Các bước diễn ra trên mặt bàn: máy tự hạ xuống bàn khi bắt đầu, khách đổi góc được bất cứ lúc nào. */
 const TABLE_PHASES: Phase[] = ["picking", "reading", "deciding", "closing", "daily"];
@@ -52,6 +51,8 @@ export default function HomeClient() {
   const setLines = (lines: ReaderLine[]) => setScript((s) => ({ id: s.id + 1, lines }));
   const [cards, setCards] = useState<DrawnCard[]>([]);
   const [revealed, setRevealed] = useState<Set<number>>(new Set());
+  // lá Nguyệt đang nói tới: tay chỉ vào, ánh nến thắp
+  const [active, setActive] = useState<number | null>(null);
   const [ctx, setCtx] = useState<Ctx | null>(null);
   const [busy, setBusy] = useState(false);
   const [picked, setPicked] = useState<number[]>([]);
@@ -120,6 +121,7 @@ export default function HomeClient() {
   const resetTable = () => {
     setCards([]);
     setRevealed(new Set());
+    setActive(null);
     setCtx(null);
     setPicked([]);
     setRecap(null);
@@ -192,6 +194,7 @@ export default function HomeClient() {
     if (line.revealPosition === undefined) return;
     const pos = line.revealPosition === -1 ? cards.length - 1 : line.revealPosition;
     setRevealed((s) => new Set(s).add(pos));
+    setActive(pos);
   };
 
   const onDone = () => {
@@ -301,8 +304,6 @@ export default function HomeClient() {
       }
     : {};
 
-  const showFan = phase === "picking" && onTable;
-  const showTable = cards.length > 0 && !showFan && onTable;
   const quotaText = me?.status ? `${Math.max(0, me.status.limit - me.status.used)}/${me.status.limit} lượt tháng này` : null;
 
   return (
@@ -339,28 +340,18 @@ export default function HomeClient() {
       )}
 
       {(stage === "inside" || onTable) && (
-        <div className="play-zone">
-          {showFan && (
-            <div className="fan-zone" aria-label="Dải bài úp">
-              {Array.from({ length: FAN_SIZE }, (_, i) => {
-                const mid = (FAN_SIZE - 1) / 2;
-                const angle = (i - mid) * 5;
-                const order = picked.indexOf(i);
-                return (
-                  <div key={i} className={`fan-card ${order >= 0 ? "is-picked" : ""}`} style={{ "--angle": `${angle}deg`, "--offset": `${(i - mid) * 7}%` } as React.CSSProperties}>
-                    <TarotCard revealed={false} size="sm" onClick={order >= 0 ? undefined : () => pickFromFan(i)} selected={order >= 0} />
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {showTable && (
-            <div className="table-zone">
-              {cards.map((c, i) => (
-                <TarotCard key={`${c.card.id}-${i}`} drawn={c} revealed={revealed.has(i)} label={c.positionLabel} size={cards.length > 4 || recap ? "sm" : "md"} highlight={c.clarifier} />
-              ))}
-            </div>
+        <div className={`play-zone ${onTable ? "is-table" : ""}`}>
+          {onTable && (
+            <TableView
+              spread={phase === "daily" ? "daily" : (ctx?.spread ?? "one")}
+              cards={cards}
+              revealed={revealed}
+              active={active}
+              shuffling={busy && cards.length === 0}
+              picking={phase === "picking"}
+              picked={picked}
+              onPick={pickFromFan}
+            />
           )}
 
           {phase === "crisis" && <SupportCard onLeave={leave} />}

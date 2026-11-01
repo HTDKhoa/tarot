@@ -626,6 +626,157 @@ img {
 .fan-card.is-picked .tarot-face {
   box-shadow: 0 0 14px rgba(243, 214, 139, 0.9), 0 6px 0 rgba(0, 0, 0, 0.45);
 }
+/* ---------- cảnh mặt bàn: lá nằm đúng hình trải trên khăn ---------- */
+.play-zone.is-table {
+  /* chừa chỗ cho nút đổi góc máy */
+  top: calc(6.4rem + env(safe-area-inset-top));
+}
+.play-zone.is-table > .table-field {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 0;
+}
+.table-field {
+  position: relative;
+  width: min(96vw, 1000px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* safe: nếu bàn đông lá hơn chỗ trống thì cuộn được, không bao giờ cắt mất hàng trên */
+  justify-content: safe center;
+  gap: clamp(1.4rem, 4vh, 2.4rem);
+}
+.table-spread {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: clamp(0.3rem, 2vw, 2.4rem);
+}
+.table-slot {
+  /* cỡ lá theo cả bề ngang lẫn bề cao màn, để ba lá và chú thích luôn vừa trên điện thoại */
+  --w: clamp(72px, min(11vw, 15vh), 136px);
+  position: relative;
+  width: max(calc(var(--w) * 1.5), 7rem);
+  display: flex;
+  justify-content: center;
+}
+.spread-clarifiers .table-slot {
+  --w: clamp(54px, min(7.5vw, 10vh), 96px);
+}
+/* có thêm hàng lá làm rõ thì hình trải chính nhỏ lại để cả bàn vừa một màn */
+.table-field.has-extra > .table-spread:not(.spread-clarifiers) .table-slot {
+  --w: clamp(64px, min(9vw, 11vh), 112px);
+}
+/* tam giác: Trở ngại ở đỉnh, Tình huống và Lời khuyên thấp hơn hai bên */
+.spread-triangle .table-slot:not(:nth-child(2)) {
+  margin-top: calc(var(--w) * 0.6);
+}
+.table-slot .tarot-caption {
+  max-width: 100%;
+  min-height: 3.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+/* nền mực mờ sau chữ: đọc được cả trên vùng khăn sáng nhất cạnh ngọn nến */
+.table-slot .tarot-pos,
+.table-slot .tarot-name {
+  background: rgba(8, 6, 13, 0.66);
+  padding: 0.05rem 0.35rem;
+}
+.table-slot .tarot-pos {
+  white-space: nowrap;
+}
+.table-slot .tarot-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* tay Nguyệt từ phía bên kia bàn: đầu ngón trỏ dừng ngay trên mép trên của lá */
+.table-hand {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: calc(100% + 2px);
+  width: calc(var(--w) * 34 / 48);
+  transform: translateX(-43%);
+  image-rendering: pixelated;
+  pointer-events: none;
+  animation: hand-in 0.45s ease-out;
+}
+/* hàng lá làm rõ: chỉ thò đầu ngón tay ra giữa hai hàng, không đè lên chú thích hàng trên */
+.spread-clarifiers .table-hand {
+  height: calc(var(--w) * 0.62);
+  object-fit: cover;
+  object-position: bottom;
+}
+@keyframes hand-in {
+  from {
+    transform: translate(-43%, -24%);
+    opacity: 0;
+  }
+}
+.table-count {
+  font-family: var(--font-pixel);
+  font-size: 1.25rem;
+  color: var(--cream);
+  background: rgba(8, 6, 13, 0.66);
+  padding: 0.1rem 0.6rem;
+}
+/* Nguyệt xào bài: hai nửa bộ bài dưới hai bàn tay tách ra rồi gập vào */
+.table-shuffle {
+  --w: clamp(72px, min(11vw, 15vh), 136px);
+  display: flex;
+  align-items: flex-end;
+}
+.shuffle-half {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.shuffle-hand {
+  width: calc(var(--w) * 34 / 48);
+  margin-bottom: calc(var(--w) * -0.42);
+  position: relative;
+  z-index: 1;
+  image-rendering: pixelated;
+}
+.shuffle-deck {
+  width: var(--w);
+  height: calc(var(--w) * 80 / 48);
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.45), 0 -3px 0 #160c1c inset;
+}
+.half-b {
+  margin-left: calc(var(--w) * -0.55);
+}
+.half-a {
+  animation: riffle-a 1s steps(3) infinite;
+}
+.half-b {
+  animation: riffle-b 1s steps(3) infinite;
+}
+@keyframes riffle-a {
+  50% {
+    transform: translateX(-38%) rotate(-4deg);
+  }
+}
+@keyframes riffle-b {
+  50% {
+    transform: translateX(38%) rotate(4deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .half-a,
+  .half-b,
+  .table-hand {
+    animation: none;
+  }
+}
+
 @media (max-width: 640px) {
   .forest-hero {
     width: 100vw;

@@ -16,7 +16,7 @@ interface Props {
   onClick?: () => void;
   selected?: boolean;
   label?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "table";
   highlight?: boolean;
 }
 
@@ -46,16 +46,29 @@ export function TarotCard({ drawn, revealed, onClick, selected, label, size = "m
           )}
         </span>
       </button>
-      {(label || (revealed && c)) && (
+      {size === "table" ? (
+        // Trên bàn: vùng chú thích cố định (vị trí + chiều, rồi tên tối đa 2 dòng) để mọi lá thẳng hàng
         <div className="tarot-caption">
-          {label && <div className="tarot-pos">{label}</div>}
-          {revealed && c && (
-            <div className="tarot-name">
-              {c.name_en}
-              {drawn?.reversed && <span className="tarot-rev"> · ngược</span>}
+          {label && (
+            <div className="tarot-pos">
+              {label}
+              {revealed && drawn?.reversed && <span className="tarot-rev"> · ngược</span>}
             </div>
           )}
+          {revealed && c && <div className="tarot-name">{c.name_en}</div>}
         </div>
+      ) : (
+        (label || (revealed && c)) && (
+          <div className="tarot-caption">
+            {label && <div className="tarot-pos">{label}</div>}
+            {revealed && c && (
+              <div className="tarot-name">
+                {c.name_en}
+                {drawn?.reversed && <span className="tarot-rev"> · ngược</span>}
+              </div>
+            )}
+          </div>
+        )
       )}
     </div>
   );

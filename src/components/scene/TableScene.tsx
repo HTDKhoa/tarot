@@ -17,7 +17,7 @@ export const tableFrame = (portrait: boolean): [number, number] => (portrait ? [
 export const tableCenterY = (portrait: boolean) => TOP_Y - (tableFrame(portrait)[1] * PX) / 2;
 
 /** Ngọn nến đặt ở góc trên phải mặt bàn: chính nó thắp khăn (point light) và cho bloom bắt (flame glow). */
-function TableCandle({ x, y }: { x: number; y: number }) {
+function TableCandle({ x, y, size }: { x: number; y: number; size: number }) {
   const light = useRef<THREE.PointLight>(null);
   const halo = useRef<THREE.Mesh>(null);
   const tex = useRadialTexture("rgba(255,190,110,0.9)", "rgba(255,150,60,0)");
@@ -38,7 +38,7 @@ function TableCandle({ x, y }: { x: number; y: number }) {
     }
   });
   // candle.png 20×40: bấc ở (10, 5); flame_N.png 10×16, đáy ngọn lửa ở (5, 15)
-  const S = 1.6;
+  const S = size;
   const candleY = y;
   const wickY = candleY + (20 - 5) * PX * S;
   const flameY = wickY + (15 - 8) * PX * S;
@@ -49,8 +49,9 @@ function TableCandle({ x, y }: { x: number; y: number }) {
         <planeGeometry />
         <meshBasicMaterial map={tex} transparent opacity={0.4} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
       </mesh>
-      <PixelSprite src={`${I}/candle.png`} position={[x, candleY, 0.06]} scale={S} />
-      <PixelSprite src={flames} frame={flame} position={[x, flameY, 0.07]} scale={S} mode="glow" glowStrength={2.8} glowColor="#ffd08a" />
+      {/* chính cây nến là nguồn sáng: giữ màu sáp thật, không nhận ánh nến của chính nó */}
+      <PixelSprite src={`${I}/candle.png`} position={[x, candleY, 0.06]} scale={S} mode="flat" />
+      <PixelSprite src={flames} frame={flame} position={[x, flameY, 0.07]} scale={S} mode="glow" glowStrength={2.1} glowColor="#ffd08a" />
     </>
   );
 }
@@ -62,11 +63,11 @@ export function TableScene({ portrait }: { portrait: boolean }) {
   // nến ở góc trên phải khăn
   // bản dọc: điện thoại cắt bớt hai mép và thanh trên cùng che đỉnh, nên đặt nến lùi vào trong
   const candleX = (w / 2 - (portrait ? 84 : 70)) * PX;
-  const candleY = cy + (h / 2 - (portrait ? 96 : 56)) * PX;
+  const candleY = cy + (h / 2 - (portrait ? 96 : 76)) * PX;
   return (
     <group>
       <PixelSprite src={portrait ? `${T}/tabletop_doc.png` : `${T}/tabletop.png`} position={[0, cy, 0]} />
-      <TableCandle x={candleX} y={candleY} />
+      <TableCandle x={candleX} y={candleY} size={portrait ? 1.2 : 1.6} />
     </group>
   );
 }
