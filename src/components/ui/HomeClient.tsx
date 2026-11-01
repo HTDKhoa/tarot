@@ -12,7 +12,8 @@ import { createClient } from "@/lib/supabase/client";
 import { SPREADS, type SpreadId } from "@/lib/tarot/spreads";
 import { TOPIC_LABELS, type DrawnCard, type ReaderLine, type Topic } from "@/lib/tarot/types";
 
-const Experience = dynamic(() => import("../scene/Experience"), { ssr: false });
+// Cảnh 3D (hoặc ảnh tĩnh nếu không có WebGL) chỉ chạy ở trình duyệt.
+const SceneStage = dynamic(() => import("../scene/SceneStage"), { ssr: false });
 
 type Phase = "menu" | "form" | "picking" | "reading" | "deciding" | "closing" | "done" | "daily" | "crisis" | "message" | "login";
 interface Draw { cardId: number; reversed: boolean }
@@ -247,7 +248,7 @@ export default function HomeClient() {
   return (
     <main className="stage-root">
       <div className="stage-canvas">
-        <Experience />
+        <SceneStage />
       </div>
       <div className="stage-fade" style={{ opacity: fade }} />
       <TopBar me={me} onLogin={login} />

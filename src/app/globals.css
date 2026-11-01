@@ -144,6 +144,24 @@ img {
 .pixel-canvas canvas {
   image-rendering: pixelated;
 }
+/* ảnh tĩnh thay canvas khi không có WebGL */
+.scene-fallback,
+.scene-fallback img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.scene-fallback img {
+  object-fit: cover;
+  image-rendering: pixelated;
+  transform-origin: 50% 62%;
+  transition: transform 1.6s ease-in;
+}
+/* đang bước tới cửa: tiến gần ngôi nhà như camera của cảnh 3D */
+.scene-fallback.is-door img {
+  transform: scale(2.2);
+}
 .stage-fade {
   position: absolute;
   inset: 0;
