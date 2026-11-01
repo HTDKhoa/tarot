@@ -6,6 +6,27 @@ Phạm vi: đọc tài liệu và mã nguồn, chạy `typecheck` / `lint` / `bu
 `01-bia-rung`, `01b-dang-vao-cua`, `02-trong-nha`, `03-form-cau-hoi`, `04-dai-bai`, `05-dang-doc-bai`, `05b-moi-rut-them`, `06-tong-ket`, `07-goi` (+ `07-goi-full`), `08-khung-hoang`.
 SwiftShader chậm nên game tự hạ xuống "Đồ họa: nhẹ" (không bloom). Nút tròn "N" ở góc dưới trái là chỉ báo của Next dev, bản build không có.
 
+## Tiến độ (cập nhật 2026-11-01, đợt 1)
+
+Đã xong, mỗi việc một commit (ảnh sau khi sửa ở `docs/assessment/sau-p0/`):
+
+| Việc | Lỗi | Ghi chú |
+| --- | --- | --- |
+| B1 | (L23) | git, `.gitattributes` (LF), lint bỏ qua thư mục skill. **Chưa đẩy lên GitHub**: máy chưa đăng nhập GitHub. |
+| B2 | L16 | Hàm SQL `activate_payment` (migration 0002), mọi lỗi ghi DB trả 500 + log `[payos-webhook]`. |
+| B4 | L18 | Migration 0003: khách không còn INSERT lá bài / lời thoại, chỉ UPDATE `note`, `happened`. |
+| C1 | L17 | Migration 0004 + `DELETE /api/me`, `DELETE /api/reading/[id]`, nút trong nhật ký. Hạn mức đếm ở `reading_usage` để xóa phiên không hồi lượt. |
+| B5 | L19 | Production thiếu biến thì đóng cửa + log; `DEMO_MODE=1` để cố ý chạy demo. |
+| A1 | L1 | `.play-zone` flex cột. |
+| A4 | L4 | Khóa trải bài tới hết phiên, thẻ hỗ trợ cố định, chỉ có "Ra về". |
+| A2 (một phần) | L2 | Sửa trong `reader.ts` thay vì sửa dữ liệu: "người hỏi" → "cậu", lượt ≤ 28 từ. |
+| A3 | L3 | Chỉ mời khi `offerClarifier`. |
+| A5 | L5 | Thẻ "Bàn hôm nay". |
+| A6 (một phần) | L6 | Gỡ "tổng kết tháng"; phần thông tin người bán / hoàn tiền / làm nổi gói năm còn lại. |
+| B6 | L20 | Ảnh tĩnh + error boundary. |
+
+Các migration 0002–0004 đã được chạy thử trên PGlite (Postgres WASM) với schema `auth` giả lập: 31 kiểm tra đạt (kích hoạt gói, gửi lặp, hoàn tác khi lỗi, RLS, xóa dữ liệu). Chưa chạy trên Supabase thật.
+
 ## 1. Kết quả kiểm tra
 
 | Lệnh | Kết quả |

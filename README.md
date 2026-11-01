@@ -77,6 +77,8 @@ npm run deploy
 ```
 Chạy thử bản build trên runtime của Cloudflare: điền `.dev.vars`, rồi chạy `npm run preview`.
 
+Bản production (`next start`, `npm run preview`, Cloudflare) thiếu biến Supabase sẽ **đóng cửa và ghi log** thay vì lặng lẽ chạy demo. Muốn cố ý chạy demo trên bản build thì đặt `DEMO_MODE=1` (ví dụ `DEMO_MODE=1 npx next start`).
+
 ## Hạn mức
 Định nghĩa trong `src/lib/plans.ts`:
 - Free: 3 lần trải bài mỗi tháng.
