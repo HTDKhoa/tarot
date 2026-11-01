@@ -27,6 +27,14 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     ".open-next/**",
     ".wrangler/**",
+    // Skill của agent (impeccable…), không phải code của dự án
+    ".claude/**",
+    ".agents/**",
+    ".agent/**",
+    ".gemini/**",
+    ".codex/**",
+    // Bản demo một file đã build
+    "demo/dist/**",
   ]),
 ]);
 
