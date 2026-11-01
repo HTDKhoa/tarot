@@ -11,13 +11,15 @@ interface Props {
   onDone?: () => void;
   children?: React.ReactNode;
   busy?: boolean;
+  /** ô chân dung người nói, gài ở góc trên phải khung (dùng khi không thấy mặt Nguyệt trong cảnh) */
+  portrait?: React.ReactNode;
 }
 
 const SPEED_MS = 22;
 
 /** Hộp thoại kiểu game: chữ chạy từng ký tự, chạm để hiện hết câu hoặc sang câu sau.
  *  Muốn đọc bộ câu mới thì đổi `key` để component mount lại. */
-export function Dialogue({ lines, onLine, onDone, children, busy }: Props) {
+export function Dialogue({ lines, onLine, onDone, children, busy, portrait }: Props) {
   const [idx, setIdx] = useState(0);
   const [shown, setShown] = useState(0);
   const doneRef = useRef(false);
@@ -69,9 +71,12 @@ export function Dialogue({ lines, onLine, onDone, children, busy }: Props) {
   });
 
   return (
-    <div className="dialogue pixel-frame" role="log" aria-live="polite">
+    <div className={`dialogue pixel-frame ${portrait ? "has-portrait" : ""}`} role="log" aria-live="polite">
       <div className="dialogue-name">Nguyệt</div>
+      {portrait}
       <button type="button" className="dialogue-text" onClick={advance} aria-label="Tiếp">
+        {/* chừa chỗ cho ô chân dung để chữ chảy vòng quanh */}
+        {portrait && <span className="portrait-spacer" aria-hidden />}
         {busy && !line ? <span className="dialogue-wait">Nguyệt đang xào bài…</span> : full.slice(0, shown)}
         {!finished && !typing && line && <span className="dialogue-next">▼</span>}
       </button>

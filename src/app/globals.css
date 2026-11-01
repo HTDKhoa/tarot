@@ -344,6 +344,44 @@ img {
   border: 2px solid var(--gold);
   color: var(--gold-hi);
 }
+/* ô chân dung Nguyệt ở góc mặt bàn: nhô lên trên mép phải khung hộp thoại */
+.portrait {
+  --pw: 72px;
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--pw) * -0.45);
+  right: 1rem;
+  width: var(--pw);
+  height: var(--pw);
+  background: var(--navy);
+  border: 3px solid var(--gold);
+  box-shadow: 0 0 0 3px var(--ink-dark), 0 6px 0 rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+.portrait img,
+.portrait-eye {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.portrait-eye {
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+  mask-mode: alpha;
+}
+.portrait-spacer {
+  float: right;
+  width: calc(var(--pw, 72px) - 0.4rem);
+  height: calc(var(--pw, 72px) * 0.55 - 1rem);
+}
+@media (min-width: 900px) {
+  .portrait,
+  .dialogue.has-portrait {
+    --pw: 96px;
+  }
+}
 .dialogue-text {
   display: block;
   width: 100%;
@@ -828,7 +866,8 @@ img {
 .notebook.is-docked {
   top: 0;
   right: 0;
-  bottom: 0;
+  /* chừa chỗ cho ô chân dung nhô lên trên hộp thoại */
+  bottom: 1.6rem;
   width: min(30vw, 360px);
 }
 .notebook-head {

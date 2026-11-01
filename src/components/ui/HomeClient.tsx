@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dialogue } from "./Dialogue";
 import { TableView } from "./TableView";
 import { Notebook, type LogEntry } from "./Notebook";
+import { Portrait } from "./Portrait";
 import { useMedia } from "@/lib/useMedia";
 import { TopBar, type Me } from "./TopBar";
 import { sceneStore, useScene } from "@/lib/store";
@@ -418,7 +419,7 @@ export default function HomeClient() {
             {phase === "form" ? (
               <QuestionForm onSubmit={submitQuestion} onCancel={backToMenu} busy={busy} />
             ) : (
-              <Dialogue key={greetingNow ? "greet" : script.id} lines={lines} onLine={onLine} onDone={onDone} busy={busy}>
+              <Dialogue key={greetingNow ? "greet" : script.id} lines={lines} onLine={onLine} onDone={onDone} busy={busy} portrait={onTable ? <Portrait /> : undefined}>
                 {phase === "menu" && (
                   <>
                     <button className="btn-pixel btn-gold" onClick={startReading}>Trải bài</button>

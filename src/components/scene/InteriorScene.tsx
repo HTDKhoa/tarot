@@ -7,6 +7,7 @@ import { PixelSprite, framePos, useRadialTexture } from "./pixel";
 import { Fireflies } from "./Fireflies";
 import { sceneStore, useScene } from "@/lib/store";
 import type { EmotionTag } from "@/lib/tarot/types";
+import { EYE_GLOW } from "@/lib/tarot/emotion";
 
 const C = "/assets/characters";
 const I = "/assets/interior";
@@ -46,21 +47,7 @@ function normalizeAnchors(j: Record<string, unknown>): Anchors {
 const IDLE_ORDER = [0, 1, 2, 3, 2, 1];
 const idleUp = (i: number) => i === 1 || i === 2;
 
-/** Màu và độ sáng của mắt + mặt dây chuyền theo cảm xúc. */
-const GLOW: Record<EmotionTag, { color: string; strength: number }> = {
-  greet: { color: "#ffe6a0", strength: 2.6 },
-  neutral: { color: "#ffffff", strength: 2.0 },
-  think: { color: "#d9e4ff", strength: 1.7 },
-  shuffle: { color: "#ffffff", strength: 2.2 },
-  reveal: { color: "#fff2c4", strength: 3.4 },
-  warm: { color: "#ffd27a", strength: 2.8 },
-  tease: { color: "#ffe9b0", strength: 2.2 },
-  concern: { color: "#9ec3ff", strength: 1.8 },
-  surprise: { color: "#ffffff", strength: 4.0 },
-  solemn: { color: "#b9b4ff", strength: 1.5 },
-  gentle: { color: "#ffd9a8", strength: 1.6 },
-  farewell: { color: "#ffe6a0", strength: 2.4 },
-};
+const GLOW = EYE_GLOW;
 
 function Keeper({ onFrame }: { onFrame: (up: boolean) => void }) {
   const speaking = useScene((s) => s.speaking);
