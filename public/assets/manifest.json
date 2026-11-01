@@ -1,0 +1,343 @@
+{
+  "pixel_scale": 1,
+  "filter": "nearest",
+  "palette": [
+    "#160c1c",
+    "#0c0e22",
+    "#141832",
+    "#1e2446",
+    "#2e3662",
+    "#465082",
+    "#2c142c",
+    "#461e42",
+    "#62305c",
+    "#3e2e60",
+    "#5c4e82",
+    "#0e181e",
+    "#16282c",
+    "#223a38",
+    "#365442",
+    "#56744c",
+    "#24181e",
+    "#3c2624",
+    "#5a3c2e",
+    "#7e583c",
+    "#48465c",
+    "#6e6c82",
+    "#a0a2c0",
+    "#ced2e4",
+    "#966064",
+    "#c4948a",
+    "#e2beac",
+    "#96404e",
+    "#52443e",
+    "#7a6c60",
+    "#a29482",
+    "#d6ccba",
+    "#967034",
+    "#d6ac50",
+    "#f6d88c",
+    "#e88c32",
+    "#ffc85a",
+    "#fff6d6",
+    "#3c8c8c",
+    "#78e6d2",
+    "#ebdebe",
+    "#f0ecc8",
+    "#beceff"
+  ],
+  "files": [
+    {
+      "path": "cards/card_back.png",
+      "w": 48,
+      "h": 80
+    },
+    {
+      "path": "cards/card_frame.png",
+      "w": 48,
+      "h": 80
+    },
+    {
+      "path": "cards/major_star.png",
+      "w": 16,
+      "h": 16
+    },
+    {
+      "path": "cards/suit_cups.png",
+      "w": 16,
+      "h": 16
+    },
+    {
+      "path": "cards/suit_pentacles.png",
+      "w": 16,
+      "h": 16
+    },
+    {
+      "path": "cards/suit_swords.png",
+      "w": 16,
+      "h": 16
+    },
+    {
+      "path": "cards/suit_wands.png",
+      "w": 16,
+      "h": 16
+    },
+    {
+      "path": "characters/anchors.json"
+    },
+    {
+      "path": "characters/keeper_blink.png",
+      "w": 160,
+      "h": 176
+    },
+    {
+      "path": "characters/keeper_glow.png",
+      "w": 160,
+      "h": 176,
+      "kind": "glow"
+    },
+    {
+      "path": "characters/keeper_glow_blink.png",
+      "w": 160,
+      "h": 176,
+      "kind": "glow"
+    },
+    {
+      "path": "characters/keeper_glow_up.png",
+      "w": 160,
+      "h": 176,
+      "kind": "glow"
+    },
+    {
+      "path": "characters/keeper_idle_0.png",
+      "w": 160,
+      "h": 176
+    },
+    {
+      "path": "characters/keeper_idle_1.png",
+      "w": 160,
+      "h": 176
+    },
+    {
+      "path": "characters/keeper_idle_2.png",
+      "w": 160,
+      "h": 176
+    },
+    {
+      "path": "characters/keeper_idle_3.png",
+      "w": 160,
+      "h": 176
+    },
+    {
+      "path": "characters/keeper_speak_0.png",
+      "w": 160,
+      "h": 176
+    },
+    {
+      "path": "characters/keeper_speak_1.png",
+      "w": 160,
+      "h": 176
+    },
+    {
+      "path": "characters/keeper_speak_2.png",
+      "w": 160,
+      "h": 176
+    },
+    {
+      "path": "characters/owl_glow.png",
+      "w": 40,
+      "h": 44,
+      "kind": "glow"
+    },
+    {
+      "path": "characters/owl_glow_tilt.png",
+      "w": 40,
+      "h": 44,
+      "kind": "glow"
+    },
+    {
+      "path": "characters/owl_idle_0.png",
+      "w": 40,
+      "h": 44
+    },
+    {
+      "path": "characters/owl_idle_1.png",
+      "w": 40,
+      "h": 44
+    },
+    {
+      "path": "characters/owl_idle_2.png",
+      "w": 40,
+      "h": 44
+    },
+    {
+      "path": "characters/owl_idle_3.png",
+      "w": 40,
+      "h": 44
+    },
+    {
+      "path": "forest/far.png",
+      "w": 640,
+      "h": 360
+    },
+    {
+      "path": "forest/ground.png",
+      "w": 640,
+      "h": 360
+    },
+    {
+      "path": "forest/house.png",
+      "w": 160,
+      "h": 140
+    },
+    {
+      "path": "forest/house_glow.png",
+      "w": 160,
+      "h": 140,
+      "kind": "glow"
+    },
+    {
+      "path": "forest/mid.png",
+      "w": 640,
+      "h": 360
+    },
+    {
+      "path": "forest/near.png",
+      "w": 640,
+      "h": 360
+    },
+    {
+      "path": "forest/near_glow.png",
+      "w": 640,
+      "h": 360,
+      "kind": "glow"
+    },
+    {
+      "path": "forest/sky.png",
+      "w": 640,
+      "h": 360
+    },
+    {
+      "path": "forest/sky_glow.png",
+      "w": 640,
+      "h": 360,
+      "kind": "glow"
+    },
+    {
+      "path": "interior/candle.png",
+      "w": 20,
+      "h": 40
+    },
+    {
+      "path": "interior/crystal.png",
+      "w": 28,
+      "h": 28
+    },
+    {
+      "path": "interior/crystal_glow.png",
+      "w": 28,
+      "h": 28,
+      "kind": "glow"
+    },
+    {
+      "path": "interior/flame_0.png",
+      "w": 10,
+      "h": 16
+    },
+    {
+      "path": "interior/flame_1.png",
+      "w": 10,
+      "h": 16
+    },
+    {
+      "path": "interior/flame_2.png",
+      "w": 10,
+      "h": 16
+    },
+    {
+      "path": "interior/flame_3.png",
+      "w": 10,
+      "h": 16
+    },
+    {
+      "path": "interior/room.png",
+      "w": 640,
+      "h": 360
+    },
+    {
+      "path": "interior/room_glow.png",
+      "w": 640,
+      "h": 360,
+      "kind": "glow"
+    },
+    {
+      "path": "interior/table.png",
+      "w": 640,
+      "h": 110
+    }
+  ],
+  "layout": {
+    "forest": {
+      "frame": [
+        640,
+        360
+      ],
+      "order": [
+        "sky",
+        "far",
+        "mid",
+        "house",
+        "ground",
+        "near"
+      ],
+      "house_pos": [
+        240,
+        118
+      ],
+      "full_frame_layers_at": [
+        0,
+        0
+      ]
+    },
+    "interior": {
+      "frame": [
+        640,
+        360
+      ],
+      "table_pos": [
+        0,
+        250
+      ],
+      "keeper_pos": [
+        240,
+        75
+      ],
+      "candle_pos": [
+        478,
+        254
+      ],
+      "flame_offset_in_candle": [
+        5,
+        -9
+      ],
+      "crystal_pos": [
+        142,
+        266
+      ]
+    },
+    "card_frame": {
+      "art_window": [
+        4,
+        4,
+        43,
+        63
+      ],
+      "name_band": [
+        4,
+        66,
+        43,
+        76
+      ]
+    }
+  }
+}

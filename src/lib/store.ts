@@ -1,0 +1,39 @@
+"use client";
+import { useSyncExternalStore } from "react";
+import type { EmotionTag } from "./tarot/types";
+
+export type Stage = "forest" | "door" | "inside";
+export type Quality = "high" | "low";
+
+export interface SceneState {
+  stage: Stage;
+  tag: EmotionTag;
+  speaking: boolean;
+  quality: Quality;
+  /** 0..1, dùng cho hiệu ứng mờ dần khi chuyển cảnh */
+  fade: number;
+}
+
+let state: SceneState = { stage: "forest", tag: "neutral", speaking: false, quality: "high", fade: 0 };
+const listeners = new Set<() => void>();
+
+export const sceneStore = {
+  get: () => state,
+  set(patch: Partial<SceneState>) {
+    state = { ...state, ...patch };
+    listeners.forEach((l) => l());
+  },
+  subscribe(l: () => void) {
+    listeners.add(l);
+    return () => listeners.delete(l);
+  },
+};
+
+const serverSnapshot = state;
+export function useScene<T>(select: (s: SceneState) => T): T {
+  return useSyncExternalStore(
+    sceneStore.subscribe,
+    () => select(sceneStore.get()),
+    () => select(serverSnapshot),
+  );
+}

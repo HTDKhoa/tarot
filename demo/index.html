@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Ngôi Nhà Trong Rừng · Demo</title>
+    <style>
+      #demo-toast { position: fixed; left: 50%; top: 4.2rem; transform: translate(-50%, -8px); z-index: 50; max-width: min(90vw, 520px);
+        padding: .6rem .9rem; background: #1d2547; color: #f3e9d2; border: 2px solid #d9ae55; font: 14px/1.5 "Be Vietnam Pro", system-ui, sans-serif;
+        opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; text-align: center; }
+      #demo-toast.show { opacity: 1; transform: translate(-50%, 0); }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="demo-toast" role="status"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

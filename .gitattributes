@@ -1,0 +1,5 @@
+# Giữ LF trong repo để script và build trên Linux/CI chạy đúng
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.exe binary

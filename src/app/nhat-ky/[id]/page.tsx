@@ -1,0 +1,56 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { PageShell } from "@/components/ui/PageShell";
+import { getUser } from "@/lib/supabase/server";
+import { getCard } from "@/lib/tarot/cards";
+import { SPREADS, type SpreadId } from "@/lib/tarot/spreads";
+import { TOPIC_LABELS, type Topic } from "@/lib/tarot/types";
+import { NoteEditor } from "./NoteEditor";
+
+export default async function JournalEntry({ params }: PageProps<"/nhat-ky/[id]">) {
+  const { id } = await params;
+  const { supabase, user } = await getUser();
+  if (!supabase || !user) notFound();
+  const { data: r } = await supabase
+    .from("readings")
+    .select("id, question, topic, spread, summary, advice, note, happened, created_at, reading_cards(position, card_id, reversed, clarifier), messages(id, role, text)")
+    .eq("id", id)
+    .maybeSingle();
+  if (!r) notFound();
+  const spread = SPREADS[r.spread as SpreadId];
+  const cards = [...r.reading_cards].sort((a, b) => a.position - b.position);
+  const messages = [...r.messages].sort((a, b) => a.id - b.id);
+
+  return (
+    <PageShell title={r.question} lead={`${new Date(r.created_at).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })} · ${TOPIC_LABELS[r.topic as Topic]} · ${spread?.name ?? r.spread}`}>
+      <section className="pixel-frame" style={{ padding: "1rem 1.2rem", marginBottom: "1.5rem" }}>
+        <ul style={{ display: "grid", gap: "0.4rem" }}>
+          {cards.map((c) => {
+            const card = getCard(c.card_id);
+            const label = c.clarifier ? "Lá làm rõ" : spread?.positions[c.position] ?? `Lá ${c.position + 1}`;
+            return (
+              <li key={c.position} style={{ fontFamily: "var(--font-pixel)", fontSize: "1.3rem" }}>
+                <span style={{ color: "var(--muted)" }}>{label}:</span>{" "}
+                <span style={{ color: "var(--gold-hi)" }}>{card.name_en}</span> · {card.name_vi}
+                {c.reversed && <span style={{ color: "#9ec3ff" }}> · ngược</span>}
+              </li>
+            );
+          })}
+        </ul>
+        {r.advice && <p style={{ marginTop: "0.8rem" }}><b>Lời dặn:</b> {r.advice}</p>}
+      </section>
+
+      <NoteEditor id={r.id} note={r.note ?? ""} happened={r.happened} />
+
+      <div className="prose-dark" style={{ marginTop: "2rem" }}>
+        <h2>Những gì Nguyệt đã nói</h2>
+        {messages.map((m) => (
+          <p key={m.id} style={m.role === "user" ? { color: "var(--muted)", fontStyle: "italic" } : undefined}>
+            {m.role === "user" ? `Cậu: ${m.text}` : m.text}
+          </p>
+        ))}
+      </div>
+      <p style={{ marginTop: "1.5rem" }}><Link href="/nhat-ky">← Về nhật ký</Link></p>
+    </PageShell>
+  );
+}

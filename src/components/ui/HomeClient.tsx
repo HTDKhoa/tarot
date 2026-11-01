@@ -1,0 +1,373 @@
+"use client";
+import dynamic from "next/dynamic";
+import { storageGet, storageSet } from "@/lib/storage";
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Dialogue } from "./Dialogue";
+import { TarotCard } from "./TarotCard";
+import { TopBar, type Me } from "./TopBar";
+import { sceneStore, useScene } from "@/lib/store";
+import { createClient } from "@/lib/supabase/client";
+import { SPREADS, type SpreadId } from "@/lib/tarot/spreads";
+import { TOPIC_LABELS, type DrawnCard, type ReaderLine, type Topic } from "@/lib/tarot/types";
+
+const Experience = dynamic(() => import("../scene/Experience"), { ssr: false });
+
+type Phase = "menu" | "form" | "picking" | "reading" | "deciding" | "closing" | "done" | "daily" | "crisis" | "message" | "login";
+interface Draw { cardId: number; reversed: boolean }
+interface Ctx {
+  readingId: string | null;
+  demo: boolean;
+  topic: Topic;
+  spread: SpreadId;
+  draws: Draw[];
+  clarifiers: Draw[];
+  clarifiersLeft: number;
+}
+
+const FAN_SIZE = 13;
+
+export default function HomeClient() {
+  const stage = useScene((s) => s.stage);
+  const fade = useScene((s) => s.fade);
+  const [me, setMe] = useState<Me | null>(null);
+  const [visited, setVisited] = useState(false);
+  const [phase, setPhase] = useState<Phase>("menu");
+  const [script, setScript] = useState<{ id: number; lines: ReaderLine[] }>({ id: 0, lines: [] });
+  const setLines = (lines: ReaderLine[]) => setScript((s) => ({ id: s.id + 1, lines }));
+  const [cards, setCards] = useState<DrawnCard[]>([]);
+  const [revealed, setRevealed] = useState<Set<number>>(new Set());
+  const [ctx, setCtx] = useState<Ctx | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [picked, setPicked] = useState<number[]>([]);
+  const [pendingLines, setPendingLines] = useState<ReaderLine[]>([]);
+
+  const loadMe = useCallback(async () => {
+    const r = await fetch("/api/me", { cache: "no-store" });
+    const j = (await r.json()) as Me;
+    setMe(j);
+    return j;
+  }, []);
+
+  useEffect(() => {
+    // Đọc trạng thái đăng nhập và localStorage (chỉ có ở trình duyệt) sau khi mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadMe();
+    setVisited(storageGet("nguyet_visited") === "1");
+    const params = new URLSearchParams(location.search);
+    if (params.get("vao") === "1") {
+      sceneStore.set({ stage: "inside" });
+      history.replaceState(null, "", "/");
+    }
+  }, [loadMe]);
+
+  // vừa vào nhà mà chưa nói gì thì Nguyệt chào
+  const greetingNow = stage === "inside" && phase === "menu" && script.lines.length === 0 && me ? me.greeting : null;
+  const lines = greetingNow ?? script.lines;
+
+  const enterHouse = (skip = false) => {
+    storageSet("nguyet_visited", "1");
+    if (skip) {
+      sceneStore.set({ fade: 1 });
+      setTimeout(() => sceneStore.set({ stage: "inside", fade: 0 }), 450);
+      return;
+    }
+    sceneStore.set({ stage: "door" });
+    setTimeout(() => sceneStore.set({ fade: 1 }), 1500);
+    setTimeout(() => sceneStore.set({ stage: "inside", fade: 0 }), 2100);
+  };
+
+  const leave = () => {
+    sceneStore.set({ fade: 1 });
+    setTimeout(() => {
+      resetTable();
+      setLines([]);
+      setPhase("menu");
+      sceneStore.set({ stage: "forest", fade: 0, tag: "neutral" });
+    }, 450);
+  };
+
+  const resetTable = () => {
+    setCards([]);
+    setRevealed(new Set());
+    setCtx(null);
+    setPicked([]);
+  };
+
+  const say = (l: ReaderLine[], next: Phase) => {
+    setPhase(next);
+    setLines(l);
+  };
+
+  const login = async () => {
+    const supabase = createClient();
+    if (!supabase) return;
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${location.origin}/auth/callback?next=/?vao=1` },
+    });
+  };
+
+  const startReading = () => {
+    if (me?.configured && !me.user) {
+      say([{ tag: "tease", text: "Khoan đã. Muốn ta trải bài thì cậu ghi tên vào sổ khách trước. Ta cần nhớ ai đã ngồi ở bàn này." }], "login");
+      return;
+    }
+    resetTable();
+    say([{ tag: "think", text: "Kể ta nghe điều cậu đang băn khoăn. Viết thật lòng, càng cụ thể ta càng đọc rõ." }], "form");
+  };
+
+  const submitQuestion = async (question: string, topic: Topic, spread: SpreadId) => {
+    setBusy(true);
+    setLines([]);
+    try {
+      const r = await fetch("/api/reading", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question, topic, spread }) });
+      const j = await r.json();
+      if (j.crisis) return say(j.lines, "crisis");
+      if (r.status === 401) return say([{ tag: "tease", text: j.error }], "login");
+      if (j.error === "quota") return say([{ tag: "concern", text: j.message }], "message");
+      if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc. Cậu thử lại nhé." }], "message");
+      setCtx({ readingId: j.readingId, demo: j.demo, topic, spread, draws: j.draws ?? [], clarifiers: [], clarifiersLeft: j.clarifiersLeft });
+      setCards(j.cards);
+      setPendingLines(j.lines);
+      setPicked([]);
+      say([{ tag: "shuffle", text: `Ta xào xong rồi. Cậu chọn ${j.cards.length === 1 ? "một lá" : `${j.cards.length} lá`} trong dải bài này, theo cảm giác của cậu.` }], "picking");
+      loadMe();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const pickFromFan = (i: number) => {
+    if (picked.includes(i) || picked.length >= cards.length) return;
+    const next = [...picked, i];
+    setPicked(next);
+    if (next.length === cards.length) setTimeout(() => say(pendingLines, "reading"), 500);
+  };
+
+  const onLine = (line: ReaderLine) => {
+    if (line.revealPosition === undefined) return;
+    const pos = line.revealPosition === -1 ? cards.length - 1 : line.revealPosition;
+    setRevealed((s) => new Set(s).add(pos));
+  };
+
+  const onDone = () => {
+    if (phase === "reading") setPhase("deciding");
+    if (phase === "closing") setPhase("done");
+  };
+
+  const clarify = async () => {
+    if (!ctx) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/reading/clarify", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ readingId: ctx.readingId, demo: ctx.demo ? { topic: ctx.topic, spread: ctx.spread, draws: ctx.draws, clarifiers: ctx.clarifiers } : undefined }),
+      });
+      const j = await r.json();
+      if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc." }], "deciding");
+      setCards((c) => [...c, j.card]);
+      setCtx({ ...ctx, clarifiers: j.draw ? [...ctx.clarifiers, j.draw] : [...ctx.clarifiers, { cardId: j.card.card.id, reversed: j.card.reversed }], clarifiersLeft: j.clarifiersLeft });
+      say(j.lines, "reading");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const finish = async () => {
+    if (!ctx) return;
+    setBusy(true);
+    setLines([]);
+    try {
+      const r = await fetch("/api/reading/finish", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ readingId: ctx.readingId, demo: ctx.demo ? { topic: ctx.topic, draws: ctx.draws, clarifiers: ctx.clarifiers } : undefined }),
+      });
+      const j = await r.json();
+      if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc." }], "done");
+      say(j.lines, "closing");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const daily = async () => {
+    resetTable();
+    setBusy(true);
+    setLines([]);
+    try {
+      const j = await (await fetch("/api/daily", { cache: "no-store" })).json();
+      setCards([j.card]);
+      say(j.lines, "daily");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const backToMenu = () => {
+    resetTable();
+    say([{ tag: "neutral", text: "Còn điều gì khác không?" }], "menu");
+  };
+
+  const showFan = phase === "picking";
+  const showTable = cards.length > 0 && !showFan;
+  const quotaText = me?.status ? `${Math.max(0, me.status.limit - me.status.used)}/${me.status.limit} lượt tháng này` : null;
+
+  return (
+    <main className="stage-root">
+      <div className="stage-canvas">
+        <Experience />
+      </div>
+      <div className="stage-fade" style={{ opacity: fade }} />
+      <TopBar me={me} onLogin={login} />
+
+      {stage === "forest" && (
+        <section className="forest-hero">
+          <h1 className="title-pixel">Ngôi Nhà Trong Rừng</h1>
+          <p className="hero-sub">Có một ngọn đèn không bao giờ tắt ở cuối lối mòn. Người giữ đèn đọc bài tarot cho những ai mang theo một câu hỏi.</p>
+          <div className="hero-actions">
+            <button className="btn-pixel btn-gold" onClick={() => enterHouse(false)}>Đi theo lối mòn</button>
+            {visited && (
+              <button className="btn-pixel" onClick={() => enterHouse(true)}>Vào thẳng trong nhà</button>
+            )}
+          </div>
+          <p className="hero-note">
+            Dành cho giải trí và tự chiêm nghiệm, không thay thế lời khuyên y tế, pháp lý hay tài chính. <Link href="/dieu-khoan">Điều khoản</Link> · <Link href="/rieng-tu">Quyền riêng tư</Link>
+          </p>
+        </section>
+      )}
+
+      {stage === "inside" && (
+        <>
+          {showFan && (
+            <div className="fan-zone" aria-label="Dải bài úp">
+              {Array.from({ length: FAN_SIZE }, (_, i) => {
+                const mid = (FAN_SIZE - 1) / 2;
+                const angle = (i - mid) * 5;
+                const order = picked.indexOf(i);
+                return (
+                  <div key={i} className={`fan-card ${order >= 0 ? "is-picked" : ""}`} style={{ "--angle": `${angle}deg`, "--offset": `${(i - mid) * 7}%` } as React.CSSProperties}>
+                    <TarotCard revealed={false} size="sm" onClick={order >= 0 ? undefined : () => pickFromFan(i)} selected={order >= 0} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {showTable && (
+            <div className="table-zone">
+              {cards.map((c, i) => (
+                <TarotCard key={`${c.card.id}-${i}`} drawn={c} revealed={revealed.has(i)} label={c.positionLabel} size={cards.length > 4 ? "sm" : "md"} highlight={c.clarifier} />
+              ))}
+            </div>
+          )}
+
+          <div className="dialogue-zone">
+            {phase === "form" ? (
+              <QuestionForm onSubmit={submitQuestion} onCancel={backToMenu} busy={busy} />
+            ) : (
+              <Dialogue key={greetingNow ? "greet" : script.id} lines={lines} onLine={onLine} onDone={onDone} busy={busy}>
+                {phase === "menu" && (
+                  <>
+                    <button className="btn-pixel btn-gold" onClick={startReading}>Trải bài</button>
+                    <button className="btn-pixel" onClick={daily}>Lá bài của ngày</button>
+                    {me?.user && <Link className="btn-pixel" href="/nhat-ky">Nhật ký</Link>}
+                    <button className="btn-pixel btn-ghost" onClick={leave}>Ra về</button>
+                    {quotaText && <span className="quota-chip">{quotaText}</span>}
+                  </>
+                )}
+                {phase === "login" && (
+                  <>
+                    {me?.configured ? <button className="btn-pixel btn-gold" onClick={login}>Ghi tên bằng Google</button> : <span className="hint">Chưa cấu hình đăng nhập (chế độ demo).</span>}
+                    <button className="btn-pixel btn-ghost" onClick={backToMenu}>Để sau</button>
+                  </>
+                )}
+                {phase === "deciding" && ctx && (
+                  <>
+                    {ctx.clarifiersLeft > 0 && (
+                      <button className="btn-pixel" onClick={clarify} disabled={busy}>Rút thêm một lá ({ctx.clarifiersLeft})</button>
+                    )}
+                    <button className="btn-pixel btn-gold" onClick={finish} disabled={busy}>Nói đi, ta nghe</button>
+                  </>
+                )}
+                {phase === "done" && (
+                  <>
+                    <button className="btn-pixel btn-gold" onClick={startReading}>Hỏi điều khác</button>
+                    {me?.user && <Link className="btn-pixel" href="/nhat-ky">Xem nhật ký</Link>}
+                    <button className="btn-pixel btn-ghost" onClick={leave}>Ra về</button>
+                  </>
+                )}
+                {phase === "daily" && (
+                  <>
+                    <button className="btn-pixel btn-gold" onClick={startReading}>Trải bài sâu hơn</button>
+                    <button className="btn-pixel btn-ghost" onClick={backToMenu}>Quay lại</button>
+                  </>
+                )}
+                {phase === "message" && (
+                  <>
+                    <Link className="btn-pixel btn-gold" href="/goi">Xem các gói</Link>
+                    <button className="btn-pixel btn-ghost" onClick={backToMenu}>Quay lại</button>
+                  </>
+                )}
+                {phase === "crisis" && (
+                  <div className="support-card">
+                    <p>Nếu cậu đang gặp nguy hiểm, hãy gọi <a href="tel:115">115</a> hoặc tới cơ sở y tế gần nhất. Hãy nói chuyện với một người cậu tin tưởng ngay lúc này.</p>
+                    <button className="btn-pixel btn-ghost" onClick={backToMenu}>Ta vẫn ở đây</button>
+                  </div>
+                )}
+              </Dialogue>
+            )}
+          </div>
+        </>
+      )}
+    </main>
+  );
+}
+
+function QuestionForm({ onSubmit, onCancel, busy }: { onSubmit: (q: string, t: Topic, s: SpreadId) => void; onCancel: () => void; busy: boolean }) {
+  const [q, setQ] = useState("");
+  const [topic, setTopic] = useState<Topic>("ban_than");
+  const [spread, setSpread] = useState<SpreadId>("past_present_path");
+  const topics = useMemo(() => Object.entries(TOPIC_LABELS) as [Topic, string][], []);
+  return (
+    <form
+      className="dialogue pixel-frame question-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (q.trim().length >= 3 && !busy) onSubmit(q.trim(), topic, spread);
+      }}
+    >
+      <div className="dialogue-name">Câu hỏi của cậu</div>
+      <textarea
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        maxLength={500}
+        rows={3}
+        placeholder="Ví dụ: Mình có nên nhận lời chuyển sang công việc mới không?"
+        autoFocus
+        aria-label="Câu hỏi"
+      />
+      <div className="chip-row" role="radiogroup" aria-label="Chủ đề">
+        {topics.map(([k, label]) => (
+          <button key={k} type="button" role="radio" aria-checked={topic === k} className={`chip ${topic === k ? "is-on" : ""}`} onClick={() => setTopic(k)}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="chip-row" role="radiogroup" aria-label="Kiểu trải bài">
+        {Object.values(SPREADS).map((s) => (
+          <button key={s.id} type="button" role="radio" aria-checked={spread === s.id} className={`chip ${spread === s.id ? "is-on" : ""}`} onClick={() => setSpread(s.id)} title={s.description}>
+            {s.name}
+          </button>
+        ))}
+      </div>
+      <div className="dialogue-actions">
+        <button className="btn-pixel btn-gold" type="submit" disabled={busy || q.trim().length < 3}>{busy ? "Đang xào bài…" : "Xào bài"}</button>
+        <button className="btn-pixel btn-ghost" type="button" onClick={onCancel}>Thôi</button>
+        <span className="hint">{q.length}/500</span>
+      </div>
+    </form>
+  );
+}

@@ -1,0 +1,87 @@
+{
+  "keeper_frame": [
+    160,
+    176
+  ],
+  "owl_frame": [
+    40,
+    44
+  ],
+  "owl_feet_on_left_shoulder": [
+    36,
+    108
+  ],
+  "owl_feet_in_owl_sprite": [
+    20,
+    43
+  ],
+  "owl_sprite_offset_in_keeper": [
+    16,
+    65
+  ],
+  "glowing_eye_center": [
+    88,
+    60
+  ],
+  "pendant_center": [
+    80,
+    112
+  ],
+  "mouth_center": [
+    80,
+    80
+  ],
+  "per_frame": {
+    "keeper_idle_0": {
+      "upper_dy": 0,
+      "glow": "keeper_glow.png"
+    },
+    "keeper_idle_1": {
+      "upper_dy": -1,
+      "glow": "keeper_glow_up.png"
+    },
+    "keeper_idle_2": {
+      "upper_dy": -1,
+      "glow": "keeper_glow_up.png"
+    },
+    "keeper_idle_3": {
+      "upper_dy": 0,
+      "glow": "keeper_glow.png"
+    },
+    "keeper_blink": {
+      "upper_dy": 0,
+      "glow": "keeper_glow_blink.png"
+    },
+    "keeper_speak_0": {
+      "upper_dy": 0,
+      "glow": "keeper_glow.png"
+    },
+    "keeper_speak_1": {
+      "upper_dy": 0,
+      "glow": "keeper_glow.png"
+    },
+    "keeper_speak_2": {
+      "upper_dy": 0,
+      "glow": "keeper_glow.png"
+    }
+  },
+  "owl_per_frame": {
+    "owl_idle_0": {
+      "glow": "owl_glow.png"
+    },
+    "owl_idle_1": {
+      "glow": "owl_glow.png"
+    },
+    "owl_idle_2": {
+      "glow": null
+    },
+    "owl_idle_3": {
+      "glow": "owl_glow_tilt.png"
+    }
+  },
+  "notes": [
+    "upper_dy: hood, shoulders, face and pendant rise 1px on idle 1-2; add upper_dy to the owl position and to eye/pendant coords on those frames.",
+    "Speak frames share frame 0 geometry, so keeper_glow.png fits them (no keeper_glow_speak needed).",
+    "Keeper hands sit on the bottom edge of the frame: place the sprite so its bottom row touches the far edge of table.png."
+  ]
+}
