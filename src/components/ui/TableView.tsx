@@ -25,6 +25,10 @@ interface Props {
   picking: boolean;
   picked: number[];
   onPick: (i: number) => void;
+  /** desktop: cuốn sổ nằm mở sẵn bên phải khăn, hình trải lùi sang trái nhường chỗ */
+  docked: boolean;
+  /** cuốn sổ của Bấc */
+  children?: React.ReactNode;
 }
 
 /** Tay Nguyệt đưa từ phía bên kia bàn; đầu ngón tay dừng ngay trên mép trên của lá, không che tên hay hình. */
@@ -42,7 +46,8 @@ function Slot({ c, i, revealed, active }: { c: DrawnCard; i: number; revealed: b
 }
 
 /** Lớp DOM của cảnh mặt bàn: lá, dải bài để chọn, tay Nguyệt. Khăn và nến nằm ở cảnh 3D phía sau. */
-export function TableView({ spread, cards, revealed, active, shuffling, picking, picked, onPick }: Props) {
+export function TableView({ spread, cards, revealed, active, shuffling, picking, picked, onPick, docked, children }: Props) {
+  const field = (extra = "") => `table-field ${docked ? "has-notebook" : ""} ${extra}`;
   const main = cards.map((c, i) => ({ c, i })).filter(({ c }) => !c.clarifier);
   const extra = cards.map((c, i) => ({ c, i })).filter(({ c }) => c.clarifier);
 
@@ -64,7 +69,7 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
 
   if (picking) {
     return (
-      <div className="table-field">
+      <div className={field()}>
         <p className="table-count" aria-live="polite">
           Đã chọn {picked.length}/{cards.length}
         </p>
@@ -79,12 +84,13 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
             );
           })}
         </div>
+        {children}
       </div>
     );
   }
 
   return (
-    <div className={`table-field ${extra.length ? "has-extra" : ""}`}>
+    <div className={field(extra.length ? "has-extra" : "")}>
       <div className={`table-spread ${SHAPE[spread]}`}>
         {main.map(({ c, i }) => (
           <Slot key={`${c.card.id}-${i}`} c={c} i={i} revealed={revealed.has(i)} active={active === i} />
@@ -97,6 +103,7 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
           ))}
         </div>
       )}
+      {children}
     </div>
   );
 }

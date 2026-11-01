@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dialogue } from "./Dialogue";
 import { TableView } from "./TableView";
+import { Notebook, type LogEntry } from "./Notebook";
+import { useMedia } from "@/lib/useMedia";
 import { TopBar, type Me } from "./TopBar";
 import { sceneStore, useScene } from "@/lib/store";
 import { createClient } from "@/lib/supabase/client";
@@ -15,9 +17,10 @@ import { TOPIC_LABELS, type DrawnCard, type ReaderLine, type Topic } from "@/lib
 // Cảnh 3D (hoặc ảnh tĩnh nếu không có WebGL) chỉ chạy ở trình duyệt.
 const SceneStage = dynamic(() => import("../scene/SceneStage"), { ssr: false });
 
-type Phase = "menu" | "form" | "picking" | "reading" | "deciding" | "closing" | "done" | "daily" | "crisis" | "message" | "login";
+type Phase = "menu" | "form" | "picking" | "reading" | "deciding" | "closing" | "summary" | "done" | "daily" | "crisis" | "message" | "login";
 interface Draw { cardId: number; reversed: boolean }
 interface Ctx {
+  question: string;
   readingId: string | null;
   demo: boolean;
   topic: Topic;
@@ -29,11 +32,23 @@ interface Ctx {
 
 
 /** Các bước diễn ra trên mặt bàn: máy tự hạ xuống bàn khi bắt đầu, khách đổi góc được bất cứ lúc nào. */
-const TABLE_PHASES: Phase[] = ["picking", "reading", "deciding", "closing", "daily"];
+const TABLE_PHASES: Phase[] = ["picking", "reading", "deciding", "closing", "summary", "daily"];
 const toTable = () => sceneStore.set({ stage: "table" });
 const toFace = () => {
   if (sceneStore.get().stage === "table") sceneStore.set({ stage: "inside" });
 };
+/**
+ * Một trục dọc duy nhất: mặt Nguyệt ở trên, mặt bàn ở giữa, cuốn sổ ở dưới cùng.
+ * Đi xuống: mặt → bàn → mở sổ (điện thoại). Đi lên: gập sổ → mặt Nguyệt.
+ */
+function verticalStep(dir: "up" | "down", o: { notebookOpen: boolean; docked: boolean; hasNotebook: boolean; setNotebookOpen: (v: boolean) => void }) {
+  const onTable = sceneStore.get().stage === "table";
+  if (dir === "up") {
+    if (onTable && o.notebookOpen && !o.docked) o.setNotebookOpen(false);
+    else toFace();
+  } else if (!onTable) toTable();
+  else if (o.hasNotebook && !o.docked) o.setNotebookOpen(true);
+}
 /** Vuốt / cuộn bắt đầu trên một nút, ô nhập hay vùng cuộn thì không tính là đổi góc máy. */
 const isInteractive = (t: EventTarget | null) => t instanceof Element && !!t.closest("button, a, textarea, input, select, [data-scrollable]");
 
@@ -57,8 +72,16 @@ export default function HomeClient() {
   const [busy, setBusy] = useState(false);
   const [picked, setPicked] = useState<number[]>([]);
   const [pendingLines, setPendingLines] = useState<ReaderLine[]>([]);
-  // Tổng kết cuối phiên: ở lại trên màn hình tới khi khách chọn bước tiếp theo.
+  // Tổng kết cuối phiên: nằm ở trang cuối cuốn sổ trên bàn.
   const [recap, setRecap] = useState<{ themes: string[]; advice: string } | null>(null);
+  // Cuốn sổ của Bấc: mọi câu Nguyệt nói trong phiên, gắn với lá đang được lật lúc đó.
+  const [log, setLog] = useState<LogEntry[]>([]);
+  const [notebookOpen, setNotebookOpen] = useState(false);
+  const currentCard = useRef<number | null>(null);
+  // Câu chào ra về để dành tới lúc máy ngẩng lên mặt Nguyệt.
+  const [farewell, setFarewell] = useState<ReaderLine | null>(null);
+  // Desktop: sổ nằm mở sẵn bên phải khăn.
+  const docked = useMedia("(min-width: 1024px) and (min-aspect-ratio: 4/3)");
 
   // Máy chủ thiếu cấu hình (production): đóng cửa, không cho vào nhà.
   const [closed, setClosed] = useState(false);
@@ -125,6 +148,10 @@ export default function HomeClient() {
     setCtx(null);
     setPicked([]);
     setRecap(null);
+    setLog([]);
+    setNotebookOpen(false);
+    setFarewell(null);
+    currentCard.current = null;
   };
 
   const say = (l: ReaderLine[], next: Phase) => {
@@ -172,7 +199,7 @@ export default function HomeClient() {
       if (r.status === 401) return say([{ tag: "tease", text: j.error }], "login");
       if (j.error === "quota") return say([{ tag: "concern", text: j.message }], "message");
       if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc. Cậu thử lại nhé." }], "message");
-      setCtx({ readingId: j.readingId, demo: j.demo, topic, spread, draws: j.draws ?? [], clarifiers: [], clarifiersLeft: j.clarifiersLeft });
+      setCtx({ question, readingId: j.readingId, demo: j.demo, topic, spread, draws: j.draws ?? [], clarifiers: [], clarifiersLeft: j.clarifiersLeft });
       setCards(j.cards);
       setPendingLines(j.lines);
       setPicked([]);
@@ -190,19 +217,27 @@ export default function HomeClient() {
     if (next.length === cards.length) setTimeout(() => say(pendingLines, "reading"), 500);
   };
 
-  const onLine = (line: ReaderLine) => {
-    if (line.revealPosition === undefined) return;
-    const pos = line.revealPosition === -1 ? cards.length - 1 : line.revealPosition;
-    setRevealed((s) => new Set(s).add(pos));
-    setActive(pos);
+  const onLine = (line: ReaderLine, index: number) => {
+    if (line.revealPosition !== undefined) {
+      const pos = line.revealPosition === -1 ? cards.length - 1 : line.revealPosition;
+      setRevealed((s) => new Set(s).add(pos));
+      setActive(pos);
+      currentCard.current = pos;
+    }
+    // ghi vào sổ mọi câu của phiên trải bài (không ghi lá của ngày)
+    if (ctx && phase !== "daily") {
+      const key = `${script.id}:${index}`;
+      const entry: LogEntry = { key, line, card: currentCard.current };
+      setLog((l) => (l.some((e) => e.key === key) ? l : [...l, entry]));
+    }
   };
 
   const onDone = () => {
     if (phase === "reading") setPhase("deciding");
     if (phase === "closing") {
-      // gom xong thì máy ngẩng lên, Nguyệt chào mặt đối mặt
-      toFace();
-      setPhase("done");
+      // gom xong thì sổ mở tới trang tổng kết; khách đọc xong mới ngẩng lên
+      setPhase("summary");
+      setNotebookOpen(true);
     }
   };
 
@@ -238,7 +273,13 @@ export default function HomeClient() {
       const j = await r.json();
       if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc." }], "done");
       setRecap({ themes: j.themes ?? [], advice: j.advice ?? "" });
-      say(j.lines, "closing");
+      // phần gom nói trên bàn; câu chào ra về để dành tới lúc ngẩng lên
+      const all = j.lines as ReaderLine[];
+      const last = all.at(-1);
+      const bye = last?.tag === "farewell" ? last : null;
+      setFarewell(bye);
+      currentCard.current = null;
+      say(bye ? all.slice(0, -1) : all, "closing");
     } finally {
       setBusy(false);
     }
@@ -270,16 +311,19 @@ export default function HomeClient() {
   const onTable = stage === "table";
   const touchY = useRef<number | null>(null);
   const lastWheel = useRef(0);
+  const hasNotebook = !!ctx && phase !== "daily";
   useEffect(() => {
     if (!canToggle) return;
+    const nav = { notebookOpen, docked, hasNotebook, setNotebookOpen };
     const onKey = (e: KeyboardEvent) => {
       if (isInteractive(e.target) && !(e.target instanceof HTMLButtonElement)) return;
-      if (e.key === "ArrowUp") toFace();
-      if (e.key === "ArrowDown") toTable();
+      if (e.key === "ArrowUp") verticalStep("up", nav);
+      if (e.key === "ArrowDown") verticalStep("down", nav);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [canToggle]);
+  }, [canToggle, notebookOpen, docked, hasNotebook]);
+  const nav = { notebookOpen, docked, hasNotebook, setNotebookOpen };
   const gestures = canToggle
     ? {
         onTouchStart: (e: React.TouchEvent) => {
@@ -289,17 +333,16 @@ export default function HomeClient() {
           if (touchY.current === null) return;
           const dy = e.changedTouches[0].clientY - touchY.current;
           touchY.current = null;
-          // vuốt lên (ngón tay đi lên) thì ngẩng lên nhìn Nguyệt; vuốt xuống thì nhìn bàn
-          if (dy < -60) toFace();
-          else if (dy > 60) toTable();
+          // vuốt lên (ngón tay đi lên) thì đi lên trục: gập sổ / nhìn Nguyệt; vuốt xuống thì xuống bàn / mở sổ
+          if (dy < -60) verticalStep("up", nav);
+          else if (dy > 60) verticalStep("down", nav);
         },
         onWheel: (e: React.WheelEvent) => {
           if (isInteractive(e.target) || Math.abs(e.deltaY) < 30) return;
           const now = performance.now();
           if (now - lastWheel.current < 700) return;
           lastWheel.current = now;
-          if (e.deltaY < 0) toFace();
-          else toTable();
+          verticalStep(e.deltaY < 0 ? "up" : "down", nav);
         },
       }
     : {};
@@ -351,11 +394,25 @@ export default function HomeClient() {
               picking={phase === "picking"}
               picked={picked}
               onPick={pickFromFan}
-            />
+              docked={docked && hasNotebook}
+            >
+              {hasNotebook && ctx && (
+                <Notebook
+                  question={ctx.question}
+                  cards={cards}
+                  log={log}
+                  recap={recap}
+                  active={active}
+                  open={notebookOpen}
+                  docked={docked}
+                  toRecap={phase === "summary"}
+                  onOpenChange={setNotebookOpen}
+                />
+              )}
+            </TableView>
           )}
 
           {phase === "crisis" && <SupportCard onLeave={leave} />}
-          {phase === "done" && recap && <RecapCard themes={recap.themes} advice={recap.advice} />}
 
           <div className="dialogue-zone">
             {phase === "form" ? (
@@ -385,6 +442,19 @@ export default function HomeClient() {
                     <button className="btn-pixel btn-gold" onClick={finish} disabled={busy}>Nói đi, ta nghe</button>
                   </>
                 )}
+                {phase === "summary" && (
+                  <button
+                    className="btn-pixel btn-gold"
+                    onClick={() => {
+                      // đọc xong trang tổng kết thì máy ngẩng lên, Nguyệt chào mặt đối mặt
+                      setNotebookOpen(false);
+                      toFace();
+                      say([farewell ?? { tag: "farewell", text: "Đường về vẫn sáng. Ta để đèn chờ." }], "done");
+                    }}
+                  >
+                    Gập sổ, ngẩng lên
+                  </button>
+                )}
                 {phase === "done" && (
                   <>
                     <button className="btn-pixel btn-gold" onClick={startReading}>Hỏi điều khác</button>
@@ -410,25 +480,6 @@ export default function HomeClient() {
         </div>
       )}
     </main>
-  );
-}
-
-/** Tổng kết phiên: Nguyệt nói xong thì phần gom ý và lời dặn vẫn nằm lại trên bàn. */
-function RecapCard({ themes, advice }: { themes: string[]; advice: string }) {
-  return (
-    <section className="recap-card pixel-frame" aria-label="Tổng kết phiên">
-      <h2 className="recap-title">Bàn hôm nay</h2>
-      {themes.length > 0 && (
-        <p>
-          <span className="recap-key">Các lá nói về</span> {themes.join(" · ")}
-        </p>
-      )}
-      {advice && (
-        <p>
-          <span className="recap-key">Lời dặn</span> {advice}
-        </p>
-      )}
-    </section>
   );
 }
 

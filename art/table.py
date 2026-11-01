@@ -172,11 +172,7 @@ def page_frame():
     d.rectangle([3, 3, S - 4, S - 4], outline=c('o1'))
     for (x, y) in ((3, 3), (S - 4, 3), (3, S - 4), (S - 4, S - 4)):
         put(img, x, y, 'w1')
-    # vân giấy rất nhẹ ở lõi
-    for y in range(8, S - 8):
-        for x in range(8, S - 8):
-            if bayer(x, y, 0.08):
-                put(img, x, y, 'o3')
+    # lõi để trơn: border-image kéo giãn lõi ra cả trang, một chấm vân cũng thành mảng lớn
     return img
 
 
