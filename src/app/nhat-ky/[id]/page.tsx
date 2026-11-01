@@ -6,6 +6,7 @@ import { getCard } from "@/lib/tarot/cards";
 import { SPREADS, type SpreadId } from "@/lib/tarot/spreads";
 import { TOPIC_LABELS, type Topic } from "@/lib/tarot/types";
 import { NoteEditor } from "./NoteEditor";
+import { DeleteButton } from "@/components/ui/DeleteButton";
 
 export default async function JournalEntry({ params }: PageProps<"/nhat-ky/[id]">) {
   const { id } = await params;
@@ -50,7 +51,15 @@ export default async function JournalEntry({ params }: PageProps<"/nhat-ky/[id]"
           </p>
         ))}
       </div>
-      <p style={{ marginTop: "1.5rem" }}><Link href="/nhat-ky">← Về nhật ký</Link></p>
+      <div style={{ marginTop: "2rem", display: "grid", gap: "1rem", justifyItems: "start" }}>
+        <DeleteButton
+          label="Xóa phiên này"
+          warning="Câu hỏi, các lá, lời của Nguyệt và ghi chú của phiên này sẽ bị xóa hẳn, không lấy lại được. Lượt trải bài đã dùng trong tháng vẫn được tính."
+          endpoint={`/api/reading/${r.id}`}
+          redirectTo="/nhat-ky"
+        />
+        <Link href="/nhat-ky">← Về nhật ký</Link>
+      </div>
     </PageShell>
   );
 }

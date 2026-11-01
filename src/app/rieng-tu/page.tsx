@@ -17,7 +17,8 @@ export default function Privacy() {
         <h2>Bên thứ ba</h2>
         <p>Dữ liệu được lưu trên Supabase. Khi tính năng AI được bật, câu hỏi sẽ được xử lý qua dịch vụ AI của Anthropic.</p>
         <h2>Quyền của cậu</h2>
-        <p>Cậu có thể yêu cầu xem, sửa hoặc xóa toàn bộ dữ liệu của mình bất kỳ lúc nào.</p>
+        <p>Cậu xem và sửa ghi chú trong Nhật ký. Mỗi phiên có nút &quot;Xóa phiên này&quot;; cuối trang Nhật ký có nút &quot;Xóa toàn bộ dữ liệu của tôi&quot;, xóa hẳn mọi câu hỏi, lá bài, lời giải, ghi chú và hồ sơ.</p>
+        <p>Sau khi xóa, chúng tôi chỉ giữ: lịch sử thanh toán (theo yêu cầu kế toán), gói đang dùng, thời điểm các lượt trải bài trong tháng (để tính hạn mức, không kèm câu hỏi hay lá bài) và tài khoản đăng nhập Google.</p>
       </div>
     </PageShell>
   );

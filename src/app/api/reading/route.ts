@@ -69,7 +69,8 @@ export async function POST(req: Request) {
     const failed =
       (await admin.from("reading_cards").insert(draws.map((d, i) => ({ reading_id: id, position: i, card_id: d.cardId, reversed: d.reversed })))).error ??
       (await admin.from("messages").insert({ reading_id: id, role: "user", text: question })).error ??
-      (await saveLines(admin, id, lines));
+      (await saveLines(admin, id, lines)) ??
+      (await admin.from("reading_usage").insert({ user_id: user.id })).error;
     if (failed) {
       console.error("[reading] không lưu được lá bài / lời thoại", failed.message);
       await admin.from("readings").delete().eq("id", id);

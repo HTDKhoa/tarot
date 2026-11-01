@@ -26,3 +26,22 @@ export async function GET() {
     greeting: greeting({ name, hour: vnHour(), returning: (count ?? 0) > 0 }),
   });
 }
+
+/**
+ * "Xóa toàn bộ dữ liệu của tôi": mọi phiên (kèm lá bài, lời thoại), bộ nhớ và hồ sơ.
+ * Giữ lại lịch sử thanh toán (kế toán), gói đang dùng và số lượt đã dùng trong tháng.
+ */
+export async function DELETE() {
+  const { supabase, user } = await getUser();
+  if (!supabase || !user) return NextResponse.json({ error: "Cậu cần đăng nhập trước." }, { status: 401 });
+
+  // Client của khách: RLS chỉ cho xóa dữ liệu của chính mình.
+  for (const [table, column] of [["readings", "user_id"], ["user_memory", "user_id"], ["profiles", "id"]] as const) {
+    const { error } = await supabase.from(table).delete().eq(column, user.id);
+    if (error) {
+      console.error("[xóa dữ liệu]", table, error.message);
+      return NextResponse.json({ error: "Chưa xóa xong. Cậu thử lại nhé, phần còn lại sẽ được xóa tiếp." }, { status: 500 });
+    }
+  }
+  return NextResponse.json({ ok: true });
+}

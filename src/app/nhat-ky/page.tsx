@@ -4,6 +4,7 @@ import { getUser } from "@/lib/supabase/server";
 import { SPREADS, type SpreadId } from "@/lib/tarot/spreads";
 import { TOPIC_LABELS, type Topic } from "@/lib/tarot/types";
 import { getCard } from "@/lib/tarot/cards";
+import { DeleteButton } from "@/components/ui/DeleteButton";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Nhật ký · Ngôi Nhà Trong Rừng" };
@@ -52,6 +53,18 @@ export default async function JournalPage() {
           );
         })}
       </ol>
+      <section className="prose-dark" style={{ marginTop: "3rem" }}>
+        <h2>Dữ liệu của cậu</h2>
+        <p>
+          Cậu có thể xóa toàn bộ nhật ký, ghi chú và hồ sơ bất kỳ lúc nào. Lịch sử thanh toán được giữ lại theo yêu cầu kế toán; gói đang dùng và số lượt đã dùng trong tháng không đổi.
+        </p>
+        <DeleteButton
+          label="Xóa toàn bộ dữ liệu của tôi"
+          warning="Mọi phiên trải bài, lời của Nguyệt, ghi chú và hồ sơ của cậu sẽ bị xóa hẳn, không lấy lại được."
+          endpoint="/api/me"
+          redirectTo="/nhat-ky"
+        />
+      </section>
     </PageShell>
   );
 }

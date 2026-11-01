@@ -16,8 +16,9 @@ export interface PlanStatus {
 export async function getPlanStatus(supabase: SupabaseClient, userId: string): Promise<PlanStatus> {
   const [{ data: sub }, { count }] = await Promise.all([
     supabase.from("subscriptions").select("plan, expires_at").eq("user_id", userId).maybeSingle(),
+    // Đếm ở reading_usage chứ không ở readings: khách xóa phiên thì hạn mức tháng không "hồi" lại.
     supabase
-      .from("readings")
+      .from("reading_usage")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
       .gte("created_at", vnMonthStart().toISOString()),

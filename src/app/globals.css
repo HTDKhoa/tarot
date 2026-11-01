@@ -96,6 +96,33 @@ img {
   background: transparent;
   border-color: rgba(185, 176, 201, 0.5);
 }
+/* hành động không hoàn tác được (xóa dữ liệu) */
+.btn-danger {
+  background: #3a1616;
+  border-color: #d98a75;
+  color: #ffe1d6;
+}
+.btn-danger:hover:not(:disabled) {
+  background: #522020;
+}
+.delete-confirm {
+  border: 2px solid #d98a75;
+  background: rgba(58, 22, 22, 0.55);
+  padding: 0.8rem 1rem;
+}
+.delete-confirm p {
+  margin-bottom: 0.6rem;
+}
+.delete-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.delete-error {
+  color: #f0b9a0;
+  font-size: 0.9rem;
+  margin: 0.6rem 0 0;
+}
 
 .title-pixel {
   font-family: var(--font-pixel);
