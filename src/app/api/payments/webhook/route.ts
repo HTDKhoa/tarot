@@ -1,50 +1,70 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { payos } from "@/lib/payos";
+import { isPayOSConfigured, payos } from "@/lib/payos";
 import { PLANS } from "@/lib/plans";
+
+const TAG = "[payos-webhook]";
+
+/** Lỗi hệ thống: trả 500 để payOS gửi lại webhook sau. */
+function retryLater(message: string, detail: Record<string, unknown>) {
+  console.error(TAG, message, JSON.stringify(detail));
+  return NextResponse.json({ success: false, error: message }, { status: 500 });
+}
 
 /**
  * Webhook payOS. Đăng ký URL https://<domain>/api/payments/webhook trong trang quản trị payOS.
- * Luôn trả 200 cho payload hợp lệ (kể cả đơn thử của payOS) để payOS không gửi lại liên tục.
+ * Payload hợp lệ đã xử lý xong (kể cả đơn thử của payOS) thì trả 200 để payOS thôi gửi lại.
+ * Mọi lỗi ghi DB đều trả 500 để payOS gửi lại; đơn và gói được ghi cùng một transaction
+ * trong hàm SQL activate_payment (supabase/migrations/0002_activate_payment.sql).
  */
 export async function POST(req: Request) {
+  if (!isPayOSConfigured()) return retryLater("Chưa cấu hình payOS", {});
+
   let data;
   try {
     data = await payos().webhooks.verify(await req.json());
-  } catch {
+  } catch (e) {
+    console.warn(TAG, "chữ ký không hợp lệ", (e as Error).message);
     return NextResponse.json({ success: false, error: "Chữ ký không hợp lệ" }, { status: 400 });
   }
+  const orderCode = data.orderCode;
 
-  const admin = createAdminClient();
-  const { data: payment } = await admin.from("payments").select("*").eq("order_code", data.orderCode).maybeSingle();
-  if (!payment) return NextResponse.json({ success: true, note: "order not found" });
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch (e) {
+    return retryLater("Thiếu cấu hình Supabase phía server", { orderCode, error: (e as Error).message });
+  }
+
+  const { data: payment, error: findError } = await admin
+    .from("payments")
+    .select("id, plan, amount, status")
+    .eq("order_code", orderCode)
+    .maybeSingle();
+  if (findError) return retryLater("Không đọc được đơn", { orderCode, error: findError.message });
+  if (!payment) {
+    console.info(TAG, "không có đơn (có thể là đơn thử của payOS)", orderCode);
+    return NextResponse.json({ success: true, note: "order not found" });
+  }
   if (payment.status === "paid") return NextResponse.json({ success: true, note: "already processed" });
+
   if (data.code !== "00" || data.amount < payment.amount) {
-    await admin.from("payments").update({ raw: data }).eq("id", payment.id);
+    const { error } = await admin.from("payments").update({ raw: data }).eq("id", payment.id);
+    if (error) return retryLater("Không lưu được dữ liệu đơn chưa thanh toán", { orderCode, error: error.message });
+    console.warn(TAG, "đơn chưa thanh toán đủ", JSON.stringify({ orderCode, code: data.code, amount: data.amount, expected: payment.amount }));
     return NextResponse.json({ success: true, note: "not paid" });
   }
 
-  const now = new Date();
-  // Chỉ một request được chuyển pending -> paid, tránh cộng ngày hai lần khi payOS gửi lặp.
-  const { data: claimed } = await admin
-    .from("payments")
-    .update({ status: "paid", paid_at: now.toISOString(), raw: data })
-    .eq("id", payment.id)
-    .eq("status", "pending")
-    .select("id");
-  if (!claimed?.length) return NextResponse.json({ success: true, note: "already processed" });
-
   const plan = PLANS[payment.plan as "month" | "year"];
-  const { data: sub } = await admin.from("subscriptions").select("plan, expires_at").eq("user_id", payment.user_id).maybeSingle();
-  const base = sub && new Date(sub.expires_at) > now ? new Date(sub.expires_at) : now;
-  const expires = new Date(base.getTime() + plan.days * 86_400_000);
-  // Đang còn gói năm mà mua thêm gói tháng thì vẫn giữ nhãn gói năm, chỉ cộng thêm ngày.
-  const keepYear = sub && new Date(sub.expires_at) > now && sub.plan === "year";
-  await admin.from("subscriptions").upsert({
-    user_id: payment.user_id,
-    plan: keepYear ? "year" : payment.plan,
-    expires_at: expires.toISOString(),
-    updated_at: now.toISOString(),
+  if (!plan) return retryLater("Gói của đơn không hợp lệ", { orderCode, plan: payment.plan });
+
+  const { data: result, error: activateError } = await admin.rpc("activate_payment", {
+    p_order_code: orderCode,
+    p_days: plan.days,
+    p_raw: data,
   });
-  return NextResponse.json({ success: true });
+  if (activateError) return retryLater("Kích hoạt gói thất bại", { orderCode, error: activateError.message });
+
+  console.info(TAG, "kết quả", JSON.stringify({ orderCode, result }));
+  return NextResponse.json({ success: true, note: result });
 }

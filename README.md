@@ -52,7 +52,7 @@ CLAUDE.md                    hướng dẫn cho Claude Code / agent
 
 ### 1. Supabase
 1. Tạo project tại supabase.com (gói Free).
-2. Vào **SQL Editor**, dán nội dung `supabase/migrations/0001_init.sql` rồi bấm Run.
+2. Vào **SQL Editor**, lần lượt dán và Run **từng file** trong `supabase/migrations/` theo thứ tự số (`0001_…`, `0002_…`, …). Khi có file mới, chỉ chạy các file chưa chạy.
 3. Vào **Authentication → Providers → Google** và bật lên. Client ID và Secret lấy từ Google Cloud Console (OAuth consent screen + OAuth client loại Web). Redirect URI của Google ghi là `https://<project>.supabase.co/auth/v1/callback`.
 4. Vào **Authentication → URL Configuration**:
    - Site URL: domain của bạn.
