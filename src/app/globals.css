@@ -247,14 +247,34 @@ img {
   text-shadow: 0 1px 3px #000;
 }
 
+/* ---------- vùng chơi: bàn bài + hộp thoại ---------- */
+/* Xếp trong một cột flex từ dưới lên: hộp thoại cao bao nhiêu thì bàn bài tự lùi lên bấy nhiêu, không bao giờ đè nhau. */
+.play-zone {
+  position: absolute;
+  z-index: 6;
+  left: 0;
+  right: 0;
+  top: 4rem;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(0.75rem, 2.5vh, 1.6rem);
+  pointer-events: none;
+}
+.play-zone > * {
+  pointer-events: auto;
+}
+
 /* ---------- hộp thoại ---------- */
 .dialogue-zone {
-  position: absolute;
-  z-index: 7;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: max(1rem, env(safe-area-inset-bottom));
+  position: relative;
+  z-index: 1;
+  flex: none;
   width: min(94vw, 780px);
+  /* chừa chỗ cho thẻ tên nhô lên trên mép hộp thoại */
+  margin-top: 1rem;
 }
 .dialogue {
   position: relative;
@@ -361,11 +381,7 @@ img {
 
 /* ---------- lá bài ---------- */
 .table-zone {
-  position: absolute;
-  z-index: 6;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: calc(14.5rem + env(safe-area-inset-bottom));
+  flex: none;
   display: flex;
   gap: clamp(0.5rem, 2.5vw, 1.6rem);
   align-items: flex-end;
@@ -508,11 +524,8 @@ img {
 
 /* dải bài để khách tự chọn */
 .fan-zone {
-  position: absolute;
-  z-index: 6;
-  left: 50%;
-  bottom: calc(15rem + env(safe-area-inset-bottom));
-  transform: translateX(-50%);
+  position: relative;
+  flex: none;
   width: min(96vw, 820px);
   height: calc(clamp(54px, 9vw, 88px) * 80 / 48 + 40px);
 }
@@ -545,9 +558,6 @@ img {
   }
   .fan-card.is-picked {
     transform: translateX(calc(-50% + var(--offset) * 3.4)) translateY(-22px) rotate(var(--angle));
-  }
-  .table-zone {
-    bottom: calc(16rem + env(safe-area-inset-bottom));
   }
   .topbar {
     font-size: 1.1rem;

@@ -251,7 +251,7 @@ export default function HomeClient() {
       )}
 
       {stage === "inside" && (
-        <>
+        <div className="play-zone">
           {showFan && (
             <div className="fan-zone" aria-label="Dải bài úp">
               {Array.from({ length: FAN_SIZE }, (_, i) => {
@@ -331,7 +331,7 @@ export default function HomeClient() {
               </Dialogue>
             )}
           </div>
-        </>
+        </div>
       )}
     </main>
   );
