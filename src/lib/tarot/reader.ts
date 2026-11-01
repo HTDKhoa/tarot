@@ -154,6 +154,7 @@ export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offe
     (spread.id === "situation_obstacle_advice" && draws[1]?.reversed === true) ||
     (single !== null && single.yes_no === "maybe");
 
+  // PERSONA: chỉ mời rút thêm khi có lý do, và nói ra lý do. Không có lý do thì không mời; khách vẫn có hai nút để chọn.
   if (offerClarifier) {
     lines.push({
       tag: "think",
@@ -162,8 +163,6 @@ export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offe
         "Các lá đang kéo hai ngả. Một lá nữa có thể cho ta biết cậu đang đứng gần bên nào hơn. Rút, hay để ta nói những gì đang thấy?",
       ]),
     });
-  } else {
-    lines.push({ tag: "neutral", text: "Cậu muốn rút thêm một lá làm rõ, hay để ta gom lại những gì đang thấy?" });
   }
   return { lines, offerClarifier };
 }
@@ -175,10 +174,9 @@ export function composeClarifier(d: Draw, topic: Topic, index: number): ReaderLi
     ...turns(`Lá làm rõ: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: -1 }),
     ...turns(`${card.chu_de[topic][o]} ${card.loi_khuyen[o]}`, tagFor(card, d.reversed)),
   ];
+  // Lá làm rõ không tự mời thêm lá nữa; hết lượt thì nói rõ vì sao dừng.
   if (index + 1 >= MAX_CLARIFIERS) {
     lines.push({ tag: "neutral", text: "Bàn đã đủ chật rồi. Rút thêm chỉ làm nó rối hơn. Để ta gom lại cho cậu nghe." });
-  } else {
-    lines.push({ tag: "neutral", text: "Cậu muốn rút thêm, hay để ta gom lại?" });
   }
   return lines;
 }
