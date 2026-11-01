@@ -3,7 +3,9 @@ import type { DrawnCard } from "@/lib/tarot/types";
 import { assetUrl } from "@/lib/assets";
 
 const ROMAN = ["0", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI"];
-const RANK: Record<number, string> = { 1: "Át", 11: "Tiểu Đồng", 12: "Hiệp Sĩ", 13: "Nữ Hoàng", 14: "Vua" };
+// Trên bàn tên lá chỉ dùng tiếng Anh (chủ dự án chốt); tên Việt chỉ có trong lời Nguyệt.
+const RANK: Record<number, string> = { 1: "Ace", 11: "Page", 12: "Knight", 13: "Queen", 14: "King" };
+const SUIT: Record<string, string> = { wands: "Wands", cups: "Cups", swords: "Swords", pentacles: "Pentacles" };
 
 export function cardNumeral(c: DrawnCard["card"]) {
   if (c.arcana === "major") return ROMAN[c.number] ?? String(c.number);
@@ -41,7 +43,7 @@ export function TarotCard({ drawn, revealed, onClick, selected, label, size = "m
                 {icon && <img src={icon} alt="" className="tarot-icon" />}
                 <span className="tarot-numeral">{cardNumeral(c)}</span>
               </span>
-              <span className="tarot-band">{c.arcana === "major" ? c.name_vi : c.name_vi.split(" ").at(-1)}</span>
+              <span className="tarot-band">{c.arcana === "major" ? c.name_en.replace(/^The /, "") : SUIT[c.suit ?? ""]}</span>
             </>
           )}
         </span>

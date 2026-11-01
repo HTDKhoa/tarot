@@ -27,8 +27,9 @@ function tagFor(card: CardData, reversed: boolean): EmotionTag {
   return "neutral";
 }
 
+/** Nguyệt gọi tên Việt (cách gọi phổ biến, xem cards.ts) kèm tên Anh để khách đối chiếu với lá trên bàn. */
 function cardTitle(card: CardData, reversed: boolean) {
-  return `${card.name_en}${reversed ? ", lá ngược" : ""}`;
+  return `${card.name_vi} (${card.name_en})${reversed ? ", lá ngược" : ""}`;
 }
 
 /**
@@ -39,6 +40,8 @@ function speak(text: string): string {
   return text
     .replaceAll("Người hỏi", "Cậu")
     .replaceAll("người hỏi", "cậu")
+    // dữ liệu gọi lá Queen là "Nữ Hoàng <chất>"; cách gọi phổ biến là "Hoàng Hậu <chất>" (cards.ts)
+    .replace(/Nữ Hoàng (Gậy|Cốc|Kiếm|Tiền)/g, "Hoàng Hậu $1")
     .replace(/;\s*(\S)/gu, (_, c: string) => `. ${c.toLocaleUpperCase("vi")}`);
 }
 

@@ -357,7 +357,9 @@ Các thành phần trầm và tiết chế: chúng là đồ vật nhỏ trong n
 Khung pixel rộng min(94vw, 780px) với thẻ tên tím mận nhô lên mép trái. Lời Nguyệt chạy từng ký tự (22 ms mỗi ký tự); chạm, Enter hoặc Space để hiện hết câu hoặc sang câu sau. Mũi tên ▼ ngọn lửa nhấp nhô theo `steps(2)` báo còn câu tiếp. Nút hành động chỉ hiện khi đã nói xong.
 
 ### Lá bài (signature)
-Mặt sau là ảnh pixel đèn lồng trên nền xanh đêm; mặt trước là khung kem với biểu tượng chất bài, số La Mã hoặc tên bậc (VT323 ngọn lửa) và dải tên tiếng Việt. Lật bằng cách co bề ngang về 0 rồi mở ra trong 0.5s, đổi mặt đúng ở giữa. Lá ngược xoay phần hình 180°. Chú thích dưới lá: vị trí (khói sương), tên lá (ngọn lửa), "ngược" (xanh trăng). Ba cỡ: sm, md, lg.
+Mặt sau là ảnh pixel đèn lồng trên nền xanh đêm; mặt trước là khung kem với biểu tượng chất bài, số La Mã hoặc tên bậc bằng tiếng Anh (VT323 ngọn lửa) và dải tên (tên lá Ẩn Chính bỏ "The", hoặc tên chất: Wands, Cups, Swords, Pentacles). Lật bằng cách co bề ngang về 0 rồi mở ra trong 0.5s, đổi mặt đúng ở giữa. Lá ngược xoay phần hình 180°. Chú thích dưới lá: vị trí (khói sương), tên lá (ngọn lửa), "ngược" (xanh trăng). Ba cỡ: sm, md, lg.
+
+**Luật Tên Lá.** Mọi chữ khách đọc trên bàn, trong sổ và nhật ký gọi lá bằng tên tiếng Anh. Tên Việt chỉ xuất hiện trong lời Nguyệt, luôn kèm tên Anh trong ngoặc, theo cách gọi phổ biến (The Empress là Nữ Hoàng, lá Queen là Hoàng Hậu, The Chariot là Cỗ Xe Chiến Thắng; `viName` trong `src/lib/tarot/cards.ts`).
 
 ### Dải bài (signature)
 13 lá úp xếp hình quạt (mỗi lá lệch 5°, xoay quanh điểm dưới đáy). Lá được chọn nhấc lên 28 px (22 px trên mobile) và thắp quầng nến.
