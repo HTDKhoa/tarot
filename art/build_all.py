@@ -13,6 +13,7 @@ import forest
 import interior
 import characters
 import cards
+import table
 
 PREVIEW = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'preview.png')
 
@@ -132,6 +133,7 @@ def main():
     interior.build()
     characters.build()
     cards.build()
+    table.build()
     files = write_manifest()
     fs, ins, cr = forest_scene(), interior_scene(), cards_row().convert('RGB')
     gap = 8
