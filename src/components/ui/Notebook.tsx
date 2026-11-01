@@ -62,6 +62,23 @@ export function Notebook({ question, cards, log, recap, open, docked, toRecap, o
     return () => window.removeEventListener("keydown", onKey);
   }, [open, docked, onOpenChange]);
 
+  // có câu mới thì cuộn trang tới đó: giữ đề mục của lá đang nói trong tầm nhìn nếu vừa trang,
+  // còn không thì ưu tiên câu mới nhất (sổ ghim trên desktop thấp hơn sổ mở trên điện thoại)
+  const pageRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const page = pageRef.current;
+    if (!shown || toRecap || !page) return;
+    const entries = page.querySelectorAll<HTMLElement>("[data-entry]");
+    const last = entries[entries.length - 1];
+    if (!last) return;
+    const heads = page.querySelectorAll<HTMLElement>("h4");
+    const head = heads[heads.length - 1];
+    const lastBottom = last.offsetTop + last.offsetHeight;
+    const headTop = head && head.offsetTop <= last.offsetTop ? head.offsetTop : last.offsetTop;
+    const top = Math.max(headTop - 8, lastBottom - page.clientHeight + 12);
+    if (top > page.scrollTop) page.scrollTo({ top, behavior: "smooth" });
+  }, [log.length, shown, toRecap]);
+
   const byCard = (i: number) => log.filter((e) => e.card === i);
 
   return (
@@ -108,7 +125,7 @@ export function Notebook({ question, cards, log, recap, open, docked, toRecap, o
               </button>
             )}
           </div>
-          <div className="notebook-page" data-scrollable>
+          <div ref={pageRef} className="notebook-page" data-scrollable>
             <section>
               <h3>Cậu hỏi</h3>
               <p className="notebook-question">{question}</p>
@@ -117,12 +134,14 @@ export function Notebook({ question, cards, log, recap, open, docked, toRecap, o
               <h3>Lời Nguyệt</h3>
               {log.map((e) =>
                 e.line.revealPosition !== undefined && e.card !== null && cards[e.card] ? (
-                  <div key={e.key}>
+                  <div key={e.key} data-entry>
                     <h4>{cardTitle(cards[e.card])}</h4>
                     {withoutTitle(e.line.text) && <p>{withoutTitle(e.line.text)}</p>}
                   </div>
                 ) : (
-                  <p key={e.key}>{e.line.text}</p>
+                  <p key={e.key} data-entry>
+                    {e.line.text}
+                  </p>
                 ),
               )}
             </section>

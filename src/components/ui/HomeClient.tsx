@@ -88,6 +88,8 @@ export default function HomeClient() {
   const currentCard = useRef<number | null>(null);
   // Câu chào ra về để dành tới lúc máy ngẩng lên mặt Nguyệt.
   const [farewell, setFarewell] = useState<ReaderLine | null>(null);
+  // câu hỏi vừa gửi, để sổ đã ghi được câu hỏi ngay trong lúc xào bài (trước khi máy chủ trả lá)
+  const [askedQuestion, setAskedQuestion] = useState("");
   // Desktop: sổ nằm mở sẵn bên phải khăn.
   const docked = useMedia("(min-width: 1024px) and (min-aspect-ratio: 4/3)");
 
@@ -193,6 +195,7 @@ export default function HomeClient() {
     // Bấm "Xào bài" thì máy hạ xuống bàn ngay, Nguyệt xào bài trong lúc chờ máy chủ rút lá.
     toTable();
     // form gập lại, hộp thoại báo Nguyệt đang xào bài trong lúc hai tay xào trên bàn
+    setAskedQuestion(question);
     setPhase("shuffling");
     const startedAt = performance.now();
     try {
@@ -328,7 +331,7 @@ export default function HomeClient() {
   const onTable = stage === "table";
   const touchY = useRef<number | null>(null);
   const lastWheel = useRef(0);
-  const hasNotebook = !!ctx && phase !== "daily";
+  const hasNotebook = (!!ctx || phase === "shuffling") && phase !== "daily";
   useEffect(() => {
     if (!canToggle) return;
     const nav = { notebookOpen, docked, hasNotebook, setNotebookOpen };
@@ -424,9 +427,9 @@ export default function HomeClient() {
               onPick={pickFromFan}
               docked={docked && hasNotebook}
             >
-              {hasNotebook && ctx && (
+              {hasNotebook && (
                 <Notebook
-                  question={ctx.question}
+                  question={ctx?.question ?? askedQuestion}
                   cards={cards}
                   log={log}
                   recap={recap}

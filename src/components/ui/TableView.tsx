@@ -74,7 +74,7 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
 
   if (shuffling) {
     return (
-      <div className="table-field" aria-label="Nguyệt đang xào bài">
+      <div className={field()} aria-label="Nguyệt đang xào bài">
         {/* hai nửa bộ bài, mỗi nửa dưới một bàn tay, tách ra rồi gập vào nhau */}
         <div className="table-shuffle" aria-hidden>
           {["half-a", "half-b"].map((h) => (
@@ -84,6 +84,8 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
             </div>
           ))}
         </div>
+        {/* sổ không bao giờ ẩn hẳn, kể cả lúc đang xào bài */}
+        {children}
       </div>
     );
   }

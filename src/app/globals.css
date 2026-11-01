@@ -728,6 +728,10 @@ img {
   pointer-events: none;
   animation: arm-in 0.45s ease-out;
 }
+/* sổ mở trên điện thoại phủ kín bàn: cất cánh tay để ống tay không thò ra phía trên sổ */
+.table-field:has(> .notebook.is-open) .table-arm {
+  display: none;
+}
 .arm-limb,
 .arm-shadow {
   position: absolute;
@@ -939,6 +943,8 @@ img {
   background: rgba(90, 60, 46, 0.12);
 }
 .notebook-page {
+  /* mốc cho offsetTop khi tự cuộn tới câu mới */
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
