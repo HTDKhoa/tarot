@@ -231,6 +231,15 @@ img {
   justify-content: center;
   flex-wrap: wrap;
 }
+.hero-closed {
+  display: inline-block;
+  font-family: var(--font-pixel);
+  font-size: 1.4rem;
+  color: var(--gold-hi);
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--gold);
+  background: rgba(8, 6, 13, 0.75);
+}
 .hero-note {
   margin-top: 1rem;
   font-size: 0.75rem;

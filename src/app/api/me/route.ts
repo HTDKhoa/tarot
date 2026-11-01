@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/lib/supabase/server";
 import { getPlanStatus } from "@/lib/readings";
-import { vnHour } from "@/lib/config";
+import { MissingConfigError, vnHour } from "@/lib/config";
 import { greeting } from "@/lib/tarot/reader";
 
 /** Trạng thái người dùng + lời chào của Nguyệt khi bước vào nhà. */
 export async function GET() {
-  const { supabase, user } = await getUser();
+  let auth;
+  try {
+    auth = await getUser();
+  } catch (e) {
+    if (!(e instanceof MissingConfigError)) throw e;
+    // Lỗi cấu hình: ghi rõ vào log, trình duyệt chỉ nhận mã lỗi chung.
+    console.error(e.message);
+    return NextResponse.json({ error: "misconfigured" }, { status: 503 });
+  }
+  const { supabase, user } = auth;
   if (!supabase) {
     return NextResponse.json({ configured: false, user: null, status: null, greeting: greeting({ hour: vnHour(), returning: false }) });
   }

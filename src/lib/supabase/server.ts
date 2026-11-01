@@ -1,10 +1,11 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { SUPABASE_KEY, SUPABASE_URL, isSupabaseConfigured } from "@/lib/config";
+import { SUPABASE_KEY, SUPABASE_URL, supabaseMode } from "@/lib/config";
 
+/** null = chế độ demo có chủ đích. Production thiếu cấu hình thì ném MissingConfigError. */
 export async function createClient() {
-  if (!isSupabaseConfigured()) return null;
+  if (supabaseMode() === "demo") return null;
   const cookieStore = await cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_KEY, {
     cookies: {

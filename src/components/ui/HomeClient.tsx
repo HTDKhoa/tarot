@@ -42,8 +42,15 @@ export default function HomeClient() {
   const [picked, setPicked] = useState<number[]>([]);
   const [pendingLines, setPendingLines] = useState<ReaderLine[]>([]);
 
+  // Máy chủ thiếu cấu hình (production): đóng cửa, không cho vào nhà.
+  const [closed, setClosed] = useState(false);
+
   const loadMe = useCallback(async () => {
-    const r = await fetch("/api/me", { cache: "no-store" });
+    const r = await fetch("/api/me", { cache: "no-store" }).catch(() => null);
+    if (!r?.ok) {
+      setClosed(r?.status === 503);
+      return null;
+    }
     const j = (await r.json()) as Me;
     setMe(j);
     return j;
@@ -227,12 +234,16 @@ export default function HomeClient() {
         <section className="forest-hero">
           <h1 className="title-pixel">Ngôi Nhà Trong Rừng</h1>
           <p className="hero-sub">Có một ngọn đèn không bao giờ tắt ở cuối lối mòn. Người giữ đèn đọc bài tarot cho những ai mang theo một câu hỏi.</p>
-          <div className="hero-actions">
-            <button className="btn-pixel btn-gold" onClick={() => enterHouse(false)}>Đi theo lối mòn</button>
-            {visited && (
-              <button className="btn-pixel" onClick={() => enterHouse(true)}>Vào thẳng trong nhà</button>
-            )}
-          </div>
+          {closed ? (
+            <p className="hero-closed" role="status">Ngôi nhà đang tạm đóng cửa để sửa sang. Cậu quay lại sau nhé.</p>
+          ) : (
+            <div className="hero-actions">
+              <button className="btn-pixel btn-gold" onClick={() => enterHouse(false)}>Đi theo lối mòn</button>
+              {visited && (
+                <button className="btn-pixel" onClick={() => enterHouse(true)}>Vào thẳng trong nhà</button>
+              )}
+            </div>
+          )}
           <p className="hero-note">
             Dành cho giải trí và tự chiêm nghiệm, không thay thế lời khuyên y tế, pháp lý hay tài chính. <Link href="/dieu-khoan">Điều khoản</Link> · <Link href="/rieng-tu">Quyền riêng tư</Link>
           </p>
