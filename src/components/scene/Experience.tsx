@@ -1,13 +1,14 @@
 "use client";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { storageGet } from "@/lib/storage";
 import { Bloom, EffectComposer, HueSaturation, Vignette } from "@react-three/postprocessing";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { CameraRig } from "./CameraRig";
 import { ForestScene } from "./ForestScene";
 import { InteriorScene } from "./InteriorScene";
+import { TableScene, tableCenterY, tableFrame } from "./TableScene";
 import { CAM_D } from "./pixel";
-import { sceneStore, useScene, type Quality } from "@/lib/store";
+import { sceneStore, useScene, type Quality, type Stage } from "@/lib/store";
 
 /**
  * Render ở độ phân giải thấp rồi phóng lên bằng CSS (image-rendering: pixelated):
@@ -53,6 +54,35 @@ function Effects({ quality }: { quality: Quality }) {
   );
 }
 
+/**
+ * Trong nhà có hai góc máy trên cùng một trục dọc: mặt Nguyệt ở trên, mặt bàn ngay bên dưới.
+ * Cả hai cảnh cùng được dựng nên khi đổi góc, camera lia liền một mạch thay vì cắt.
+ */
+function World({ stage }: { stage: Stage }) {
+  const { size } = useThree();
+  const portrait = size.width / size.height < 0.8;
+  if (stage === "forest" || stage === "door") {
+    return (
+      <>
+        <ForestScene />
+        <CameraRig focus={[0, 0]} zoom={1} portraitZoom={1} />
+      </>
+    );
+  }
+  const onTable = stage === "table";
+  return (
+    <>
+      <InteriorScene />
+      <TableScene portrait={portrait} />
+      {onTable ? (
+        <CameraRig focus={[0, tableCenterY(portrait)]} frame={tableFrame(portrait)} zoom={1} />
+      ) : (
+        <CameraRig focus={[0, -0.17]} zoom={1.25} portraitZoom={0.8} />
+      )}
+    </>
+  );
+}
+
 export default function Experience() {
   const stage = useScene((s) => s.stage);
   const quality = useScene((s) => s.quality);
@@ -69,7 +99,6 @@ export default function Experience() {
     return () => window.removeEventListener("resize", update);
   }, [quality]);
 
-  const inside = stage === "inside";
   return (
     <Canvas
       className="pixel-canvas"
@@ -79,8 +108,7 @@ export default function Experience() {
       flat
     >
       <Suspense fallback={null}>
-        {inside ? <InteriorScene /> : <ForestScene />}
-        <CameraRig focus={inside ? [0, -0.17] : [0, 0]} zoom={inside ? 1.25 : 1} portraitZoom={inside ? 0.8 : 1} />
+        <World stage={stage} />
         <Effects quality={quality} />
       </Suspense>
       <FpsProbe

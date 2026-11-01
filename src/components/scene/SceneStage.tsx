@@ -22,11 +22,15 @@ function hasWebGL(): boolean {
  */
 export function SceneFallback() {
   const stage = useScene((s) => s.stage);
-  const scene = stage === "inside" ? "trong-nha" : "rung";
+  // mặt bàn vốn là một ảnh phẳng nhìn từ trên, dùng thẳng làm ảnh tĩnh
+  const [doc, ngang] =
+    stage === "table"
+      ? ["/assets/table/tabletop_doc.png", "/assets/table/tabletop.png"]
+      : (["doc", "ngang"] as const).map((o) => `/assets/fallback/${stage === "inside" ? "trong-nha" : "rung"}-${o}.png`);
   return (
     <picture className={`scene-fallback ${stage === "door" ? "is-door" : ""}`}>
-      <source media="(orientation: portrait)" srcSet={assetUrl(`/assets/fallback/${scene}-doc.png`)} />
-      <img src={assetUrl(`/assets/fallback/${scene}-ngang.png`)} alt="" />
+      <source media="(orientation: portrait)" srcSet={assetUrl(doc)} />
+      <img src={assetUrl(ngang)} alt="" />
     </picture>
   );
 }

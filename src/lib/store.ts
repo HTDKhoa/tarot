@@ -2,7 +2,8 @@
 import { useSyncExternalStore } from "react";
 import type { EmotionTag } from "./tarot/types";
 
-export type Stage = "forest" | "door" | "inside";
+/** "inside": góc máy nhìn mặt Nguyệt; "table": máy hạ xuống mặt bàn khi trải bài. */
+export type Stage = "forest" | "door" | "inside" | "table";
 export type Quality = "high" | "low";
 
 export interface SceneState {

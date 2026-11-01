@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { sessionGet, sessionSet, storageGet, storageSet } from "@/lib/storage";
 import { EMERGENCY, SUPPORT_LINES } from "@/lib/safety";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dialogue } from "./Dialogue";
 import { TarotCard } from "./TarotCard";
 import { TopBar, type Me } from "./TopBar";
@@ -28,6 +28,15 @@ interface Ctx {
 }
 
 const FAN_SIZE = 13;
+
+/** Các bước diễn ra trên mặt bàn: máy tự hạ xuống bàn khi bắt đầu, khách đổi góc được bất cứ lúc nào. */
+const TABLE_PHASES: Phase[] = ["picking", "reading", "deciding", "closing", "daily"];
+const toTable = () => sceneStore.set({ stage: "table" });
+const toFace = () => {
+  if (sceneStore.get().stage === "table") sceneStore.set({ stage: "inside" });
+};
+/** Vuốt / cuộn bắt đầu trên một nút, ô nhập hay vùng cuộn thì không tính là đổi góc máy. */
+const isInteractive = (t: EventTarget | null) => t instanceof Element && !!t.closest("button, a, textarea, input, select, [data-scrollable]");
 
 /** Đã dừng vì khủng hoảng thì khóa trải bài tới hết phiên (đóng tab). */
 const CRISIS_KEY = "nguyet_crisis";
@@ -137,21 +146,27 @@ export default function HomeClient() {
       return;
     }
     resetTable();
+    toFace();
     say([{ tag: "think", text: "Kể ta nghe điều cậu đang băn khoăn. Viết thật lòng, càng cụ thể ta càng đọc rõ." }], "form");
   };
 
   const submitQuestion = async (question: string, topic: Topic, spread: SpreadId) => {
     setBusy(true);
     setLines([]);
+    // Bấm "Xào bài" thì máy hạ xuống bàn ngay, Nguyệt xào bài trong lúc chờ máy chủ rút lá.
+    toTable();
     try {
       const r = await fetch("/api/reading", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question, topic, spread }) });
       const j = await r.json().catch(() => ({}));
       if (j.crisis) {
+        // Khủng hoảng luôn ở góc mặt đối mặt.
+        toFace();
         sessionSet(CRISIS_KEY, "1");
         setCrisisLocked(true);
         resetTable();
         return say(j.lines, "crisis");
       }
+      if (!r.ok) toFace();
       if (r.status === 401) return say([{ tag: "tease", text: j.error }], "login");
       if (j.error === "quota") return say([{ tag: "concern", text: j.message }], "message");
       if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc. Cậu thử lại nhé." }], "message");
@@ -181,7 +196,11 @@ export default function HomeClient() {
 
   const onDone = () => {
     if (phase === "reading") setPhase("deciding");
-    if (phase === "closing") setPhase("done");
+    if (phase === "closing") {
+      // gom xong thì máy ngẩng lên, Nguyệt chào mặt đối mặt
+      toFace();
+      setPhase("done");
+    }
   };
 
   const clarify = async () => {
@@ -227,6 +246,7 @@ export default function HomeClient() {
     resetTable();
     setBusy(true);
     setLines([]);
+    toTable();
     try {
       const j = await (await fetch("/api/daily", { cache: "no-store" })).json();
       setCards([j.card]);
@@ -238,20 +258,65 @@ export default function HomeClient() {
 
   const backToMenu = () => {
     resetTable();
+    toFace();
     say([{ tag: "neutral", text: "Còn điều gì khác không?" }], "menu");
   };
 
-  const showFan = phase === "picking";
-  const showTable = cards.length > 0 && !showFan;
+  // Đổi góc máy: nút luôn hiện, vuốt dọc trên cảnh, bánh xe chuột, phím ↑/↓.
+  const canToggle = TABLE_PHASES.includes(phase) || (phase === "done" && cards.length > 0);
+  const onTable = stage === "table";
+  const touchY = useRef<number | null>(null);
+  const lastWheel = useRef(0);
+  useEffect(() => {
+    if (!canToggle) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (isInteractive(e.target) && !(e.target instanceof HTMLButtonElement)) return;
+      if (e.key === "ArrowUp") toFace();
+      if (e.key === "ArrowDown") toTable();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [canToggle]);
+  const gestures = canToggle
+    ? {
+        onTouchStart: (e: React.TouchEvent) => {
+          touchY.current = isInteractive(e.target) ? null : e.touches[0].clientY;
+        },
+        onTouchEnd: (e: React.TouchEvent) => {
+          if (touchY.current === null) return;
+          const dy = e.changedTouches[0].clientY - touchY.current;
+          touchY.current = null;
+          // vuốt lên (ngón tay đi lên) thì ngẩng lên nhìn Nguyệt; vuốt xuống thì nhìn bàn
+          if (dy < -60) toFace();
+          else if (dy > 60) toTable();
+        },
+        onWheel: (e: React.WheelEvent) => {
+          if (isInteractive(e.target) || Math.abs(e.deltaY) < 30) return;
+          const now = performance.now();
+          if (now - lastWheel.current < 700) return;
+          lastWheel.current = now;
+          if (e.deltaY < 0) toFace();
+          else toTable();
+        },
+      }
+    : {};
+
+  const showFan = phase === "picking" && onTable;
+  const showTable = cards.length > 0 && !showFan && onTable;
   const quotaText = me?.status ? `${Math.max(0, me.status.limit - me.status.used)}/${me.status.limit} lượt tháng này` : null;
 
   return (
-    <main className="stage-root">
+    <main className="stage-root" {...gestures}>
       <div className="stage-canvas">
         <SceneStage />
       </div>
       <div className="stage-fade" style={{ opacity: fade }} />
       <TopBar me={me} onLogin={login} />
+      {canToggle && (
+        <button type="button" className="shot-toggle" onClick={onTable ? toFace : toTable} aria-keyshortcuts={onTable ? "ArrowUp" : "ArrowDown"}>
+          {onTable ? "▲ Nhìn Nguyệt" : "▼ Xem bàn"}
+        </button>
+      )}
 
       {stage === "forest" && (
         <section className="forest-hero">
@@ -273,7 +338,7 @@ export default function HomeClient() {
         </section>
       )}
 
-      {stage === "inside" && (
+      {(stage === "inside" || onTable) && (
         <div className="play-zone">
           {showFan && (
             <div className="fan-zone" aria-label="Dải bài úp">

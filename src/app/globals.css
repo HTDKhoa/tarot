@@ -237,6 +237,30 @@ img {
   font-size: clamp(2.6rem, 7vw, 4.4rem);
   line-height: 1;
 }
+/* nút đổi góc máy (mặt Nguyệt ↔ mặt bàn): luôn hiện khi đang trải bài */
+.shot-toggle {
+  position: absolute;
+  z-index: 9;
+  top: calc(3.3rem + env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  min-height: 44px;
+  padding: 0 0.9rem;
+  font-family: var(--font-pixel);
+  font-size: 1.2rem;
+  color: var(--cream);
+  background: rgba(8, 6, 13, 0.62);
+  border: 2px solid rgba(185, 176, 201, 0.5);
+  cursor: pointer;
+}
+.shot-toggle:hover {
+  color: var(--gold-hi);
+  border-color: var(--gold);
+}
+.shot-toggle:focus-visible {
+  outline: 2px dashed var(--gold-hi);
+  outline-offset: 3px;
+}
 .hero-sub {
   margin: 0.8rem auto 1.2rem;
   max-width: 34rem;
