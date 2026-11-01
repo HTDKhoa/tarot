@@ -30,7 +30,7 @@ export default async function JournalEntry({ params }: PageProps<"/nhat-ky/[id]"
             const card = getCard(c.card_id);
             const label = c.clarifier ? "Lá làm rõ" : spread?.positions[c.position] ?? `Lá ${c.position + 1}`;
             return (
-              <li key={c.position} style={{ fontFamily: "var(--font-pixel)", fontSize: "1.3rem" }}>
+              <li key={c.position} style={{ fontFamily: "var(--font-pixel)", fontSize: "1.35rem" }}>
                 <span style={{ color: "var(--muted)" }}>{label}:</span>{" "}
                 <span style={{ color: "var(--gold-hi)" }}>{card.name_en}</span>
                 {c.reversed && <span style={{ color: "var(--moonlit-blue)" }}> · ngược</span>}

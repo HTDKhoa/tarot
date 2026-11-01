@@ -80,6 +80,11 @@ typography:
     fontSize: "0.94rem"
     fontWeight: 400
     lineHeight: 1.6
+  body-sm:
+    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
+    fontSize: "0.86rem"
+    fontWeight: 400
+    lineHeight: 1.35
 rounded:
   none: "0px"
 spacing:
@@ -271,15 +276,16 @@ Sprite trong `public/assets` dùng chung một bảng khoảng 43 màu (`art/com
 ### Hierarchy
 - **Display** (400, clamp(2.6rem, 7vw, 4.4rem), 1): tên ngôi nhà ở bìa rừng; quầng sáng vàng và bóng mực đặc bên dưới.
 - **Headline** (400, clamp(2.2rem, 6vw, 3.2rem), 1): tiêu đề trang phụ (Gói, Nhật ký, Điều khoản…).
-- **Title** (400, 1.7rem, 1.1): tiêu đề mục trong trang phụ.
-- **Label** (400, 1.35rem, 1): chữ trên nút, thẻ tên người nói, thanh trên cùng (1.3rem; 1.1rem trên mobile, thương hiệu 1.2rem).
-- **Label vừa** (400, 1.2rem, 1.05): tên lá dưới lá bài, nút đổi góc máy, nút "Gập sổ", tên lá trong sổ.
-- **Label nhỏ** (400, 1.15rem): chip, gợi ý, bộ đếm ký tự và hạn mức, ngày trong danh sách nhật ký, nhãn trong trang tổng kết của sổ.
+- **Title** (400, 1.7rem, 1.1): tiêu đề mục trong trang phụ, tên gói.
+- **Label** (400, 1.35rem, 1): chữ trên nút, thẻ tên người nói, thanh trên cùng (cả thương hiệu và liên kết dùng Label nhỏ trên mobile), tiêu đề "Sổ của Bấc", thông báo ngôi nhà đóng cửa, nhãn ghi chú và danh sách lá trong nhật ký.
+- **Label vừa** (400, 1.2rem, 1.05): tên lá dưới lá bài, nút đổi góc máy, nút "Gập sổ", tên lá và tiêu đề mục trong sổ, bộ đếm "Đã chọn n/3", dãy tên lá trong danh sách nhật ký.
+- **Label nhỏ** (400, 1.15rem): chip, gợi ý, bộ đếm ký tự và hạn mức, nhãn vị trí dưới lá, nút ▼, ngày trong danh sách nhật ký, nhãn trong trang tổng kết của sổ.
 - **Body** (400, 1rem, 1.7): đoạn văn trong trang phụ.
 - **Body hội thoại** (400, clamp(0.98rem, 2.3vw, 1.08rem), 1.6): lời Nguyệt trong hộp thoại, chữ chạy từng ký tự.
 - **Body sổ** (400, 0.94rem, 1.6): lời giải từng lá và trang tổng kết trong sổ của Bấc; câu hỏi của khách ở đầu trang dùng bản 600.
+- **Body nhỏ** (400, 0.86rem, 1.35): chữ phụ: ghi chú pháp lý ở bìa rừng, lỗi ngay dưới nút, mép trang thò ra dưới bìa sổ (tối đa 2 dòng), ghi chú dưới giá gói, tóm tắt trong danh sách nhật ký.
 
-Ngoài thang trên còn vài cỡ riêng chưa thành vai: nhãn vị trí dưới lá (VT323 1.05rem), tiêu đề "Sổ của Bấc" (VT323 1.5rem), tiêu đề mục trong sổ và bộ đếm lá trên bàn (VT323 1.25rem), chữ mép trang thò ra dưới bìa (Be Vietnam Pro 0.86rem, 1.35, tối đa 2 dòng). Trên mặt lá, số và dải tên co theo bề rộng lá (VT323, 20% và 13% bề rộng). Bề mặt mới nên chọn vai có sẵn trước khi dùng lại các cỡ này.
+Mọi cỡ chữ trong giao diện đều thuộc một vai trên; riêng số và dải tên trên mặt lá co theo bề rộng lá (VT323, 20% và 13% bề rộng), và giá gói ở /goi dùng cỡ nhỏ nhất của Headline (2.2rem). Bề mặt mới chọn vai có sẵn, không thêm cỡ lẻ.
 
 ### Named Rules
 **Luật Hai Giọng.** VT323 cho thứ để bấm hoặc gọi tên: nút, nhãn, tiêu đề, tên lá. Be Vietnam Pro cho thứ để đọc: lời thoại, đoạn văn. Đoạn nào dài hơn một dòng thì không dùng VT323.
@@ -356,7 +362,7 @@ Các thành phần trầm và tiết chế: chúng là đồ vật nhỏ trong n
 - **Bộ đếm:** VT323 khói sương ngay cạnh nút gửi (63/500).
 
 ### Navigation
-- **Thanh trên cùng:** VT323 1.3rem (1.1rem trên mobile); thương hiệu màu ngọn lửa kèm biểu tượng trăng ☾; liên kết kem giấy cũ mờ 85%, hover sáng hẳn và chuyển ngọn lửa. Huy hiệu "Demo" là viền vàng 1 px.
+- **Thanh trên cùng:** VT323 Label 1.35rem (Label nhỏ 1.15rem trên mobile); thương hiệu màu ngọn lửa kèm biểu tượng trăng ☾; liên kết kem giấy cũ mờ 85%, hover sáng hẳn và chuyển ngọn lửa. Huy hiệu "Demo" là viền vàng 1 px.
 
 ### Hộp thoại (signature)
 Khung pixel rộng min(94vw, 780px) với thẻ tên tím mận nhô lên mép trái. Lời Nguyệt chạy từng ký tự (22 ms mỗi ký tự); chạm vào chữ, Enter hoặc Space để hiện hết câu hoặc sang câu sau. Mũi tên ▼ ngọn lửa là một nút thật ở góc dưới phải khung (vùng chạm 44px), nhấp nhô theo `steps(2)` khi còn câu tiếp và mờ đi khi chữ đang chạy. Nút hành động chỉ hiện khi đã nói xong; lúc đó focus chuyển tới nút đầu tiên, còn khi chưa xong thì focus nằm ở ▼. Hộp thoại không giành focus khi khách đang ở chỗ khác (sổ, ô nhập). Lúc chờ rút lá, khung hiện "Nguyệt đang xào bài…" nghiêng, màu khói sương. Trình đọc màn hình không nghe chữ chạy: mỗi câu được báo trọn một lần ("Nguyệt: …") qua một vùng `aria-live` ẩn. Người dùng chọn giảm chuyển động thì chữ hiện ngay, máy không lia và bỏ cảnh đi tới cửa.

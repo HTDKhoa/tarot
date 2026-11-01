@@ -16,7 +16,7 @@ export function NoteEditor({ id, note, happened }: { id: string; note: string; h
   };
   return (
     <section className="pixel-frame" style={{ padding: "1rem 1.2rem" }}>
-      <label style={{ fontFamily: "var(--font-pixel)", fontSize: "1.3rem", color: "var(--gold-hi)" }} htmlFor="note">Ghi chú của cậu</label>
+      <label style={{ fontFamily: "var(--font-pixel)", fontSize: "1.35rem", color: "var(--gold-hi)" }} htmlFor="note">Ghi chú của cậu</label>
       <textarea
         id="note"
         value={text}

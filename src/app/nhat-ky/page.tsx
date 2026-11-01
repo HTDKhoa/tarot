@@ -44,10 +44,10 @@ export default async function JournalPage() {
                   {new Date(r.created_at).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "medium", timeStyle: "short" })} · {TOPIC_LABELS[r.topic as Topic]} · {SPREADS[r.spread as SpreadId]?.name ?? r.spread}
                 </div>
                 <div style={{ fontWeight: 600, margin: "0.3rem 0" }}>{r.question}</div>
-                <div style={{ fontFamily: "var(--font-pixel)", fontSize: "1.25rem", color: "var(--gold-hi)" }}>
+                <div style={{ fontFamily: "var(--font-pixel)", fontSize: "1.2rem", color: "var(--gold-hi)" }}>
                   {cards.map((c) => `${getCard(c.card_id).name_en}${c.reversed ? " (ngược)" : ""}`).join(" · ")}
                 </div>
-                {r.summary && <p style={{ color: "var(--muted)", marginTop: "0.3rem", fontSize: "0.92rem" }}>{r.summary}</p>}
+                {r.summary && <p style={{ color: "var(--muted)", marginTop: "0.3rem", fontSize: "0.86rem" }}>{r.summary}</p>}
               </Link>
             </li>
           );
