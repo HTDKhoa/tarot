@@ -20,10 +20,14 @@ interface Props {
   label?: string;
   size?: "sm" | "md" | "lg" | "table";
   highlight?: boolean;
+  /** tên đọc cho lá úp (mặc định "Lá bài úp"), ví dụ vị trí trong dải bài */
+  name?: string;
+  /** lá trong dải bài đã được chọn */
+  pressed?: boolean;
 }
 
 /** Lá bài DOM: mặt sau / mặt trước pixel, lật bằng CSS 3D. Lá ngược thì xoay 180° mặt trước. */
-export function TarotCard({ drawn, revealed, onClick, selected, label, size = "md", highlight }: Props) {
+export function TarotCard({ drawn, revealed, onClick, selected, label, size = "md", highlight, name, pressed }: Props) {
   const c = drawn?.card;
   const icon = c ? assetUrl(c.arcana === "major" ? "/assets/cards/major_star.png" : `/assets/cards/suit_${c.suit}.png`) : null;
   return (
@@ -32,7 +36,8 @@ export function TarotCard({ drawn, revealed, onClick, selected, label, size = "m
         type="button"
         onClick={onClick}
         disabled={!onClick}
-        aria-label={revealed && c ? `${c.name_en}${drawn?.reversed ? " ngược" : ""}` : "Lá bài úp"}
+        aria-label={revealed && c ? `${c.name_en}${drawn?.reversed ? " ngược" : ""}` : (name ?? "Lá bài úp")}
+        aria-pressed={pressed}
         className={`tarot-card ${revealed ? "is-revealed" : ""} ${selected ? "is-selected" : ""} ${highlight ? "is-highlight" : ""}`}
       >
         <span className="tarot-face tarot-back" style={{ backgroundImage: `url("${assetUrl("/assets/cards/card_back.png")}")` }} />

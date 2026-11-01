@@ -131,7 +131,8 @@ export default function HomeClient() {
 
   const enterHouse = (skip = false) => {
     storageSet("nguyet_visited", "1");
-    if (skip) {
+    // giảm chuyển động: bỏ cảnh máy tiến tới cửa, chỉ mờ đen rồi vào nhà
+    if (skip || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
       sceneStore.set({ fade: 1 });
       setTimeout(() => sceneStore.set({ stage: "inside", fade: 0 }), 450);
       return;
@@ -382,7 +383,8 @@ export default function HomeClient() {
 
   return (
     <main className="stage-root" {...gestures}>
-      <div className="stage-canvas">
+      {/* cảnh 3D là trang trí; nội dung đọc được nằm ở các lớp DOM bên trên */}
+      <div className="stage-canvas" aria-hidden>
         <SceneStage />
       </div>
       <div className="stage-fade" style={{ opacity: fade }} />
@@ -413,6 +415,12 @@ export default function HomeClient() {
         </section>
       )}
 
+      {(stage === "inside" || onTable) && (
+        // tiêu đề cho trình đọc màn hình; nằm ngoài vùng chơi để không phá cột flex dồn đáy
+        <h1 className="sr-only">
+          {onTable ? "Bàn đọc bài của Nguyệt" : "Trong nhà, trước mặt Nguyệt, người giữ đèn, với con cú Bấc trên vai"}
+        </h1>
+      )}
       {(stage === "inside" || onTable) && (
         <div className={`play-zone ${onTable ? "is-table" : ""}`}>
           {onTable && (

@@ -27,7 +27,8 @@ export function TopBar({ me, onLogin }: { me: Me | null; onLogin: () => void }) 
       <nav className="topnav">
         <Link href="/goi">Gói</Link>
         {me?.user && <Link href="/nhat-ky">Nhật ký</Link>}
-        <button type="button" onClick={toggleQuality} title="Đổi mức đồ họa" aria-label="Đổi mức đồ họa">
+        {/* tên đọc theo đúng chữ hiển thị (gồm trạng thái); title nói rõ việc nút làm */}
+        <button type="button" onClick={toggleQuality} title="Đổi mức đồ họa">
           {quality === "high" ? "Đồ họa: cao" : "Đồ họa: nhẹ"}
         </button>
         {me?.configured &&

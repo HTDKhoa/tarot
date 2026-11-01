@@ -23,6 +23,9 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
+/** cuộn mượt, trừ khi người dùng chọn giảm chuyển động */
+const smooth = (): ScrollBehavior => (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
+
 const cardTitle = (c: DrawnCard) => `${c.positionLabel} · ${c.card.name_en}${c.reversed ? " (ngược)" : ""}`;
 
 /** Câu lật lá mở đầu bằng "Vị trí: Tên lá." đã có ở đề mục ngay trên, nên bỏ phần đó cho khỏi lặp. */
@@ -45,7 +48,7 @@ export function Notebook({ question, cards, log, recap, open, docked, toRecap, o
   // mở sổ thì đưa focus vào sổ; gom xong thì lật tới trang tổng kết
   useEffect(() => {
     if (!shown) return;
-    if (toRecap && recapRef.current) recapRef.current.scrollIntoView({ block: "start", behavior: "smooth" });
+    if (toRecap && recapRef.current) recapRef.current.scrollIntoView({ block: "start", behavior: smooth() });
     else if (!docked) panel.current?.querySelector<HTMLElement>("h2")?.focus();
   }, [shown, toRecap, docked]);
 
@@ -76,7 +79,7 @@ export function Notebook({ question, cards, log, recap, open, docked, toRecap, o
     const lastBottom = last.offsetTop + last.offsetHeight;
     const headTop = head && head.offsetTop <= last.offsetTop ? head.offsetTop : last.offsetTop;
     const top = Math.max(headTop - 8, lastBottom - page.clientHeight + 12);
-    if (top > page.scrollTop) page.scrollTo({ top, behavior: "smooth" });
+    if (top > page.scrollTop) page.scrollTo({ top, behavior: smooth() });
   }, [log.length, shown, toRecap]);
 
   const byCard = (i: number) => log.filter((e) => e.card === i);

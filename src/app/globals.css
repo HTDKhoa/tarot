@@ -44,6 +44,19 @@ img {
   image-rendering: pixelated;
 }
 
+/* Người dùng chọn giảm chuyển động: mọi hoạt ảnh và chuyển tiếp CSS về trạng thái cuối ngay lập tức.
+   (Chữ chạy, lia máy và cảnh đi tới cửa được tắt riêng trong JS.) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ---------- khung pixel dùng chung ---------- */
 .pixel-frame {
   background: linear-gradient(180deg, rgba(29, 37, 71, 0.94), rgba(20, 16, 38, 0.96));
@@ -85,7 +98,7 @@ img {
 .btn-pixel:focus-visible,
 .chip:focus-visible,
 .tarot-card:focus-visible,
-.dialogue-text:focus-visible {
+.dialogue-next:focus-visible {
   outline: 2px dashed var(--gold-hi);
   outline-offset: 3px;
 }
@@ -390,19 +403,31 @@ img {
   font-size: clamp(0.98rem, 2.3vw, 1.08rem);
   line-height: 1.6;
   color: var(--cream);
-  background: none;
-  border: 0;
   cursor: pointer;
 }
 .dialogue-wait {
   color: var(--muted);
   font-style: italic;
 }
+/* nút ▼ "Câu tiếp": góc dưới phải khung, vùng chạm 44px; mờ khi chữ còn đang chạy */
 .dialogue-next {
-  display: inline-block;
-  margin-left: 0.4rem;
+  position: absolute;
+  right: 0.4rem;
+  bottom: 0.2rem;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
   color: var(--gold-hi);
+  background: none;
+  border: 0;
+  cursor: pointer;
   animation: bob 0.9s steps(2) infinite;
+}
+.dialogue-next.is-typing {
+  opacity: 0.4;
+  animation: none;
 }
 @keyframes bob {
   50% {

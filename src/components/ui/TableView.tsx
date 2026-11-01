@@ -102,7 +102,14 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
             const order = picked.indexOf(i);
             return (
               <div key={i} className={`fan-card ${order >= 0 ? "is-picked" : ""}`} style={{ "--angle": `${(i - mid) * 5}deg`, "--offset": `${(i - mid) * 7}%` } as React.CSSProperties}>
-                <TarotCard revealed={false} size="sm" onClick={order >= 0 ? undefined : () => onPick(i)} selected={order >= 0} label={undefined} />
+                <TarotCard
+                  revealed={false}
+                  size="sm"
+                  onClick={order >= 0 ? undefined : () => onPick(i)}
+                  selected={order >= 0}
+                  name={`Lá thứ ${i + 1} trên ${FAN_SIZE}`}
+                  pressed={order >= 0}
+                />
               </div>
             );
           })}

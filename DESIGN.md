@@ -354,7 +354,7 @@ Các thành phần trầm và tiết chế: chúng là đồ vật nhỏ trong n
 - **Thanh trên cùng:** VT323 1.3rem (1.1rem trên mobile); thương hiệu màu ngọn lửa kèm biểu tượng trăng ☾; liên kết kem giấy cũ mờ 85%, hover sáng hẳn và chuyển ngọn lửa. Huy hiệu "Demo" là viền vàng 1 px.
 
 ### Hộp thoại (signature)
-Khung pixel rộng min(94vw, 780px) với thẻ tên tím mận nhô lên mép trái. Lời Nguyệt chạy từng ký tự (22 ms mỗi ký tự); chạm, Enter hoặc Space để hiện hết câu hoặc sang câu sau. Mũi tên ▼ ngọn lửa nhấp nhô theo `steps(2)` báo còn câu tiếp. Nút hành động chỉ hiện khi đã nói xong.
+Khung pixel rộng min(94vw, 780px) với thẻ tên tím mận nhô lên mép trái. Lời Nguyệt chạy từng ký tự (22 ms mỗi ký tự); chạm, Enter hoặc Space để hiện hết câu hoặc sang câu sau. Mũi tên ▼ ngọn lửa là một nút thật ở góc dưới phải khung (vùng chạm 44px), nhấp nhô theo `steps(2)` khi còn câu tiếp và mờ đi khi chữ đang chạy. Nút hành động chỉ hiện khi đã nói xong; lúc đó focus chuyển tới nút đầu tiên. Trình đọc màn hình không nghe chữ chạy: mỗi câu được báo trọn một lần ("Nguyệt: …") qua một vùng `aria-live` ẩn. Người dùng chọn giảm chuyển động thì chữ hiện ngay, máy không lia và bỏ cảnh đi tới cửa.
 
 ### Lá bài (signature)
 Mặt sau là ảnh pixel đèn lồng trên nền xanh đêm; mặt trước là khung kem với biểu tượng chất bài, số La Mã hoặc tên bậc bằng tiếng Anh (VT323 ngọn lửa) và dải tên (tên lá Ẩn Chính bỏ "The", hoặc tên chất: Wands, Cups, Swords, Pentacles). Lật bằng cách co bề ngang về 0 rồi mở ra trong 0.5s, đổi mặt đúng ở giữa. Lá ngược xoay phần hình 180°. Chú thích dưới lá: vị trí (khói sương), tên lá (ngọn lửa), "ngược" (xanh trăng). Ba cỡ: sm, md, lg.
