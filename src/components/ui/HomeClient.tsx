@@ -46,6 +46,8 @@ export default function HomeClient() {
   const [busy, setBusy] = useState(false);
   const [picked, setPicked] = useState<number[]>([]);
   const [pendingLines, setPendingLines] = useState<ReaderLine[]>([]);
+  // Tổng kết cuối phiên: ở lại trên màn hình tới khi khách chọn bước tiếp theo.
+  const [recap, setRecap] = useState<{ themes: string[]; advice: string } | null>(null);
 
   // Máy chủ thiếu cấu hình (production): đóng cửa, không cho vào nhà.
   const [closed, setClosed] = useState(false);
@@ -110,6 +112,7 @@ export default function HomeClient() {
     setRevealed(new Set());
     setCtx(null);
     setPicked([]);
+    setRecap(null);
   };
 
   const say = (l: ReaderLine[], next: Phase) => {
@@ -211,6 +214,7 @@ export default function HomeClient() {
       });
       const j = await r.json();
       if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc." }], "done");
+      setRecap({ themes: j.themes ?? [], advice: j.advice ?? "" });
       say(j.lines, "closing");
     } finally {
       setBusy(false);
@@ -288,12 +292,13 @@ export default function HomeClient() {
           {showTable && (
             <div className="table-zone">
               {cards.map((c, i) => (
-                <TarotCard key={`${c.card.id}-${i}`} drawn={c} revealed={revealed.has(i)} label={c.positionLabel} size={cards.length > 4 ? "sm" : "md"} highlight={c.clarifier} />
+                <TarotCard key={`${c.card.id}-${i}`} drawn={c} revealed={revealed.has(i)} label={c.positionLabel} size={cards.length > 4 || recap ? "sm" : "md"} highlight={c.clarifier} />
               ))}
             </div>
           )}
 
           {phase === "crisis" && <SupportCard onLeave={leave} />}
+          {phase === "done" && recap && <RecapCard themes={recap.themes} advice={recap.advice} />}
 
           <div className="dialogue-zone">
             {phase === "form" ? (
@@ -348,6 +353,25 @@ export default function HomeClient() {
         </div>
       )}
     </main>
+  );
+}
+
+/** Tổng kết phiên: Nguyệt nói xong thì phần gom ý và lời dặn vẫn nằm lại trên bàn. */
+function RecapCard({ themes, advice }: { themes: string[]; advice: string }) {
+  return (
+    <section className="recap-card pixel-frame" aria-label="Tổng kết phiên">
+      <h2 className="recap-title">Bàn hôm nay</h2>
+      {themes.length > 0 && (
+        <p>
+          <span className="recap-key">Các lá nói về</span> {themes.join(" · ")}
+        </p>
+      )}
+      {advice && (
+        <p>
+          <span className="recap-key">Lời dặn</span> {advice}
+        </p>
+      )}
+    </section>
   );
 }
 

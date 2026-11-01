@@ -259,9 +259,15 @@ img {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
   gap: clamp(0.75rem, 2.5vh, 1.6rem);
+  /* màn thấp mà bàn nhiều lá: cuộn được, thay vì để phần trên tràn khỏi tầm với */
+  overflow-y: auto;
+  scrollbar-width: none;
   pointer-events: none;
+}
+/* dồn xuống đáy bằng margin-top: auto (khác justify-content: flex-end, khi tràn vẫn cuộn tới được) */
+.play-zone > :first-child {
+  margin-top: auto;
 }
 .play-zone > * {
   pointer-events: auto;
@@ -379,6 +385,31 @@ img {
 }
 .support-card a {
   font-weight: 600;
+}
+
+/* thẻ tổng kết cuối phiên */
+.recap-card {
+  width: min(94vw, 780px);
+  flex: none;
+  padding: 0.75rem 1.2rem 0.6rem;
+}
+.recap-title {
+  font-family: var(--font-pixel);
+  font-size: 1.45rem;
+  line-height: 1;
+  color: var(--gold-hi);
+  margin-bottom: 0.4rem;
+}
+.recap-card p {
+  font-size: clamp(0.92rem, 2.2vw, 1rem);
+  line-height: 1.55;
+  margin-bottom: 0.35rem;
+}
+.recap-key {
+  font-family: var(--font-pixel);
+  font-size: 1.2rem;
+  color: var(--muted);
+  margin-right: 0.4rem;
 }
 .support-lines {
   list-style: square;

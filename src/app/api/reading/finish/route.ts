@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     ({ topic, draws, clarifiers } = parsed.data.demo);
   }
 
-  const { lines, summary, advice } = composeClosing({ topic, draws, clarifiers });
+  const { lines, summary, advice, themes } = composeClosing({ topic, draws, clarifiers });
 
   if (supabase && parsed.data.readingId) {
     // Khách chỉ được sửa note/happened; trạng thái và tóm tắt do server ghi bằng client secret key.
@@ -62,5 +62,5 @@ export async function POST(req: Request) {
     const lineError = await saveLines(admin, parsed.data.readingId, lines);
     if (lineError) console.error("[finish] không lưu được lời thoại", lineError.message);
   }
-  return NextResponse.json({ lines, summary, advice });
+  return NextResponse.json({ lines, summary, advice, themes });
 }

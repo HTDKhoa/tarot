@@ -181,7 +181,7 @@ export function composeClarifier(d: Draw, topic: Topic, index: number): ReaderLi
   return lines;
 }
 
-export function composeClosing(input: { topic: Topic; draws: Draw[]; clarifiers: Draw[] }): { lines: ReaderLine[]; summary: string; advice: string } {
+export function composeClosing(input: { topic: Topic; draws: Draw[]; clarifiers: Draw[] }): { lines: ReaderLine[]; summary: string; advice: string; themes: string[] } {
   const all = [...input.draws, ...input.clarifiers];
   const words = all.map((d) => getCard(d.cardId).tu_khoa[orient(d)][0]);
   const last = input.clarifiers.at(-1) ?? input.draws.at(-1)!;
@@ -200,7 +200,7 @@ export function composeClosing(input: { topic: Topic; draws: Draw[]; clarifiers:
       ]),
     },
   ];
-  return { lines, summary, advice };
+  return { lines, summary, advice, themes: words };
 }
 
 export function composeDaily(d: Draw): ReaderLine[] {
