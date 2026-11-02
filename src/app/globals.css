@@ -956,6 +956,13 @@ img {
   pointer-events: none;
   animation: arm-in 0.45s ease-out;
 }
+/* Tay chỉ lá: chỉ thấy bàn tay, cổ tay và một đoạn cẳng tay (cao 2.1 lá), phần trên chìm dần vào bóng tối phía Nguyệt
+   theo ba bậc, thay vì một ống tay thẳng kéo từ mép xa của bàn tới tận lá ở hàng dưới */
+.table-arm.is-pointing {
+  height: calc(var(--w) * 2.1);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0 16%, rgb(0 0 0 / 0.35) 16% 28%, rgb(0 0 0 / 0.7) 28% 40%, #000 40%);
+  mask-image: linear-gradient(to bottom, transparent 0 16%, rgb(0 0 0 / 0.35) 16% 28%, rgb(0 0 0 / 0.7) 28% 40%, #000 40%);
+}
 /* sổ mở trên điện thoại phủ kín bàn: cất cánh tay để ống tay không thò ra phía trên sổ */
 .table-field:has(> .notebook.is-open) .table-arm {
   display: none;
