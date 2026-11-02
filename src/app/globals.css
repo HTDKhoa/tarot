@@ -1005,6 +1005,14 @@ img {
   --w: clamp(72px, min(11vw, 15vh), 136px);
   display: flex;
   align-items: flex-end;
+  /* Nguyệt xào bài ngay trước mặt mình, sát mép xa của bàn: chỉ thấy bàn tay, cổ tay và một đoạn cẳng tay ngắn
+     (bàn tay cao ~1.4 lá, phủ 0.7 lá trên của bộ bài), thay vì ống tay kéo dài nửa màn tới giữa bàn */
+  margin-top: calc(var(--w) * 0.7);
+}
+/* thắng cả đệm chừa mép sổ trên điện thoại và kiểu dồn đáy của bàn desktop */
+.play-zone .table-field:has(> .table-shuffle) {
+  justify-content: flex-start;
+  padding-top: 0;
 }
 .shuffle-half {
   position: relative;
