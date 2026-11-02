@@ -66,6 +66,14 @@ function World({ stage }: { stage: Stage }) {
       <>
         <ForestScene />
         <CameraRig focus={[0, 0]} zoom={1} portraitZoom={1} />
+        {/* tải sẵn ảnh trong nhà khi khách còn ở bìa rừng, để lúc bước vào cảnh không bật ra muộn.
+            Nhóm ẩn: không vẽ, không chiếu sáng; màu nền của cảnh trong nhà gắn vào nhóm chứ không vào scene. */}
+        <Suspense fallback={null}>
+          <group visible={false}>
+            <InteriorScene />
+            <TableScene portrait={portrait} />
+          </group>
+        </Suspense>
       </>
     );
   }
@@ -77,7 +85,7 @@ function World({ stage }: { stage: Stage }) {
       {onTable ? (
         <CameraRig focus={[0, tableCenterY(portrait)]} frame={tableFrame(portrait)} zoom={1} shift />
       ) : (
-        <CameraRig focus={[0, -0.17]} zoom={1.25} portraitZoom={0.8} />
+        <CameraRig focus={[0, -0.17]} zoom={1.25} portraitZoom={0.8} arrive />
       )}
     </>
   );

@@ -65,8 +65,10 @@ img {
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
 }
@@ -210,7 +212,8 @@ img {
   inset: 0;
   background: #000;
   pointer-events: none;
-  transition: opacity 0.45s ease;
+  /* vào-ra đều (FADE_MS trong HomeClient): bóng tối dâng lên khi máy còn đang đi, rồi lui đi chậm rãi */
+  transition: opacity 0.55s cubic-bezier(0.65, 0, 0.35, 1);
   z-index: 5;
 }
 
@@ -321,6 +324,11 @@ img {
   transform: translateX(-50%);
   width: min(92vw, 640px);
   text-align: center;
+  transition: opacity 0.4s ease-out;
+}
+/* bấm "Đi theo lối mòn": chữ lui đi để khách nhìn theo máy về phía cửa */
+.forest-hero.is-leaving {
+  opacity: 0;
 }
 .forest-hero h1 {
   font-size: clamp(2.6rem, 7vw, 4.4rem);
@@ -395,6 +403,13 @@ img {
   overflow-y: auto;
   scrollbar-width: none;
   pointer-events: none;
+  /* vừa bước vào nhà: hộp thoại chờ cảnh sáng lên một chút rồi mới hiện, không nổi trên màn đen */
+  animation: zone-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+}
+@keyframes zone-in {
+  from {
+    opacity: 0;
+  }
 }
 /* dồn xuống đáy bằng margin-top: auto (khác justify-content: flex-end, khi tràn vẫn cuộn tới được) */
 .play-zone > :first-child {

@@ -60,6 +60,9 @@ const shuffleTime = (since: number) => {
 /** Vuốt / cuộn bắt đầu trên một nút, ô nhập hay vùng cuộn thì không tính là đổi góc máy. */
 const isInteractive = (t: EventTarget | null) => t instanceof Element && !!t.closest("button, a, textarea, input, select, [data-scrollable]");
 
+/** Thời gian lớp đen mờ vào/ra (khớp transition của .stage-fade). */
+const FADE_MS = 550;
+
 /** Đã dừng vì khủng hoảng thì khóa trải bài tới hết phiên (đóng tab). */
 const CRISIS_KEY = "nguyet_crisis";
 const CRISIS_RETURN: ReaderLine[] = [{ tag: "gentle", text: "Đèn vẫn sáng. Hôm nay ta cất bài rồi. Ta chỉ muốn biết cậu đang an toàn." }];
@@ -156,12 +159,19 @@ export default function HomeClient() {
     // giảm chuyển động: bỏ cảnh máy tiến tới cửa, chỉ mờ đen rồi vào nhà
     if (skip || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
       sceneStore.set({ fade: 1 });
-      setTimeout(() => sceneStore.set({ stage: "inside", fade: 0 }), 450);
+      setTimeout(() => sceneStore.set({ stage: "inside", fade: 0 }), FADE_MS);
       return;
     }
+    // Một nhịp liền: máy đi tới cửa (CameraRig, 2.4 giây), bóng tối phủ lên khi máy vẫn đang đi,
+    // đổi cảnh lúc đã tối hẳn, rồi trong nhà sáng dần lên.
     sceneStore.set({ stage: "door" });
-    setTimeout(() => sceneStore.set({ fade: 1 }), 1500);
-    setTimeout(() => sceneStore.set({ stage: "inside", fade: 0 }), 2100);
+    setTimeout(() => sceneStore.set({ fade: 1 }), 1350);
+    setTimeout(() => {
+      sceneStore.set({ stage: "inside" });
+      // chờ cảnh trong nhà vẽ xong vài khung (dựng shader lần đầu có thể khựng) rồi mới cho sáng lên,
+      // để lớp đen không lui đi trên một khung hình cũ của bìa rừng
+      requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => sceneStore.set({ fade: 0 }))));
+    }, 1350 + FADE_MS + 60);
   };
 
   const leave = () => {
@@ -171,7 +181,7 @@ export default function HomeClient() {
       setLines(crisisLocked ? CRISIS_RETURN : []);
       setPhase(crisisLocked ? "crisis" : "menu");
       sceneStore.set({ stage: "forest", fade: 0, tag: "neutral" });
-    }, 450);
+    }, FADE_MS);
   };
 
   const resetTable = () => {
@@ -466,8 +476,9 @@ export default function HomeClient() {
         </button>
       )}
 
-      {stage === "forest" && (
-        <section className="forest-hero">
+      {/* lúc máy đi tới cửa, khối chữ mờ dần đi chứ không biến mất ngay; inert để không bấm lại được */}
+      {(stage === "forest" || stage === "door") && (
+        <section className={`forest-hero ${stage === "door" ? "is-leaving" : ""}`} inert={stage === "door"}>
           <h1 className="title-pixel">Ngôi Nhà Trong Rừng</h1>
           <p className="hero-sub">Có một ngọn đèn không bao giờ tắt ở cuối lối mòn. Người giữ đèn đọc bài tarot cho những ai mang theo một câu hỏi.</p>
           {closed ? (
