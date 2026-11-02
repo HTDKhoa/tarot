@@ -2,7 +2,8 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import * as THREE from "three";
-import { CAM_D, FRAME_H, FRAME_W, PX } from "./pixel";
+import { CAM_D, FRAME_H, FRAME_W, PX, framePos } from "./pixel";
+import { armRig } from "@/lib/armRig";
 import { sceneStore } from "@/lib/store";
 
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -16,6 +17,20 @@ const reducedMotion = () => typeof window !== "undefined" && window.matchMedia?.
  * Đi vào nhà là một chuyển động liền: ở bìa rừng máy tăng tốc dần về phía cửa và vẫn đang tiến khi chìm vào
  * bóng tối; vào trong (`arrive`) máy mở ra hơi gần rồi lùi nhẹ về khung nghỉ, như mắt vừa quen ánh nến.
  */
+/**
+ * Khuỷu tay Nguyệt ở mép xa của bàn (pixel khung 640×360, mặt bàn z 0.5, overscan 1.08): ngay sau hai bàn tay
+ * đang đặt trên bàn ở góc mặt Nguyệt (keeper hands x ~288 và ~351, y 251), lùi vào phía người nàng.
+ */
+const ELBOWS = { left: [282, 236], right: [357, 236] } as const;
+const TABLE_Z = 0.5;
+const OVERSCAN = 1.08;
+const tmp = new THREE.Vector3();
+function project(cam: THREE.Camera, u: number, v: number, w: number, h: number) {
+  const [x, y] = framePos(u, v, TABLE_Z);
+  tmp.set(x * OVERSCAN, y * OVERSCAN, TABLE_Z).project(cam);
+  return { x: ((tmp.x + 1) / 2) * w, y: ((1 - tmp.y) / 2) * h };
+}
+
 /** Thời gian máy đi tới cửa (giây), khớp với lịch mờ đen trong HomeClient.enterHouse. */
 const DOOR_WALK = 2.4;
 /** Độ gần lúc mở cảnh trong nhà (cùng thang với dolly ra cửa: 1 = 4.6 đơn vị). */
@@ -75,7 +90,8 @@ export function CameraRig({
       dolly.current = THREE.MathUtils.damp(dolly.current, 0, 2, dt);
     }
     const d = dolly.current;
-    const still = 1 - Math.min(1, Math.max(0, d));
+    // góc mặt bàn: bỏ thị sai theo chuột, để mặt bàn (3D) và lá bài, tay Nguyệt (DOM) không trượt lệch nhau
+    const still = stage === "table" ? 0 : 1 - Math.min(1, Math.max(0, d));
     // màn hình dọc: giới hạn biên độ ngang để không lộ mép khung
     const maxX = Math.max(0, (frameW - visH * aspect) / 2) * 0.9;
     const px = THREE.MathUtils.clamp(pointer.x * 0.12, -0.12, 0.12) * still;
@@ -88,6 +104,16 @@ export function CameraRig({
     cam.position.y = snap ? ty : THREE.MathUtils.damp(cam.position.y, ty, 3.2, dt);
     cam.position.z = CAM_D - d * 4.6;
     ready.current = true;
+    if (stage === "table") {
+      cam.updateMatrixWorld();
+      const l = project(cam, ELBOWS.left[0], ELBOWS.left[1], size.width, size.height);
+      const r = project(cam, ELBOWS.right[0], ELBOWS.right[1], size.width, size.height);
+      const far = project(cam, ELBOWS.left[0] + 40, ELBOWS.left[1], size.width, size.height);
+      armRig.left = l;
+      armRig.right = r;
+      armRig.px = (far.x - l.x) / 40;
+      armRig.ready = true;
+    } else armRig.ready = false;
   });
   return null;
 }

@@ -732,6 +732,24 @@ img {
   50% { transform: scaleX(0.02); }
   100% { transform: scaleX(1); }
 }
+/* Lá nằm trên khăn: bóng tiếp xúc sát mép, đổ về phía xa nến (dưới trái), không đổ dài xuống như lá đang nhấc lên;
+   ánh nến phủ lá như phủ khăn: sáng hơn về phía nến, tối dần sang góc dưới trái. Lá đang được nói thì nến thắp rõ hơn. */
+.table-slot .tarot-face {
+  box-shadow: -2px 2px 0 rgba(8, 6, 13, 0.7), -4px 4px 0 rgba(8, 6, 13, 0.28);
+}
+.table-slot .tarot-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(215deg, rgba(255, 196, 120, 0.1), rgba(8, 6, 13, 0) 45%, rgba(8, 6, 13, 0.34));
+}
+.table-slot .tarot-card.is-highlight::after {
+  background: linear-gradient(215deg, rgba(255, 196, 120, 0.16), rgba(8, 6, 13, 0) 55%, rgba(8, 6, 13, 0.16));
+}
+.table-slot .tarot-card.is-highlight .tarot-face {
+  box-shadow: 0 0 12px rgba(243, 214, 139, 0.55), -2px 2px 0 rgba(8, 6, 13, 0.7), -4px 4px 0 rgba(8, 6, 13, 0.28);
+}
 .tarot-card.is-highlight .tarot-face {
   box-shadow: 0 0 14px rgba(243, 214, 139, 0.7), 0 6px 0 rgba(0, 0, 0, 0.45);
 }
@@ -950,25 +968,22 @@ img {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-/* cánh tay Nguyệt từ mép xa của bàn: ống tay lặp dọc tới mép trên vùng bàn (vùng chơi cắt phần thừa) */
-.table-arm {
-  --aw: calc(var(--w) * 34 / 48);
-  position: absolute;
-  z-index: 2;
-  left: 50%;
-  bottom: calc(100% + 2px);
-  width: var(--aw);
-  height: 120vh;
-  transform: translateX(-43%);
+/* Cánh tay Nguyệt (TableView Arms): một lớp phủ cả màn, mỗi tay đặt gốc ở khuỷu tay thật của nàng (chiếu từ cảnh 3D),
+   xoay quanh gốc ấy về phía lá; cỡ theo cơ thể nàng (bàn tay bằng bàn tay ở góc mặt Nguyệt), không theo cỡ lá.
+   Vị trí, chiều dài, góc do JS đặt mỗi khung; ống tay đi ra từ trên mép màn, phía nàng ngồi. */
+.arm-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
   pointer-events: none;
-  animation: arm-in 0.45s ease-out;
+  overflow: hidden;
 }
-/* Tay chỉ lá: chỉ thấy bàn tay, cổ tay và một đoạn cẳng tay (cao 2.1 lá), phần trên chìm dần vào bóng tối phía Nguyệt
-   theo ba bậc, thay vì một ống tay thẳng kéo từ mép xa của bàn tới tận lá ở hàng dưới */
-.table-arm.is-pointing {
-  height: calc(var(--w) * 2.1);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0 16%, rgb(0 0 0 / 0.35) 16% 28%, rgb(0 0 0 / 0.7) 28% 40%, #000 40%);
-  mask-image: linear-gradient(to bottom, transparent 0 16%, rgb(0 0 0 / 0.35) 16% 28%, rgb(0 0 0 / 0.7) 28% 40%, #000 40%);
+.table-arm {
+  --aw: 60px;
+  position: absolute;
+  visibility: hidden;
+  transform-origin: 50% 0;
+  pointer-events: none;
 }
 /* sổ mở trên điện thoại phủ kín bàn: cất cánh tay để ống tay không thò ra phía trên sổ */
 .table-field:has(> .notebook.is-open) .table-arm {
@@ -998,14 +1013,10 @@ img {
   margin-bottom: -1px;
 }
 .table-arm img {
+  flex: none;
   display: block;
   width: 100%;
   image-rendering: pixelated;
-}
-@keyframes arm-in {
-  from {
-    transform: translate(-43%, -12%);
-  }
 }
 .table-count {
   font-family: var(--font-pixel);
@@ -1016,7 +1027,8 @@ img {
 }
 /* Nguyệt xào bài: hai nửa bộ bài dưới hai bàn tay tách ra rồi gập vào */
 .table-shuffle {
-  --w: clamp(72px, min(11vw, 15vh), 136px);
+  /* cùng cỡ lá trên bàn, để hai bàn tay Nguyệt (cỡ theo người nàng) úp lên bộ bài cân đối */
+  --w: clamp(84px, min(21.5vw, 15vh), 136px);
   display: flex;
   align-items: flex-end;
   /* Nguyệt xào bài ngay trước mặt mình, sát mép xa của bàn: chỉ thấy bàn tay, cổ tay và một đoạn cẳng tay ngắn
@@ -1034,17 +1046,12 @@ img {
   flex-direction: column;
   align-items: center;
 }
-/* bàn tay úp lên nửa trên của bộ bài */
-.table-arm.is-shuffling {
-  bottom: calc(100% - var(--w) * 0.7);
-  animation: none;
-}
 .shuffle-deck {
   width: var(--w);
   height: calc(var(--w) * 80 / 48);
   background-size: 100% 100%;
   image-rendering: pixelated;
-  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.45), 0 -3px 0 var(--ink-dark) inset;
+  box-shadow: -2px 2px 0 rgba(8, 6, 13, 0.7), -4px 4px 0 rgba(8, 6, 13, 0.28), 0 -3px 0 var(--ink-dark) inset;
 }
 .half-b {
   margin-left: calc(var(--w) * -0.55);
@@ -1067,8 +1074,7 @@ img {
 }
 @media (prefers-reduced-motion: reduce) {
   .half-a,
-  .half-b,
-  .table-arm {
+  .half-b {
     animation: none;
   }
 }
