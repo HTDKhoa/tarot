@@ -9,11 +9,14 @@ const T = "/assets/table";
 const I = "/assets/interior";
 
 /**
- * Cúi xuống tại chỗ: cảnh bàn đặt ngay trên chiếc bàn trước mặt Nguyệt ở góc mặt Nguyệt (mặt khăn của
- * interior table.png, khung 640×360 từ y 250 tới 300, z 0.5, phóng overscan 1.08). Máy chỉ hạ nhẹ xuống đó
- * trong khi mặt bàn nhìn từ trên hiện dần lên đè lên cảnh trong nhà; không lia qua vạt khăn sang chỗ khác.
+ * Cúi xuống tại chỗ: cảnh bàn mở ra từ chính chiếc bàn trước mặt Nguyệt ở góc mặt Nguyệt (mặt khăn của
+ * interior table.png, khung 640×360 từ y 250 tới 300, z 0.5, phóng overscan 1.08). Lúc bắt đầu cúi, mặt bàn
+ * nhìn từ trên bị ép dẹt nằm đúng lên dải khăn ấy (như mặt bàn nhìn chếch); máy hạ xuống thì mặt bàn giãn ra,
+ * mép xa dâng lên che dần Nguyệt từ dưới lên, như khi người ta cúi đầu nhìn bàn. Ngẩng lên thì làm ngược lại.
  */
-const TABLE_SURFACE_Y = framePos(320, 275, 0.5)[1] * 1.08;
+const STRIP_TOP = framePos(320, 250, 0.5)[1] * 1.08;
+const STRIP_FRONT = framePos(320, 300, 0.5)[1] * 1.08;
+const TABLE_SURFACE_Y = (STRIP_TOP + STRIP_FRONT) / 2;
 
 /** Khung ngắm của cảnh bàn: bản ngang cho màn ngang, bản dọc cho điện thoại. */
 export const tableFrame = (portrait: boolean): [number, number] => (portrait ? [360, 640] : [640, 360]);
@@ -65,34 +68,61 @@ function TableCandle({ x, y, size, fade }: { x: number; y: number; size: number;
   );
 }
 
+/** Thời gian cúi xuống / ngẩng lên (giây). */
+const UNFOLD_S = 0.9;
+
+/** Mép xa / mép gần của mặt bàn trong ảnh (khớp art/table.py tabletop). */
+const EDGES = { landscape: { far: 40, near: 262 }, portrait: { far: 52, near: 455 } };
+
 /**
  * Mặt bàn nhìn từ chỗ khách ngồi, cúi xuống. Lá, tay Nguyệt và cuốn sổ là lớp DOM đặt trên cảnh này.
- * Nến (gần, bên phải) và quả cầu pha lê (gần, bên trái) đứng đúng chỗ như ở góc mặt Nguyệt; toạ độ tính
- * theo pixel của ảnh mặt bàn (khớp art/table.py tabletop). Cảnh vẽ đè lên cảnh trong nhà (không so chiều sâu)
- * và hiện dần khi máy cúi xuống, mờ đi khi ngẩng lên.
+ * Nến (gần, bên phải) và quả cầu pha lê (gần, bên trái) đứng đúng chỗ như ở góc mặt Nguyệt, nên lúc mặt bàn
+ * còn ép dẹt chúng trùng với nến và quả cầu vẽ sẵn. Cảnh vẽ đè lên cảnh trong nhà (không so chiều sâu).
+ *
+ * Toạ độ trong nhóm `unfold`: gốc ở mép xa, trục y đi xuống theo pixel ảnh; mỗi khung đặt vị trí và độ ép
+ * dọc của nhóm theo tiến độ cúi (0: dải khăn ở góc mặt Nguyệt, 1: nhìn hẳn xuống bàn). Nến và quả cầu
+ * là vật đứng nên được bù độ ép, chỉ trượt theo mặt bàn.
  */
 export function TableScene({ portrait }: { portrait: boolean }) {
   const [w, h] = tableFrame(portrait);
   const cy = tableCenterY(portrait);
-  const group = useRef<THREE.Group>(null);
-  const fade = useRef(sceneStore.get().stage === "table" ? 1 : 0);
+  const iw = portrait ? w : 960; // ảnh bản ngang rộng 960, hơn khung 640, để máy lia khi có sổ
+  const { far, near } = portrait ? EDGES.portrait : EDGES.landscape;
+  const unfold = useRef<THREE.Group>(null);
+  const standing = useRef<THREE.Group[]>([]);
+  const start = sceneStore.get().stage === "table" ? 1 : 0;
+  const progress = useRef(start);
+  const fade = useRef(start);
   const prepared = useRef(false);
-  // pixel ảnh mặt bàn -> toạ độ thế giới (ảnh bản ngang rộng 960, hơn khung 640, để máy lia khi có sổ)
-  const iw = portrait ? w : 960;
-  const at = (u: number, v: number): [number, number] => [(u - iw / 2) * PX, cy + (h / 2 - v) * PX];
-  const candleS = portrait ? 1.2 : 1.6;
+
+  // pixel ảnh -> toạ độ trong nhóm unfold
+  const lx = (u: number) => (u - iw / 2) * PX;
+  const ly = (v: number) => -(v - far) * PX;
+  const S = portrait ? 1.2 : 1.6;
   // điện thoại: mép gần thường nằm sau cuốn sổ và hộp thoại, nên nến đứng nhích lên để ngọn lửa ló ra sau sổ;
   // quả cầu pha lê không đặt (ở góc mặt Nguyệt trên điện thoại nó cũng nằm ngoài khung)
-  const [candleX, candleY] = at(portrait ? 290 : 650, (portrait ? 400 : 232) - 20 * candleS);
-  const [ballX, ballY] = at(portrait ? 70 : 312, (portrait ? 440 : 232) - 14 * candleS);
+  const candle: [number, number] = [lx(portrait ? 290 : 650), ly(portrait ? 400 : 232)];
+  const ball: [number, number] = [lx(312), ly(232)];
+  // độ ép dọc lúc bắt đầu: cả mặt bàn (mép xa tới mép gần) nằm gọn trong dải khăn ở góc mặt Nguyệt
+  const squash0 = (STRIP_TOP - STRIP_FRONT) / ((near - far) * PX);
+  const farY1 = cy + (h / 2 - far) * PX;
 
   useFrame((_, dt) => {
-    const g = group.current;
+    const g = unfold.current;
     if (!g) return;
     const target = sceneStore.get().stage === "table" ? 1 : 0;
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    fade.current = reduce ? target : THREE.MathUtils.damp(fade.current, target, 3.4, dt);
-    if (Math.abs(fade.current - target) < 0.004) fade.current = target;
+    // nhịp cúi đầu: đi đều theo thời gian rồi nắn bằng đường sin vào-ra (khởi động êm, dừng êm),
+    // thay vì damp (nhanh nhất ngay khung đầu, mặt bàn bật lên)
+    const step = dt / UNFOLD_S;
+    progress.current = reduce ? target : progress.current + THREE.MathUtils.clamp(target - progress.current, -step, step);
+    const p = (1 - Math.cos(Math.PI * progress.current)) / 2;
+    // mặt bàn hiện rõ ngay khi bắt đầu mở (đã nằm đúng chỗ dải khăn), không lồng mờ lên cảnh trong nhà
+    fade.current = THREE.MathUtils.smoothstep(p, 0, 0.18);
+    const sy = THREE.MathUtils.lerp(squash0, 1, p);
+    g.position.y = THREE.MathUtils.lerp(STRIP_TOP, farY1, p);
+    g.scale.y = sy;
+    standing.current.forEach((o) => o && (o.scale.y = 1 / sy));
     g.visible = fade.current > 0.002;
     g.traverse((o) => {
       const m = o as THREE.Mesh;
@@ -114,10 +144,16 @@ export function TableScene({ portrait }: { portrait: boolean }) {
   });
 
   return (
-    <group ref={group}>
-      <PixelSprite src={portrait ? `${T}/tabletop_doc.png` : `${T}/tabletop.png`} position={[0, cy, 0]} renderOrder={10} />
-      {!portrait && <PixelSprite src={`${I}/crystal.png`} position={[ballX, ballY, 0.05]} scale={candleS} renderOrder={11} />}
-      <TableCandle x={candleX} y={candleY} size={candleS} fade={fade} />
+    <group ref={unfold}>
+      <PixelSprite src={portrait ? `${T}/tabletop_doc.png` : `${T}/tabletop.png`} position={[0, ly(h / 2), 0]} renderOrder={10} />
+      {!portrait && (
+        <group position={[ball[0], ball[1], 0.05]} ref={(o) => void (o && (standing.current[0] = o))}>
+          <PixelSprite src={`${I}/crystal.png`} position={[0, 14 * PX * S, 0]} scale={S} renderOrder={11} />
+        </group>
+      )}
+      <group position={[candle[0], candle[1], 0]} ref={(o) => void (o && (standing.current[1] = o))}>
+        <TableCandle x={0} y={20 * PX * S} size={S} fade={fade} />
+      </group>
     </group>
   );
 }

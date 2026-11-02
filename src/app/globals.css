@@ -857,6 +857,13 @@ img {
   flex: 1 1 auto;
   min-height: 0;
   margin-top: 0;
+  /* lá, tay Nguyệt và sổ hiện ra khi mặt bàn đã mở gần xong (TableScene), không nổi trên cảnh đang cúi */
+  animation: field-in 0.45s ease-out 0.4s both;
+}
+@keyframes field-in {
+  from {
+    opacity: 0;
+  }
 }
 .table-field {
   position: relative;
