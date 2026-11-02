@@ -6,6 +6,7 @@ import { drawCards, dailyDraw, type Draw } from "@/lib/tarot/draw";
 import { SPREADS, MAX_CLARIFIERS, type SpreadId } from "@/lib/tarot/spreads";
 import { composeClarifier, composeClosing, composeDaily, composeReading, crisisLines, greeting } from "@/lib/tarot/reader";
 import { isCrisis, sensitiveKind } from "@/lib/safety";
+import { chooseSpread, chooseTopic } from "@/lib/tarot/choose";
 import { toDrawnCards } from "@/lib/readings";
 import { getCard, toPublic } from "@/lib/tarot/cards";
 import { vnDateKey, vnHour } from "@/lib/config";
@@ -21,15 +22,16 @@ async function handle(path: string, body: Record<string, unknown> | null): Promi
 
     case "/api/reading": {
       const question = String(body?.question ?? "").trim();
-      const topic = body?.topic as Topic;
-      const spread = SPREADS[body?.spread as SpreadId];
+      const topic = (body?.topic as Topic | undefined) ?? chooseTopic(question);
+      const spreadId = (body?.spread as SpreadId | undefined) ?? chooseSpread(question);
+      const spread = SPREADS[spreadId];
       if (question.length < 3) return json({ error: "Câu hỏi hơi ngắn quá" }, 400);
       if (!spread) return json({ error: "Kiểu trải không hợp lệ" }, 400);
       if (isCrisis(question)) return json({ crisis: true, lines: crisisLines() });
       storageSet("nguyet_demo_returning", "1");
       const draws = drawCards(spread.positions.length);
       const { lines, offerClarifier } = composeReading({ question, topic, spread, draws, sensitive: sensitiveKind(question) });
-      return json({ readingId: null, demo: true, draws, cards: toDrawnCards(draws, spread.positions), lines, offerClarifier, clarifiersLeft: MAX_CLARIFIERS });
+      return json({ readingId: null, demo: true, topic, spread: spreadId, draws, cards: toDrawnCards(draws, spread.positions), lines, offerClarifier, clarifiersLeft: MAX_CLARIFIERS });
     }
 
     case "/api/reading/clarify": {

@@ -15,8 +15,20 @@ const CRISIS_PATTERNS = [
   /r[ạa]ch\s*tay/i,
   /nh[ảa]y\s*c[ầa]u/i,
   /bi[ếe]n\s*m[ấa]t\s*m[ãa]i/i,
+  /mu[ốo]n\s*bi[ếe]n\s*m[ấa]t/i,
+  /ch[áa]n\s*s[ốo]ng/i,
+  /(kh[ôo]ng|ch[ẳa]ng)\s*(c[òo]n\s*)?thi[ếe]t\s*s[ốo]ng/i,
+  /s[ốo]ng\s*(kh[ôo]ng|ch[ẳa]ng)\s*n[ổo]i/i,
+  /s[ốo]ng\s*([đd][ểe]\s*)?l[àa]m\s*g[ìi]\s*n[ữu]a/i,
+  /kh[ôo]ng\s*mu[ốo]n\s*t[ồo]n\s*t[ạa]i/i,
+  /ng[ủu]\s*(lu[ôo]n|m[ộo]t\s*gi[ấa]c)\s*(kh[ôo]ng|ch[ẳa]ng)\s*(d[ậa]y|t[ỉi]nh)/i,
+  /kh[ôo]ng\s*(mu[ốo]n\s*)?t[ỉi]nh\s*d[ậa]y\s*n[ữu]a/i,
+  /ch[ếe]t\s*(qu[áa]ch|cho\s*(xong|r[ồo]i))/i,
+  /qu[áa]\s*li[ềe]u/i,
   /\bsuicid/i,
   /kill\s*myself/i,
+  /end\s*my\s*life/i,
+  /want\s*to\s*die/i,
 ];
 
 const SENSITIVE_PATTERNS: Array<{ kind: "health" | "legal" | "money"; re: RegExp }> = [

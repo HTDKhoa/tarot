@@ -26,7 +26,7 @@ Một người đọc bài có cá tính, ở trong một nơi chốn có thật
 
 ## Operating Context
 
-- Luồng chính: bìa rừng → bước vào nhà → đặt câu hỏi (chủ đề + kiểu trải) → chọn lá từ dải bài úp → Nguyệt lật và giải từng lá → có thể bốc thêm tối đa 3 lá làm rõ → tổng kết và lời dặn.
+- Luồng chính: bìa rừng → bước vào nhà → viết câu hỏi (Nguyệt tự chọn chủ đề và kiểu trải từ câu hỏi) → chọn lá từ dải bài úp → Nguyệt lật và giải từng lá → có thể bốc thêm tối đa 3 lá làm rõ → tổng kết và lời dặn.
 - Lá bài của ngày: miễn phí, không giới hạn, cố định theo người và ngày.
 - Nhật ký: các phiên đã đọc, ghi chú riêng, đánh dấu "điều đó đã xảy ra chưa", xóa từng phiên hoặc toàn bộ dữ liệu.
 - Thanh toán: quét VietQR qua payOS bằng app ngân hàng, không lưu thẻ, không tự gia hạn.

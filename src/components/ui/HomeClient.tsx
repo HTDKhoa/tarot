@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { sessionGet, sessionSet, storageGet, storageSet } from "@/lib/storage";
 import { EMERGENCY, SUPPORT_LINES, isCrisis } from "@/lib/safety";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Dialogue } from "./Dialogue";
 import { TableView } from "./TableView";
 import { Notebook, type LogEntry } from "./Notebook";
@@ -12,8 +12,8 @@ import { useMedia } from "@/lib/useMedia";
 import { TopBar, type Me } from "./TopBar";
 import { sceneStore, useScene } from "@/lib/store";
 import { createClient } from "@/lib/supabase/client";
-import { SPREADS, type SpreadId } from "@/lib/tarot/spreads";
-import { TOPIC_LABELS, type DrawnCard, type ReaderLine, type Topic } from "@/lib/tarot/types";
+import type { SpreadId } from "@/lib/tarot/spreads";
+import type { DrawnCard, ReaderLine, Topic } from "@/lib/tarot/types";
 
 // Cảnh 3D (hoặc ảnh tĩnh nếu không có WebGL) chỉ chạy ở trình duyệt.
 const SceneStage = dynamic(() => import("../scene/SceneStage"), { ssr: false });
@@ -64,11 +64,12 @@ const isInteractive = (t: EventTarget | null) => t instanceof Element && !!t.clo
 const CRISIS_KEY = "nguyet_crisis";
 const CRISIS_RETURN: ReaderLine[] = [{ tag: "gentle", text: "Đèn vẫn sáng. Hôm nay ta cất bài rồi. Ta chỉ muốn biết cậu đang an toàn." }];
 /** Lời mời viết câu hỏi: Nguyệt nói câu này ngay trên ô nhập, form không thay giọng của nàng bằng tiêu đề. */
-const FORM_INVITE = "Kể ta nghe điều cậu đang băn khoăn. Viết thật lòng, càng cụ thể ta càng đọc rõ.";
+const FORM_INVITE = "Kể ta nghe điều cậu đang băn khoăn. Viết thật lòng, càng cụ thể ta càng đọc rõ. Trải mấy lá, để ta lo.";
 /** Lời báo lỗi: nói cái gì chưa xong, lỗi ở phía ai, và bước tiếp theo. Không hứa điều máy không biết chắc. */
 const FAIL = {
   askNetwork: "Ta chưa xào được bài. Đường tới đây vừa chập chờn. Câu hỏi ta vẫn giữ, cậu hỏi lại nhé.",
   askServer: "Ta chưa xào được bài. Trục trặc ở phía ta, không phải do cậu. Câu hỏi ta vẫn giữ, cậu hỏi lại nhé.",
+  daily: "Ta chưa lấy được lá của hôm nay, đường tới đây vừa chập chờn. Cậu thử lại nhé.",
   clarify: "Lá làm rõ chưa rút được, đường tới đây vừa chập chờn. Cậu rút lại, hoặc để ta gom lại cũng được.",
   finish: "Ta chưa gom lại được, đường tới đây vừa chập chờn. Bài vẫn nằm nguyên trên bàn, cậu bấm lại nhé.",
 };
@@ -105,9 +106,11 @@ export default function HomeClient() {
   const [farewell, setFarewell] = useState<ReaderLine | null>(null);
   // câu hỏi vừa gửi, để sổ đã ghi được câu hỏi ngay trong lúc xào bài (trước khi máy chủ trả lá)
   const [askedQuestion, setAskedQuestion] = useState("");
-  const [lastAsk, setLastAsk] = useState<{ q: string; topic: Topic; spread: SpreadId } | null>(null);
+  const [lastAsk, setLastAsk] = useState<string | null>(null);
   // chỉ điền sẵn form khi "Hỏi lại" sau lỗi; "Trải bài", "Hỏi điều khác" luôn mở form trống
-  const [prefill, setPrefill] = useState<typeof lastAsk>(null);
+  const [prefill, setPrefill] = useState<string | null>(null);
+  // lỗi vừa rồi đến từ đâu, để nút "thử lại" làm đúng việc đó
+  const [retry, setRetry] = useState<"ask" | "daily" | null>(null);
   // Desktop: sổ nằm mở sẵn bên phải khăn.
   const docked = useMedia("(min-width: 1024px) and (min-aspect-ratio: 4/3)");
 
@@ -211,7 +214,7 @@ export default function HomeClient() {
   };
 
   /** Khủng hoảng: ở góc mặt Nguyệt, khóa bài tới hết phiên, thẻ hỗ trợ hiện ngay; lời của Nguyệt lấy từ máy chủ. */
-  const enterCrisis = async (question: string, topic: Topic, spread: SpreadId) => {
+  const enterCrisis = async (question: string) => {
     toFace();
     sessionSet(CRISIS_KEY, "1");
     setCrisisLocked(true);
@@ -219,7 +222,7 @@ export default function HomeClient() {
     setStayIndex(0);
     say([], "crisis");
     try {
-      const r = await fetch("/api/reading", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question, topic, spread }) });
+      const r = await fetch("/api/reading", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question }) });
       const j = await r.json();
       say(j.crisis && Array.isArray(j.lines) ? j.lines : CRISIS_RETURN, "crisis");
     } catch {
@@ -233,21 +236,23 @@ export default function HomeClient() {
     setStayIndex((i) => i + 1);
   };
 
-  const submitQuestion = async (question: string, topic: Topic, spread: SpreadId) => {
+  // Khách chỉ gửi câu hỏi; máy chủ chọn chủ đề và cách trải rồi trả về cùng lá.
+  const submitQuestion = async (question: string) => {
     // An toàn trước vai diễn: câu hỏi có dấu hiệu khủng hoảng thì không hạ máy, không xào bài, thẻ hỗ trợ hiện ngay.
     // Kiểm bằng đúng hàm máy chủ dùng; máy chủ vẫn kiểm lại (và có thể bắt thêm) ở dưới.
-    if (isCrisis(question)) return enterCrisis(question, topic, spread);
+    if (isCrisis(question)) return enterCrisis(question);
     setBusy(true);
     setLines([]);
     // Bấm "Xào bài" thì máy hạ xuống bàn ngay, Nguyệt xào bài trong lúc chờ máy chủ rút lá.
     toTable();
     // form gập lại, hộp thoại báo Nguyệt đang xào bài trong lúc hai tay xào trên bàn
     setAskedQuestion(question);
-    setLastAsk({ q: question, topic, spread });
+    setLastAsk(question);
+    setRetry("ask");
     setPhase("shuffling");
     const startedAt = performance.now();
     try {
-      const r = await fetch("/api/reading", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question, topic, spread }) });
+      const r = await fetch("/api/reading", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question }) });
       const j = await r.json().catch(() => ({}));
       if (j.crisis) {
         // Khủng hoảng luôn ở góc mặt đối mặt.
@@ -264,7 +269,7 @@ export default function HomeClient() {
       if (j.error === "quota") return say([{ tag: "concern", text: j.message }], "quota");
       // 400 là lời nhắc về chính câu hỏi (ngắn quá, dài quá); còn lại là trục trặc phía máy chủ
       if (!r.ok) return say([{ tag: "concern", text: r.status === 400 && j.error ? j.error : FAIL.askServer }], "message");
-      setCtx({ question, readingId: j.readingId, demo: j.demo, topic, spread, draws: j.draws ?? [], clarifiers: [], clarifiersLeft: j.clarifiersLeft });
+      setCtx({ question, readingId: j.readingId, demo: j.demo, topic: j.topic, spread: j.spread, draws: j.draws ?? [], clarifiers: [], clarifiersLeft: j.clarifiersLeft });
       setCards(j.cards);
       setPendingLines(j.lines);
       setPicked([]);
@@ -366,9 +371,16 @@ export default function HomeClient() {
     setLines([]);
     toTable();
     try {
-      const j = await (await fetch("/api/daily", { cache: "no-store" })).json();
+      const r = await fetch("/api/daily", { cache: "no-store" });
+      const j = await r.json();
+      if (!r.ok || !j.card) throw new Error("daily");
       setCards([j.card]);
       say(j.lines, "daily");
+    } catch {
+      // không để khách ngồi trước tấm khăn trống: ngẩng lên, Nguyệt báo và cho thử lại
+      toFace();
+      setRetry("daily");
+      say([{ tag: "concern", text: FAIL.daily }], "message");
     } finally {
       setBusy(false);
     }
@@ -574,8 +586,10 @@ export default function HomeClient() {
                 )}
                 {phase === "message" && (
                   <>
-                    {lastAsk && (
-                      <button className="btn-pixel btn-gold" onClick={() => {
+                    {retry === "ask" && lastAsk && (
+                      <button
+                        className="btn-pixel btn-gold"
+                        onClick={() => {
                           setPrefill(lastAsk);
                           say([{ tag: "think", text: FORM_INVITE }], "form");
                         }}
@@ -583,7 +597,12 @@ export default function HomeClient() {
                         Hỏi lại
                       </button>
                     )}
-                    <button className={`btn-pixel ${lastAsk ? "btn-ghost" : "btn-gold"}`} onClick={backToMenu}>
+                    {retry === "daily" && (
+                      <button className="btn-pixel btn-gold" onClick={daily}>
+                        Thử lại
+                      </button>
+                    )}
+                    <button className={`btn-pixel ${retry ? "btn-ghost" : "btn-gold"}`} onClick={backToMenu}>
                       Quay lại
                     </button>
                   </>
@@ -599,6 +618,9 @@ export default function HomeClient() {
 
 /** Thẻ hỗ trợ khi khủng hoảng: hiện ngay, cố định. Hai lối: ngồi lại với Nguyệt (không bài), hoặc ra về. */
 function SupportCard({ onStay, onLeave }: { onStay: () => void; onLeave: () => void }) {
+  // thẻ hiện thì focus vào "Ngồi thêm một lúc", không để rơi về body (người dùng bàn phím, trình đọc màn hình)
+  const stayRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => stayRef.current?.focus({ preventScroll: true }), []);
   return (
     <section className="support-card pixel-frame" role="alert" aria-label="Hỗ trợ khẩn cấp">
       <p>
@@ -615,7 +637,7 @@ function SupportCard({ onStay, onLeave }: { onStay: () => void; onLeave: () => v
         </ul>
       )}
       <div className="support-actions">
-        <button className="btn-pixel" onClick={onStay}>
+        <button ref={stayRef} className="btn-pixel btn-gold" onClick={onStay}>
           Ngồi thêm một lúc
         </button>
         <button className="btn-pixel btn-ghost" onClick={onLeave}>
@@ -628,7 +650,7 @@ function SupportCard({ onStay, onLeave }: { onStay: () => void; onLeave: () => v
 
 /**
  * Form câu hỏi nằm trong khung hộp thoại và vẫn là lượt nói của Nguyệt: thẻ tên "Nguyệt", lời mời của nàng làm nhãn ô nhập.
- * Hai hàng chip có nhãn nhìn thấy được; mô tả cách trải đang chọn hiện ngay dưới.
+ * Khách chỉ viết câu hỏi; chủ đề và cách trải để Nguyệt chọn (máy chủ đoán từ câu hỏi).
  */
 function QuestionForm({
   onSubmit,
@@ -637,23 +659,19 @@ function QuestionForm({
   quotaText,
   initial,
 }: {
-  onSubmit: (q: string, t: Topic, s: SpreadId) => void;
+  onSubmit: (q: string) => void;
   onCancel: () => void;
   busy: boolean;
   quotaText: string | null;
-  /** "Hỏi lại" sau lỗi: điền sẵn câu hỏi, chủ đề, cách trải vừa gửi để khách không phải gõ lại */
-  initial: { q: string; topic: Topic; spread: SpreadId } | null;
+  /** "Hỏi lại" sau lỗi: điền sẵn câu hỏi vừa gửi để khách không phải gõ lại */
+  initial: string | null;
 }) {
-  const [q, setQ] = useState(initial?.q ?? "");
-  const [topic, setTopic] = useState<Topic>(initial?.topic ?? "ban_than");
-  const [spread, setSpread] = useState<SpreadId>(initial?.spread ?? "past_present_path");
-  const topics = useMemo(() => Object.entries(TOPIC_LABELS) as [Topic, string][], []);
-  const spreads = useMemo(() => Object.values(SPREADS).map((s) => [s.id, s.name] as [SpreadId, string]), []);
+  const [q, setQ] = useState(initial ?? "");
   const formRef = useRef<HTMLFormElement>(null);
   const areaRef = useRef<HTMLTextAreaElement>(null);
   const tooShort = q.trim().length < 3;
 
-  // Chuột/bàn phím: vào thẳng ô nhập. Cảm ứng: không bật bàn phím ảo (nó che chip và nút "Xào bài"),
+  // Chuột/bàn phím: vào thẳng ô nhập. Cảm ứng: không bật bàn phím ảo (nó che nút "Xào bài"),
   // focus vào khung form để trình đọc màn hình vẫn đọc lời mời.
   useEffect(() => {
     if (window.matchMedia("(pointer: fine)").matches) areaRef.current?.focus();
@@ -668,7 +686,7 @@ function QuestionForm({
       aria-labelledby="form-loi-moi"
       onSubmit={(e) => {
         e.preventDefault();
-        if (!tooShort && !busy) onSubmit(q.trim(), topic, spread);
+        if (!tooShort && !busy) onSubmit(q.trim());
       }}
     >
       <div className="dialogue-name" aria-hidden>
@@ -686,8 +704,6 @@ function QuestionForm({
         rows={3}
         placeholder="Ví dụ: Mình có nên nhận lời chuyển sang công việc mới không?"
       />
-      <ChipGroup id="form-chu-de" label="Về chuyện" options={topics} value={topic} onChange={setTopic} />
-      <ChipGroup id="form-cach-trai" label="Cách trải" options={spreads} value={spread} onChange={setSpread} note={SPREADS[spread].description} />
       <div className="dialogue-actions">
         <button className="btn-pixel btn-gold" type="submit" disabled={busy || tooShort} aria-describedby="form-goi-y">
           {busy ? "Đang xào bài…" : "Xào bài"}
@@ -702,46 +718,5 @@ function QuestionForm({
         {quotaText && <span className="quota-chip">Tốn 1 lượt · còn {quotaText}</span>}
       </div>
     </form>
-  );
-}
-
-/** Một hàng chip chọn một: nhãn nhìn thấy được, phím mũi tên đi giữa các chip như radio thật. */
-function ChipGroup<T extends string>({ id, label, options, value, onChange, note }: { id: string; label: string; options: [T, string][]; value: T; onChange: (v: T) => void; note?: string }) {
-  const rowRef = useRef<HTMLDivElement>(null);
-  const move = (e: ReactKeyboardEvent, i: number) => {
-    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
-    const to = e.key === "Home" ? 0 : e.key === "End" ? options.length - 1 : step ? (i + step + options.length) % options.length : -1;
-    if (to < 0) return;
-    e.preventDefault();
-    onChange(options[to][0]);
-    rowRef.current?.querySelectorAll<HTMLElement>(".chip")[to]?.focus();
-  };
-  return (
-    <div className="chip-group">
-      <div ref={rowRef} className="chip-row" role="radiogroup" aria-labelledby={`${id}-nhan`} aria-describedby={note ? `${id}-mo-ta` : undefined}>
-        <span id={`${id}-nhan`} className="chip-label">
-          {label}
-        </span>
-        {options.map(([k, text], i) => (
-          <button
-            key={k}
-            type="button"
-            role="radio"
-            aria-checked={value === k}
-            tabIndex={value === k ? 0 : -1}
-            className={`chip ${value === k ? "is-on" : ""}`}
-            onClick={() => onChange(k)}
-            onKeyDown={(e) => move(e, i)}
-          >
-            {text}
-          </button>
-        ))}
-      </div>
-      {note && (
-        <p id={`${id}-mo-ta`} className="chip-note">
-          {note}
-        </p>
-      )}
-    </div>
   );
 }

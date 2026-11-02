@@ -349,9 +349,8 @@ Các thành phần trầm và tiết chế: chúng là đồ vật nhỏ trong n
 
 ### Chips
 - **Style:** VT323 1.15rem, viền khói sương mờ 40%, nền đêm mờ 40%.
-- **State:** khi bật (`role="radio"`, `aria-checked`): viền ngọn lửa, nền than trầm, chữ kem ánh nến. Dùng để chọn chủ đề, kiểu trải và trạng thái "đã xảy ra chưa".
-- **Hàng chip:** mỗi hàng có nhãn nhìn thấy được đứng đầu (VT323 1.15rem, khói sương: "Về chuyện", "Cách trải"); phím mũi tên đi giữa các chip như radio thật, chỉ chip đang bật nằm trong thứ tự Tab. Mô tả của lựa chọn đang bật hiện ngay dưới hàng (Be Vietnam Pro 0.86rem, khói sương), không giấu trong `title`.
-- **Form câu hỏi:** vẫn là lượt nói của Nguyệt: thẻ tên "Nguyệt", lời mời của nàng làm nhãn ô nhập, rồi hai hàng chip và nút "Xào bài". Nút bị khóa thì gợi ý nói lý do ("Viết vài chữ trước đã"); đã đăng nhập thì báo trước "Tốn 1 lượt". Màn cảm ứng không tự bật bàn phím ảo.
+- **State:** khi bật (`role="radio"`, `aria-checked`): viền ngọn lửa, nền than trầm, chữ kem ánh nến. Dùng cho trạng thái "đã xảy ra chưa" trong nhật ký.
+- **Form câu hỏi:** vẫn là lượt nói của Nguyệt: thẻ tên "Nguyệt", lời mời của nàng làm nhãn ô nhập ("… Trải mấy lá, để ta lo."), rồi nút "Xào bài". Khách chỉ viết câu hỏi; chủ đề và cách trải do máy chủ chọn từ câu hỏi (`src/lib/tarot/choose.ts`, tạm đoán theo từ khóa, sau thay bằng AI), và Nguyệt nói ra lựa chọn ở câu mở đầu ("Tình cảm, trải 3 lá: quá khứ, hiện tại, hướng đi."). Nút bị khóa thì gợi ý nói lý do ("Viết vài chữ trước đã"); đã đăng nhập thì báo trước "Tốn 1 lượt". Màn cảm ứng không tự bật bàn phím ảo.
 
 ### Cards / Containers
 - **Khung pixel** (hộp thoại, thẻ gói, mục và ghi chú nhật ký): góc vuông, viền 3 px vàng nến, mặt chuyển dọc từ xanh mũ trùm nhạt xuống gần xanh mũ trùm (gần như đặc), bóng theo Viền khung pixel. Đệm 1.2rem; hộp thoại 1.4rem trên.
