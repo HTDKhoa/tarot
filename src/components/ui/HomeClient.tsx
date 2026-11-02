@@ -291,14 +291,18 @@ export default function HomeClient() {
     if (next.length === cards.length) setTimeout(() => say(pendingLines, "reading"), 500);
   };
 
-  const onLine = (line: ReaderLine, index: number) => {
+  const onLine = (line: ReaderLine) => {
     if (line.revealPosition !== undefined) {
       const pos = line.revealPosition === -1 ? cards.length - 1 : line.revealPosition;
       setRevealed((s) => new Set(s).add(pos));
       setActive(pos);
       currentCard.current = pos;
     }
-    // ghi vào sổ mọi câu của phiên trải bài (không ghi lá của ngày), trừ câu thủ tục lúc xào/trải ("Ta xào xong rồi…")
+  };
+
+  // Ghi vào sổ mọi câu của phiên trải bài (không ghi lá của ngày), trừ câu thủ tục lúc xào/trải ("Ta xào xong rồi…").
+  // Ghi khi câu đã hiện trọn, để sổ ghim trên desktop không in sẵn câu Nguyệt còn đang nói dở.
+  const onShown = (line: ReaderLine, index: number) => {
     if (ctx && phase !== "daily" && line.tag !== "shuffle") {
       const key = `${script.id}:${index}`;
       const entry: LogEntry = { key, line, card: currentCard.current };
@@ -523,7 +527,7 @@ export default function HomeClient() {
             {phase === "form" ? (
               <QuestionForm onSubmit={submitQuestion} onCancel={backToMenu} busy={busy} quotaText={quotaText} initial={prefill} />
             ) : (
-              <Dialogue key={greetingNow ? "greet" : script.id} lines={lines} onLine={onLine} onDone={onDone} busy={busy} portrait={onTable ? <Portrait onLook={canToggle ? toFace : undefined} /> : undefined}>
+              <Dialogue key={greetingNow ? "greet" : script.id} lines={lines} onLine={onLine} onShown={onShown} onDone={onDone} busy={busy} portrait={onTable ? <Portrait onLook={canToggle ? toFace : undefined} /> : undefined}>
                 {phase === "menu" && (
                   <>
                     <button className="btn-pixel btn-gold" onClick={startReading}>Trải bài</button>

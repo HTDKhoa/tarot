@@ -8,6 +8,8 @@ interface Props {
   lines: ReaderLine[];
   /** gọi khi bắt đầu một câu (để lật bài đúng lúc) */
   onLine?: (line: ReaderLine, index: number) => void;
+  /** gọi một lần khi câu đã hiện trọn (chạy xong chữ, được bấm hiện hết, hoặc bị bỏ qua): lúc này mới ghi vào sổ */
+  onShown?: (line: ReaderLine, index: number) => void;
   /** gọi khi đã đọc hết các câu */
   onDone?: () => void;
   children?: React.ReactNode;
@@ -26,9 +28,9 @@ const SPEED_MS = 22;
  * còn nút ▼ "Câu tiếp" là đường đi bằng bàn phím. Người dùng chọn giảm chuyển động thì chữ hiện ngay.
  *
  * Bộ câu lật nhiều lá (mỗi câu có `revealPosition` mở một lá) thì hiện "Lá 2/3" và lối tắt "Sang lá kế":
- * các câu bị bỏ qua vẫn đi qua `onLine` nên vẫn được ghi vào sổ, không mất chữ nào.
+ * các câu bị bỏ qua vẫn đi qua `onShown` nên vẫn được ghi vào sổ, không mất chữ nào.
  */
-export function Dialogue({ lines, onLine, onDone, children, busy, portrait }: Props) {
+export function Dialogue({ lines, onLine, onShown, onDone, children, busy, portrait }: Props) {
   const [idx, setIdx] = useState(0);
   const [shown, setShown] = useState(0);
   const doneRef = useRef(false);
@@ -49,6 +51,15 @@ export function Dialogue({ lines, onLine, onDone, children, busy, portrait }: Pr
     sceneStore.set({ tag: line.tag });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [line, idx]);
+
+  // câu hiện trọn thì báo một lần, để sổ ghi theo nhịp chữ chạy chứ không in trước
+  const shownRef = useRef(-1);
+  useEffect(() => {
+    if (!line || typing || shownRef.current >= idx) return;
+    shownRef.current = idx;
+    onShown?.(line, idx);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [line, idx, typing]);
 
   useEffect(() => {
     sceneStore.set({ speaking: typing });
@@ -90,7 +101,7 @@ export function Dialogue({ lines, onLine, onDone, children, busy, portrait }: Pr
 
   const skipCard = () => {
     if (nextStart === undefined) return;
-    for (let i = idx + 1; i < nextStart; i++) onLine?.(lines[i], i);
+    for (let i = idx + 1; i < nextStart; i++) onShown?.(lines[i], i);
     setIdx(nextStart);
     setShown(0);
   };

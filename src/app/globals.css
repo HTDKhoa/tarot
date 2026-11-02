@@ -833,10 +833,10 @@ img {
 }
 /* ---------- cảnh mặt bàn: lá nằm đúng hình trải trên khăn ---------- */
 .play-zone.is-table {
-  /* vùng chơi bắt đầu ngay dưới thanh trên cùng để cánh tay Nguyệt vươn từ mép xa của bàn
-     (đi sau nút đổi góc); nội dung vẫn chừa chỗ cho nút bằng padding */
+  /* vùng chơi bắt đầu ngay dưới thanh trên cùng để cánh tay Nguyệt vươn từ mép xa của bàn;
+     góc mặt bàn không có nút giữa đỉnh (lối ngẩng lên ở ô chân dung) nên chỉ chừa một khe nhỏ */
   top: calc(3.2rem + env(safe-area-inset-top));
-  padding-top: 3.2rem;
+  padding-top: 0.75rem;
 }
 .play-zone.is-table > .table-field {
   flex: 1 1 auto;
@@ -872,6 +872,15 @@ img {
 .spread-clarifiers .table-slot {
   --w: clamp(54px, min(7.5vw, 10vh), 96px);
 }
+/* desktop có sổ ghim: khăn rộng, lá lớn theo chiều cao màn để hình trải đầy vòng chấm.
+   Hình trải dồn xuống gần hộp thoại để phía trên còn chỗ cho bàn tay Nguyệt vươn từ mép xa của bàn. */
+.table-field.has-notebook > .table-spread:not(.spread-clarifiers) .table-slot {
+  --w: clamp(96px, min(13vw, 18.5vh), 176px);
+}
+.table-field.has-notebook:not(.has-extra) {
+  justify-content: safe flex-end;
+  padding-bottom: 1.5rem;
+}
 /* có thêm hàng lá làm rõ thì hình trải chính nhỏ lại để cả bàn vừa một màn */
 .table-field.has-extra > .table-spread:not(.spread-clarifiers) .table-slot {
   --w: clamp(64px, min(17vw, 11vh), 112px);
@@ -879,6 +888,13 @@ img {
 /* tam giác: Trở ngại ở đỉnh, Tình huống và Lời khuyên thấp hơn hai bên */
 .spread-triangle .table-slot:not(:nth-child(2)) {
   margin-top: calc(var(--w) * 0.6);
+}
+/* thêm hàng lá làm rõ (tới 3 lá): tam giác dẹt hơn, hai hàng sát hơn, để cả bàn vừa trên hộp thoại */
+.table-field.has-extra {
+  gap: 1rem;
+}
+.table-field.has-extra .spread-triangle .table-slot:not(:nth-child(2)) {
+  margin-top: calc(var(--w) * 0.3);
 }
 .table-slot .tarot-caption {
   max-width: 100%;
