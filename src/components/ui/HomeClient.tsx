@@ -442,9 +442,11 @@ export default function HomeClient() {
       </div>
       <div className="stage-fade" style={{ opacity: fade }} />
       <TopBar me={me} onLogin={login} />
-      {canToggle && (
-        <button type="button" className="shot-toggle" onClick={onTable ? toFace : toTable} aria-keyshortcuts={onTable ? "ArrowUp" : "ArrowDown"}>
-          {onTable ? "▲ Nhìn Nguyệt" : "▼ Xem bàn"}
+      {/* nút giữa đỉnh chỉ ở góc mặt Nguyệt; ở góc mặt bàn, lối ngẩng lên là ô chân dung trong hộp thoại
+          (cánh tay Nguyệt vươn từ mép xa của bàn đi qua đúng chỗ giữa đỉnh) */}
+      {canToggle && !onTable && (
+        <button type="button" className="shot-toggle" onClick={toTable} aria-keyshortcuts="ArrowDown">
+          ▼ Xem bàn
         </button>
       )}
 
@@ -509,7 +511,7 @@ export default function HomeClient() {
             {phase === "form" ? (
               <QuestionForm onSubmit={submitQuestion} onCancel={backToMenu} busy={busy} quotaText={quotaText} initial={prefill} />
             ) : (
-              <Dialogue key={greetingNow ? "greet" : script.id} lines={lines} onLine={onLine} onDone={onDone} busy={busy} portrait={onTable ? <Portrait /> : undefined}>
+              <Dialogue key={greetingNow ? "greet" : script.id} lines={lines} onLine={onLine} onDone={onDone} busy={busy} portrait={onTable ? <Portrait onLook={canToggle ? toFace : undefined} /> : undefined}>
                 {phase === "menu" && (
                   <>
                     <button className="btn-pixel btn-gold" onClick={startReading}>Trải bài</button>

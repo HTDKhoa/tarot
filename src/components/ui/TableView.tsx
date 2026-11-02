@@ -111,7 +111,8 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
             const vars = {
               "--angle": `${(i - mid) * 5}deg`,
               "--offset": `${(i - mid) * 7}%`,
-              "--angle2": `${(j - mid2) * 4}deg`,
+              // vòng sau nghiêng ít hơn để lá ở mép không nhô ra ngoài màn; vòng trước giữ 4° để khe giữa các lá đủ rộng cho ngón tay
+              "--angle2": `${(j - mid2) * (back ? 3 : 4)}deg`,
               "--k2": j - mid2,
             } as React.CSSProperties;
             return (

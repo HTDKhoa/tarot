@@ -59,7 +59,12 @@ export function TarotCard({ drawn, revealed, onClick, selected, label, size = "m
           {label && (
             <div className="tarot-pos">
               {label}
-              {revealed && drawn?.reversed && <span className="tarot-rev"> · ngược</span>}
+              {/* ô hẹp (điện thoại): "ngược" xuống dòng riêng và bỏ dấu chấm giữa, để chú thích không tràn sang lá bên */}
+              {revealed && drawn?.reversed && (
+                <span className="tarot-rev">
+                  <span className="tarot-rev-dot"> · </span>ngược
+                </span>
+              )}
             </div>
           )}
           {revealed && c && <div className="tarot-name">{c.name_en}</div>}
