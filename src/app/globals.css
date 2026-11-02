@@ -1001,9 +1001,9 @@ img {
   left: calc(var(--cx) + var(--w) * 1.12);
   transform: translateX(-50%);
 }
-/* tay trái lật gương: lật luôn hướng bóng để bóng vẫn đổ xuống bên trái (nến ở góc trên phải) */
+/* tay trái lật gương: lật luôn hướng bóng để bóng vẫn đổ về bên trái */
 .table-arm.is-resting.is-left .arm-shadow {
-  transform: translate(calc(var(--aw) * 0.16), calc(var(--aw) * 0.16));
+  transform: translate(calc(var(--aw) * 0.16), calc(var(--aw) * -0.12));
 }
 /* sổ mở trên điện thoại phủ kín bàn: cất cánh tay để ống tay không thò ra phía trên sổ */
 .table-field:has(> .notebook.is-open) .table-arm {
@@ -1017,9 +1017,9 @@ img {
   flex-direction: column;
   justify-content: flex-end;
 }
-/* bóng tay trên khăn: nến ở góc trên phải nên bóng đổ xuống bên trái */
+/* bóng tay trên khăn: nến đứng ở mép gần bên phải (như ở góc mặt Nguyệt) nên bóng đổ ngược lên bên trái */
 .arm-shadow {
-  transform: translate(calc(var(--aw) * -0.16), calc(var(--aw) * 0.16));
+  transform: translate(calc(var(--aw) * -0.16), calc(var(--aw) * -0.12));
   opacity: 0.38;
   filter: brightness(0);
 }

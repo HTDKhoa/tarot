@@ -12,13 +12,13 @@ import characters
 
 # ------------------------------------------------------------------ mặt bàn
 def tabletop(W, H, seed, CW=None):
-    """Mặt bàn của Nguyệt nhìn từ chỗ khách ngồi, hơi chếch xuống: mép xa hẹp hơn mép gần (phối cảnh),
-    hai mép bên chéo dần, ngoài mép bàn là sàn nhà chìm trong bóng tối. Khăn tím mận như ở góc mặt Nguyệt
-    (interior.table) phủ kín mặt bàn rồi rủ qua mép (dải nếp gấp tối, viền vàng ở mép), mép gần phía khách
-    là dải viền vàng đính hạt; sao thêu thưa dần về phía xa; vòng đọc bài chấm vàng; trăng khuyết ở mép gần.
-    Vạt áo và hai tay nghỉ của Nguyệt ở mép xa là lớp DOM (.table-robe).
-    CW: bề rộng vùng giữa để đặt vòng đọc bài; phần thêm hai bên cho máy lia ngang khi sổ nằm ở góc bàn.
-    Ánh nến đến từ góc trên phải mặt bàn (dither Bayer)."""
+    """Chính chiếc bàn trước mặt Nguyệt ở góc mặt Nguyệt (interior.table), khi khách cúi xuống nhìn:
+    phối cảnh từ chỗ khách ngồi, mép xa hẹp hơn mép gần, hai mép bên hội tụ về tâm máy, ngoài mép bàn là
+    bóng tối. Khăn tím mận phủ kín mặt bàn, rủ qua mép bên (dải nếp gấp tối); mép gần phía khách nằm phía trên
+    hộp thoại, là dải viền vàng đính hạt rồi vạt khăn rủ xuống như ở góc mặt Nguyệt. Nến (gần, bên phải) và
+    quả cầu pha lê (gần, bên trái) đứng đúng chỗ như ở góc mặt Nguyệt; chúng là sprite trong TableScene,
+    ở đây chỉ vẽ ánh nến (dither Bayer) toả từ chỗ cây nến. Vạt áo và hai tay nghỉ của Nguyệt ở mép xa là lớp
+    DOM (.table-robe). CW: bề rộng vùng giữa để đặt vòng đọc bài."""
     CW = CW or W
     landscape = CW > H
     img = new(W, H, 'out')
@@ -28,12 +28,14 @@ def tabletop(W, H, seed, CW=None):
     # bản dọc đối xứng; bản ngang dùng cho desktop có sổ ghim, máy lệch phải nên mép trái chéo rõ
     # và hiện trong khung, mép phải nằm ngoài cột sổ để sổ vẫn nằm trên bàn.
     if landscape:
-        far_y, far_l, far_r, near_l, near_r = 40, 286, 890, -130, 1090
+        far_y, near_y, far_l, far_r, near_l, near_r = 40, 262, 286, 890, 20, 1010
+        lx, ly = 650, 196                               # ngọn nến (TableScene đặt cây nến ở đây)
     else:
-        far_y, far_l, far_r, near_l, near_r = 52, 64, W - 64, -14, W + 14
+        far_y, near_y, far_l, far_r, near_l, near_r = 52, 455, 64, W - 64, 4, W - 4
+        lx, ly = 290, 362
 
     def edges(y):
-        t = (y - far_y) / max(1, H - far_y)
+        t = (y - far_y) / max(1, near_y - far_y)
         return far_l + (near_l - far_l) * t, far_r + (near_r - far_r) * t
 
     def hw(y):  # nửa bề rộng quanh tâm vòng đọc bài (dùng để chừa sao)
@@ -45,12 +47,11 @@ def tabletop(W, H, seed, CW=None):
         for x in range(W):
             if bayer(x, y, 0.10 + 0.08 * ((x // 7 + y // 40) % 2)):
                 px[x, y] = c('n0')
-    lx, ly = (730 if landscape else W - 84), far_y + H * 0.10   # nguồn sáng: ngọn nến gần góc xa bên phải
-    diag = math.hypot(W, H)
+    diag = math.hypot(W, H) * 0.8
     drape = 7                                          # dải khăn rủ qua mép bên
-    for y in range(far_y, H):
+    for y in range(far_y, near_y + 1):
         el, er = edges(y)
-        depth = (y - far_y) / (H - far_y)              # 0 ở mép xa, 1 ở mép gần
+        depth = (y - far_y) / (near_y - far_y)         # 0 ở mép xa, 1 ở mép gần
         for x in range(W):
             out_by = max(el - x, x - er)               # >0: ngoài mép bàn
             if out_by <= 0:
@@ -71,7 +72,7 @@ def tabletop(W, H, seed, CW=None):
                 px[x, y] = c(col)
     d = draw(img)
     # mép bàn: viền thêu vàng chạy theo mép khăn (hai bên và mép xa)
-    for y in range(far_y, H):
+    for y in range(far_y, near_y):
         el, er = edges(y)
         put(img, int(el), y, 'au0')
         put(img, int(er), y, 'au0')
@@ -80,19 +81,29 @@ def tabletop(W, H, seed, CW=None):
             put(img, int(er - 5), y, 'au1')
     d.line([(far_l, far_y), (far_r, far_y)], fill=c('au0'))
     d.line([(far_l + 5, far_y + 4), (far_r - 5, far_y + 4)], fill=c('au1'))
-    # mép gần: khăn gập xuống phía khách, dải viền vàng đính hạt
-    d.line([(0, H - 9), (W, H - 9)], fill=c('au0'))
-    d.line([(0, H - 7), (W, H - 7)], fill=c('au2'))
-    d.rectangle([0, H - 6, W, H - 3], fill=c('au0'))
-    d.line([(0, H - 5), (W, H - 5)], fill=c('au1'))
-    for x in range(2, W, 6):
-        put(img, x, H - 5, 'au2')
-    d.rectangle([0, H - 2, W, H - 1], fill=c('out'))
+    # mép gần: dải viền vàng đính hạt, rồi vạt khăn rủ xuống phía khách (nếp gấp như interior.table)
+    nl, nr = edges(near_y)
+    nl, nr = int(max(0, nl)), int(min(W - 1, nr))
+    d.line([(nl, near_y - 3), (nr, near_y - 3)], fill=c('au0'))
+    d.line([(nl, near_y - 1), (nr, near_y - 1)], fill=c('au2'))
+    d.rectangle([nl, near_y, nr, near_y + 3], fill=c('au0'))
+    d.line([(nl, near_y + 1), (nr, near_y + 1)], fill=c('au1'))
+    for x in range(nl + 2, nr, 6):
+        put(img, x, near_y + 1, 'au2')
+    for y in range(near_y + 4, min(H, near_y + 22)):
+        k = y - near_y - 4
+        for x in range(nl, nr + 1):
+            col = 'p0' if (x % 16) not in (4, 5) else 'out'
+            if (x % 16) in (10, 11) and k > 1:
+                col = 'p1'
+            if bayer(x, y, k / 18):                     # vạt khăn khuất dần vào bóng
+                col = 'out'
+            px[x, y] = c(col)
     # sao thêu, thưa dần về phía xa; chừa vòng đọc bài
     r = rng(seed)
     # phối cảnh: vòng tròn trên mặt bàn hiện ra thành elip dẹt (rộng hơn cao), cả ở bản dọc
-    rx, ry = (CW * 0.30, H * 0.30) if landscape else (CW * 0.36, CW * 0.36 * 0.9)
-    cy0 = H * 0.46
+    rx, ry = (CW * 0.30, (near_y - far_y) * 0.42) if landscape else (CW * 0.36, (near_y - far_y) * 0.30)
+    cy0 = far_y + (near_y - far_y) * 0.52
 
     def inside(x, y, pad):
         el, er = edges(y)
@@ -106,15 +117,17 @@ def tabletop(W, H, seed, CW=None):
             put(img, x, y, 'au1')
 
     for _ in range(int(W * H / 1500)):
-        x, y = r.randint(8, W - 9), r.randint(far_y + 8, H - 16)
+        x, y = r.randint(8, W - 9), r.randint(far_y + 8, near_y - 8)
         if not inside(x, y, 9) or ((x - cx0) / (rx + 10)) ** 2 + ((y - cy0) / (ry + 10)) ** 2 < 1:
             continue
-        if r.random() > 0.35 + 0.65 * (y - far_y) / (H - far_y):
+        if math.hypot(x - lx, y - ly - 30) < 26:        # chừa chân nến
             continue
-        star(x, y, r.random() < .3 * (y - far_y) / (H - far_y) + .05)
+        if r.random() > 0.35 + 0.65 * (y - far_y) / (near_y - far_y):
+            continue
+        star(x, y, r.random() < .3 * (y - far_y) / (near_y - far_y) + .05)
     for _ in range(max(3, int(W * H / 60000))):
         for _try in range(30):
-            x, y = r.randint(20, W - 21), r.randint(far_y + 30, H - 30)
+            x, y = r.randint(20, W - 21), r.randint(far_y + 30, near_y - 30)
             if inside(x, y, 24) and ((x - cx0) / (rx + 24)) ** 2 + ((y - cy0) / (ry + 24)) ** 2 >= 1:
                 break
         for _k in range(r.randint(3, 5)):
@@ -128,7 +141,7 @@ def tabletop(W, H, seed, CW=None):
         a = 2 * math.pi * i / steps
         put(img, round(cx0 + rx * math.cos(a)), round(cy0 + ry * math.sin(a)), 'au0' if i % 3 else 'au1')
     # trăng khuyết thêu ở mép gần (phía khách)
-    mx, my = int(W / 2), int(H - (34 if landscape else 44))
+    mx, my = int(W / 2), int(near_y - 16)
     for y in range(my - 9, my + 10):
         for x in range(mx - 9, mx + 10):
             if (x - mx) ** 2 + (y - my) ** 2 <= 7 ** 2 and (x - mx + 3) ** 2 + (y - my + 2) ** 2 > 6 ** 2:
