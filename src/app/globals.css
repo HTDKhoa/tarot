@@ -963,6 +963,48 @@ img {
   -webkit-mask-image: linear-gradient(to bottom, transparent 0 16%, rgb(0 0 0 / 0.35) 16% 28%, rgb(0 0 0 / 0.7) 28% 40%, #000 40%);
   mask-image: linear-gradient(to bottom, transparent 0 16%, rgb(0 0 0 / 0.35) 16% 28%, rgb(0 0 0 / 0.7) 28% 40%, #000 40%);
 }
+/* Nguyệt ở mép xa của bàn: vạt áo phủ qua mép bàn, hai bàn tay nghỉ ở hai bên vạt áo, ống tay vươn từ phía nàng ngồi.
+   Cùng thang pixel với lá (1 px ảnh = --w/48); ngồi sát mép trên vùng chơi (field đệm 0.75rem dưới mép đó). */
+.table-field {
+  --w: clamp(72px, min(21.5vw, 15vh), 136px);
+  /* tâm hình trải; desktop có sổ ghim thì trừ cột sổ (đệm phải) ra */
+  --cx: 50%;
+}
+.table-field.has-notebook {
+  --w: clamp(96px, min(13vw, 18.5vh), 176px);
+  --cx: calc(50% - (min(30vw, 360px) + 24px) / 2);
+}
+/* vạt áo nằm dưới mọi bàn tay (tay vươn ra trước người), trên khăn */
+.table-robe {
+  position: absolute;
+  top: -0.75rem;
+  left: var(--cx);
+  width: calc(var(--w) * 96 / 48);
+  height: calc(var(--w) * 34 / 48);
+  transform: translateX(-50%);
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+/* bàn tay nghỉ: một đoạn ống tay, cổ tay áo và bàn tay, ngay hai bên vạt áo */
+.table-arm.is-resting {
+  top: calc(-0.75rem + var(--w) * 0.02);
+  bottom: auto;
+  height: calc(var(--aw) * 66 / 34);
+  animation: none;
+}
+.table-arm.is-resting.is-left {
+  left: calc(var(--cx) - var(--w) * 1.12);
+  transform: translateX(-50%) scaleX(-1);
+}
+.table-arm.is-resting.is-right {
+  left: calc(var(--cx) + var(--w) * 1.12);
+  transform: translateX(-50%);
+}
+/* tay trái lật gương: lật luôn hướng bóng để bóng vẫn đổ xuống bên trái (nến ở góc trên phải) */
+.table-arm.is-resting.is-left .arm-shadow {
+  transform: translate(calc(var(--aw) * 0.16), calc(var(--aw) * 0.16));
+}
 /* sổ mở trên điện thoại phủ kín bàn: cất cánh tay để ống tay không thò ra phía trên sổ */
 .table-field:has(> .notebook.is-open) .table-arm {
   display: none;
@@ -1082,6 +1124,7 @@ img {
 @media (max-height: 700px) {
   .table-field:has(> .notebook-peek) {
     padding-top: 1.5rem;
+    --w: clamp(56px, min(21.5vw, 9.5vh), 136px);
   }
   .table-field:has(> .notebook-peek) .table-slot {
     --w: clamp(56px, min(21.5vw, 9.5vh), 136px);

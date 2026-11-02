@@ -59,6 +59,20 @@ function PointingHand() {
   return <Arm hand="point" className="is-pointing" />;
 }
 
+/**
+ * Nguyệt ngồi ở mép xa của bàn: vạt áo choàng phủ lên mép bàn và hai bàn tay nghỉ úp ngay dưới gấu áo,
+ * như ở góc mặt Nguyệt. Bàn tay nào đang chỉ lá hay đang xào bài thì rời chỗ nghỉ (`free`).
+ */
+function Keeper({ free }: { free: "left" | "right" | "both" | null }) {
+  return (
+    <>
+      <span className="table-robe" aria-hidden style={{ backgroundImage: `url("${assetUrl("/assets/table/robe.png")}")` }} />
+      {free !== "left" && free !== "both" && <Arm hand="rest" className="is-resting is-left" />}
+      {free !== "right" && free !== "both" && <Arm hand="rest" className="is-resting is-right" />}
+    </>
+  );
+}
+
 function Slot({ c, i, revealed, active, hand }: { c: DrawnCard; i: number; revealed: boolean; active: boolean; hand: boolean }) {
   return (
     <div className={`table-slot ${active ? "is-active" : ""}`} data-pos={i}>
@@ -78,6 +92,7 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
     return (
       <div className={field()} role="img" aria-label="Nguyệt đang xào bài">
         {/* hai nửa bộ bài, mỗi nửa dưới một bàn tay, tách ra rồi gập vào nhau */}
+        <Keeper free="both" />
         <div className="table-shuffle" aria-hidden>
           {["half-a", "half-b"].map((h) => (
             <div key={h} className={`shuffle-half ${h}`}>
@@ -95,6 +110,7 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
   if (picking) {
     return (
       <div className={field()}>
+        <Keeper free={null} />
         <p className="table-count" aria-live="polite">
           Đã chọn {picked.length}/{cards.length}
         </p>
@@ -134,8 +150,12 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
     );
   }
 
+  // tay chỉ lá dùng bàn tay phía lá đó (lá giữa: tay phải); lá làm rõ không có tay chỉ
+  const pointing = main.findIndex(({ i }) => i === active);
+  const free = pointing < 0 ? null : pointing < (main.length - 1) / 2 ? "left" : "right";
   return (
     <div className={field(extra.length ? "has-extra" : "")}>
+      <Keeper free={free} />
       <div className={`table-spread ${SHAPE[spread]}`}>
         {main.map(({ c, i }) => (
           <Slot key={`${c.card.id}-${i}`} c={c} i={i} revealed={revealed.has(i)} active={active === i} hand />

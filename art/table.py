@@ -12,30 +12,19 @@ import characters
 
 # ------------------------------------------------------------------ mặt bàn
 def tabletop(W, H, seed, CW=None):
-    """Khăn tím mận trên mặt bàn gỗ; viền thêu vàng, sao thêu, vòng đọc bài chấm vàng.
-    CW: bề rộng phần khăn + lề (căn giữa); phần gỗ thừa hai bên để máy lia ngang khi sổ nằm
-    ở góc bàn mà không lộ mép ảnh. Ánh nến đến từ góc trên phải khăn (dither Bayer)."""
+    """Mặt bàn của Nguyệt nhìn từ trên xuống, cùng tấm khăn ở góc mặt Nguyệt (interior.table):
+    khăn tím mận phủ kín tới mép bàn, một đường viền thêu vàng chạy quanh, mép gần phía khách là chỗ
+    khăn gập xuống với dải viền vàng đính hạt; sao thêu và chòm sao như mặt khăn bên kia; vòng đọc bài
+    chấm vàng; trăng khuyết thêu ở mép gần. Mép xa để trơn: vạt áo của Nguyệt phủ lên đó (DOM, .table-robe).
+    CW: bề rộng vùng giữa dùng để đặt vòng đọc bài và chừa chỗ sao; phần thêm hai bên cho máy lia ngang
+    khi sổ nằm ở góc bàn. Ánh nến đến từ góc trên phải (dither Bayer)."""
     CW = CW or W
-    ox = (W - CW) // 2
-    img = new(W, H, 'w0')
+    img = new(W, H, 'p0')
     px = img.load()
-    # gỗ: ván dọc theo chiều ngang, vân bằng dither
-    plank = 26
+    lx, ly = (W - CW) // 2 + CW * 0.82, H * 0.12    # nguồn sáng: ngọn nến
+    diag = math.hypot(CW, H)
     for y in range(H):
         for x in range(W):
-            k = (y // plank)
-            t = ((x * 0.013 + k * 1.7) % 1.0)
-            col = 'w1' if bayer(x, y, 0.35 + 0.3 * math.sin(t * math.tau)) else 'w0'
-            if y % plank == 0:
-                col = 'out'
-            px[x, y] = c(col)
-    # khăn
-    m = 22 if CW > H else 16
-    x0, y0, x1, y1 = ox + m, m, ox + CW - 1 - m, H - 1 - m
-    lx, ly = ox + CW * 0.82, H * 0.12    # nguồn sáng: ngọn nến
-    diag = math.hypot(CW, H)
-    for y in range(y0, y1 + 1):
-        for x in range(x0, x1 + 1):
             light = 1 - math.hypot(x - lx, y - ly) / diag      # 0..1
             col = 'p0'
             if bayer(x, y, max(0, light - .25) * 1.6):
@@ -44,38 +33,51 @@ def tabletop(W, H, seed, CW=None):
                 col = 'p2'
             px[x, y] = c(col)
     d = draw(img)
-    # viền thêu: hai đường vàng + chấm ở góc
-    for inset, col in ((6, 'au1'), (9, 'au0')):
-        d.rectangle([x0 + inset, y0 + inset, x1 - inset, y1 - inset], outline=c(col))
-    for (cx, cy) in ((x0 + 6, y0 + 6), (x1 - 6, y0 + 6), (x0 + 6, y1 - 6), (x1 - 6, y1 - 6)):
-        for dx, dy in [(0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)]:
-            put(img, cx + dx, cy + dy, 'au2')
-    # tua rua ở mép khăn
-    for x in range(x0 + 2, x1 - 1, 4):
-        put(img, x, y0 - 1, 'au0')
-        put(img, x, y1 + 1, 'au0')
-        put(img, x, y1 + 2, 'au0' if x % 8 == 2 else 'p0')
-    # sao thêu rải, chừa vùng giữa cho lá bài
+    # đường viền thêu một nét quanh mặt bàn, như mặt khăn ở góc mặt Nguyệt
+    d.rectangle([6, 4, W - 7, H - 12], outline=c('au1'))
+    # mép gần: khăn gập xuống phía khách, hai đường vàng rồi dải viền đính hạt
+    d.line([(4, H - 9), (W - 5, H - 9)], fill=c('au0'))
+    d.line([(0, H - 7), (W, H - 7)], fill=c('au2'))
+    d.rectangle([0, H - 6, W, H - 3], fill=c('au0'))
+    d.line([(0, H - 5), (W, H - 5)], fill=c('au1'))
+    for x in range(2, W, 6):
+        put(img, x, H - 5, 'au2')
+    d.rectangle([0, H - 2, W, H - 1], fill=c('out'))
+    # sao thêu: chấm vàng, một phần là sao bốn cánh, cùng mật độ cảm giác như mặt khăn bên kia;
+    # chừa vòng đọc bài để lá bài nằm trên nền yên
     r = rng(seed)
-    for _ in range(int(CW * H / 2600)):
-        x, y = r.randint(x0 + 16, x1 - 16), r.randint(y0 + 16, y1 - 16)
-        if abs(x - W / 2) < CW * 0.3 and abs(y - H * 0.46) < H * 0.3:
-            continue
+    rx, ry = (CW * 0.30, H * 0.33) if CW > H else (CW * 0.40, H * 0.27)
+    cx, cy = W / 2, H * 0.46
+
+    def star(x, y, big):
         put(img, x, y, 'au0')
-        if r.random() < .35:
+        if big:
             for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
                 put(img, x + dx, y + dy, 'au0')
             put(img, x, y, 'au1')
+
+    for _ in range(int(W * H / 1500)):
+        x, y = r.randint(12, W - 13), r.randint(10, H - 16)
+        if ((x - cx) / (rx + 10)) ** 2 + ((y - cy) / (ry + 10)) ** 2 < 1:
+            continue
+        star(x, y, r.random() < .3)
+    # vài chòm sao nhỏ (ba tới năm sao nối nhau) ngoài vòng đọc bài
+    for _ in range(max(3, int(W * H / 60000))):
+        for _try in range(20):
+            x, y = r.randint(24, W - 25), r.randint(18, H - 30)
+            if ((x - cx) / (rx + 24)) ** 2 + ((y - cy) / (ry + 24)) ** 2 >= 1:
+                break
+        for _k in range(r.randint(3, 5)):
+            star(x, y, True)
+            x += r.randint(-9, 9)
+            y += r.randint(-6, 6)
     # vòng đọc bài: elip chấm vàng
-    # bản ngang: vòng nhỏ hơn một chút để sổ nằm mở bên phải mà không cắt vòng
-    rx, ry = (CW * 0.30, H * 0.33) if CW > H else (CW * 0.40, H * 0.27)
-    cx, cy = W / 2, H * 0.46
     steps = int(2 * math.pi * max(rx, ry) / 4)
     for i in range(steps):
         a = 2 * math.pi * i / steps
         put(img, round(cx + rx * math.cos(a)), round(cy + ry * math.sin(a)), 'au0' if i % 3 else 'au1')
-    # trăng khuyết thêu ở mép gần (phía khách)
-    mx, my = int(W / 2), int(y1 - (26 if CW > H else 34))
+    # trăng khuyết thêu ở mép gần (phía khách), như trăng trên vạt khăn ở góc mặt Nguyệt
+    mx, my = int(W / 2), int(H - (34 if CW > H else 44))
     for y in range(my - 9, my + 10):
         for x in range(mx - 9, mx + 10):
             if (x - mx) ** 2 + (y - my) ** 2 <= 7 ** 2 and (x - mx + 3) ** 2 + (y - my + 2) ** 2 > 6 ** 2:
@@ -83,7 +85,48 @@ def tabletop(W, H, seed, CW=None):
     return img
 
 
-# ------------------------------------------------------------------ tay Nguyệt (đưa từ phía bên kia bàn, nhìn từ trên)
+def robe():
+    """Lòng Nguyệt nhìn từ trên xuống, nàng ngồi bên kia mép xa của bàn: vạt áo choàng xanh sao phủ qua mép bàn,
+    gấu vàng cong chùng ở giữa, hai bên bo tròn (hai tay vươn ra từ hai bên, .table-arm.is-resting).
+    Phần trên chìm dần vào bóng tối phía nàng ngồi (dither tới 'out'), nên mép cắt ở đỉnh vùng chơi không lộ.
+    Cùng chất liệu ống tay (n1..n3, sao kem). Dưới gấu là bóng đổ lên khăn bằng dither."""
+    W, H = 96, 34
+    img = new(W, H)
+    px = img.load()
+    for x in range(W):
+        t = (x + 0.5) / W
+        u = 2 * t - 1                                      # -1..1
+        # gấu áo: cung elip, thấp nhất ở giữa, bo lên ở hai bên
+        hem = int(8 + 18 * math.sqrt(max(0.0, 1 - u * u)))
+        for y in range(0, hem + 1):
+            dark = 1 - y / max(1, hem)                     # 1 ở đỉnh, 0 ở gấu
+            col = 'n2'
+            if bayer(x, y, 0.25 + 0.45 * abs(u) ** 2):     # hai bên tối hơn (bo tròn)
+                col = 'n1'
+            if bayer(x, y, max(0, dark - 0.45) * 1.9):     # đỉnh chìm vào bóng tối
+                col = 'out'
+            px[x, y] = c(col)
+        # nếp gấp dọc ở giữa vạt
+        if abs(u) < 0.75 and x % 13 in (0, 1):
+            for y in range(int(hem * 0.45), hem - 2):
+                px[x, y] = c('n3' if x % 13 == 0 else 'n1')
+        # viền gấu vàng
+        if abs(u) < 0.97:
+            px[x, hem] = c('au0')
+            px[x, hem - 1] = c('au1' if x % 4 else 'au2')
+            if hem + 1 < H:
+                px[x, hem + 1] = c('out')
+            for k, dens in ((2, .7), (3, .45), (4, .25), (5, .12)):
+                if hem + k < H and bayer(x, hem + k, dens):
+                    px[x, hem + k] = c('out')
+    r = rng(5)
+    for _ in range(18):
+        x, y = r.randint(6, W - 7), r.randint(8, 22)
+        if px[x, y][3] and px[x, y][:3] == PAL['n2']:
+            put(img, x, y, 'cr')
+    return img
+
+
 def sleeve_and_hand(point=True):
     """Ống tay áo xanh đêm viền vàng chạy từ mép trên xuống, bàn tay úp, ngón trỏ duỗi khi chỉ."""
     W, H = 34, 66
@@ -258,6 +301,7 @@ def build():
     save(book(), 'table/book.png')
     save(book_frame(), 'table/book_frame.png', opaque=True)
     save(sleeve_tile(), 'table/sleeve_tile.png')
+    save(robe(), 'table/robe.png')
     for rel, im in portraits().items():
         save(im, rel)
 
