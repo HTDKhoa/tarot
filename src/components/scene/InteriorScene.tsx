@@ -17,7 +17,6 @@ const KEEPER_W = 160;
 const KEEPER_H = 176;
 /** Vị trí theo manifest.json của bộ asset (góc trên trái → tâm ngang + cạnh dưới). */
 const KEEPER_AT = { x: 240 + KEEPER_W / 2, bottom: 75 + KEEPER_H }; // đáy chạm mép xa của bàn
-const TABLE_BOTTOM = 360;
 const CANDLE_AT = { x: 478 + 10, bottom: 254 + 40 };
 const FLAME_AT = { x: 478 + 5 + 5, bottom: 254 - 9 + 16 };
 const CRYSTAL_AT = { x: 142 + 14, bottom: 266 + 28 };
@@ -168,7 +167,18 @@ function Candle() {
   );
 }
 
-export function InteriorScene() {
+/** Ảnh mặt bàn (art/table.py tabletop): mép trên là mép xa của bàn ở y 250 của khung, ngay dưới tay Nguyệt. */
+const T = "/assets/table";
+const TABLE_FAR = 250;
+const TABLE_IMG_H = { landscape: 420, portrait: 480 };
+
+/**
+ * Trong nhà là một khung liền từ trên xuống: Nguyệt, rồi ngay dưới tay nàng là mặt bàn nhìn chếch từ trên
+ * (kiểu sàn và bàn trong game HD-2D). Góc mặt bàn chỉ là máy lia dọc xuống mặt bàn này (Experience/CameraRig),
+ * nên nến, quả cầu và mặt khăn đứng yên một chỗ suốt lúc lia. `portrait`: mép gần và vòng đọc bài của ảnh
+ * khớp khung điện thoại.
+ */
+export function InteriorScene({ portrait = false }: { portrait?: boolean }) {
   const anchors = useAnchors();
   const [up, setUp] = useState(false);
   return (
@@ -181,7 +191,12 @@ export function InteriorScene() {
       <PixelSprite src={`${I}/room_glow.png`} position={[0, 0, -0.79]} at={{ x: 320, bottom: 360 }} overscan={OVERSCAN} mode="glow" glowStrength={1.6} glowColor="#dfe6ff" />
       <Keeper onFrame={setUp} />
       <Owl anchors={anchors} up={up} />
-      <PixelSprite src={`${I}/table.png`} position={[0, 0, 0.5]} at={{ x: 320, bottom: TABLE_BOTTOM }} overscan={OVERSCAN} />
+      <PixelSprite
+        src={portrait ? `${T}/tabletop_doc.png` : `${T}/tabletop.png`}
+        position={[0, 0, 0.5]}
+        at={{ x: 320, bottom: TABLE_FAR + (portrait ? TABLE_IMG_H.portrait : TABLE_IMG_H.landscape) }}
+        overscan={OVERSCAN}
+      />
       <PixelSprite src={`${I}/crystal.png`} position={[0, 0, 0.55]} at={CRYSTAL_AT} overscan={OVERSCAN} />
       <PixelSprite src={`${I}/crystal_glow.png`} position={[0, 0, 0.56]} at={CRYSTAL_AT} overscan={OVERSCAN} mode="glow" glowStrength={2} glowColor="#c9b6ff" />
       <Candle />

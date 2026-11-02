@@ -6,7 +6,6 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { CameraRig } from "./CameraRig";
 import { ForestScene } from "./ForestScene";
 import { InteriorScene } from "./InteriorScene";
-import { TableScene, tableCenterY, tableFrame } from "./TableScene";
 import { CAM_D } from "./pixel";
 import { sceneStore, useScene, type Quality, type Stage } from "@/lib/store";
 
@@ -58,6 +57,12 @@ function Effects({ quality }: { quality: Quality }) {
  * Trong nhà có hai góc máy trên cùng một trục dọc: mặt Nguyệt ở trên, mặt bàn ngay bên dưới.
  * Cả hai cảnh cùng được dựng nên khi đổi góc, camera lia liền một mạch thay vì cắt.
  */
+/**
+ * Mép trên khung ở góc mặt bàn (toạ độ thế giới): ngay dưới chân nến và đầu ngón tay Nguyệt trên mép xa của bàn
+ * (khung y ~296), để nến và tay nàng ra khỏi khung trọn vẹn thay vì lấp ló dưới thanh trên cùng.
+ */
+const TABLE_VIEW_TOP = -1.16;
+
 function World({ stage }: { stage: Stage }) {
   const { size } = useThree();
   const portrait = size.width / size.height < 0.8;
@@ -70,23 +75,19 @@ function World({ stage }: { stage: Stage }) {
             Nhóm ẩn: không vẽ, không chiếu sáng; màu nền của cảnh trong nhà gắn vào nhóm chứ không vào scene. */}
         <Suspense fallback={null}>
           <group visible={false}>
-            <InteriorScene />
-            <TableScene portrait={portrait} />
+            <InteriorScene portrait={portrait} />
           </group>
         </Suspense>
       </>
     );
   }
   const onTable = stage === "table";
+  // Góc mặt bàn: cùng khung và cùng độ zoom với góc mặt Nguyệt, máy chỉ lia dọc xuống mặt bàn ngay dưới tay nàng
+  // (mép trên khung dừng ngay dưới các ngón tay đang đặt trên bàn), cộng lệch ngang khi sổ ghim bên phải.
   return (
     <>
-      <InteriorScene />
-      <TableScene portrait={portrait} />
-      {onTable ? (
-        <CameraRig focus={[0, tableCenterY(portrait)]} frame={tableFrame(portrait)} zoom={1} shift />
-      ) : (
-        <CameraRig focus={[0, -0.17]} zoom={1.25} portraitZoom={0.8} arrive />
-      )}
+      <InteriorScene portrait={portrait} />
+      <CameraRig focus={[0, -0.17]} top={onTable ? TABLE_VIEW_TOP : undefined} zoom={1.25} portraitZoom={0.8} shift={onTable} arrive />
     </>
   );
 }

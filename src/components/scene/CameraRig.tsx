@@ -27,6 +27,7 @@ export function CameraRig({
   frame = [FRAME_W, FRAME_H] as [number, number],
   shift = false,
   arrive = false,
+  top,
 }: {
   focus?: [number, number];
   zoom?: number;
@@ -37,6 +38,8 @@ export function CameraRig({
   shift?: boolean;
   /** vừa bước vào: bắt đầu hơi gần rồi lùi về khung nghỉ */
   arrive?: boolean;
+  /** đặt mép trên khung ở toạ độ này (thay cho tâm focus[1]): góc mặt bàn lia dọc tới ngay dưới tay Nguyệt */
+  top?: number;
 }) {
   const { camera, size, pointer } = useThree();
   const cam = camera as THREE.PerspectiveCamera;
@@ -79,7 +82,8 @@ export function CameraRig({
     // lệch đặt sau phép kẹp: ảnh mặt bàn rộng thêm phần gỗ hai bên nên lệch không lộ mép
     const offset = shift ? sceneStore.get().shiftX * visH * aspect : 0;
     const tx = THREE.MathUtils.clamp(focus[0] + px, -maxX - 0.12, maxX + 0.12) + offset;
-    const ty = focus[1] + pointer.y * 0.05 * still - (stage === "door" ? d * 0.75 : 0); // tiến về phía cửa nhà
+    const cy = top !== undefined ? top - visH / 2 : focus[1];
+    const ty = cy + pointer.y * 0.05 * still - (stage === "door" ? d * 0.75 : 0); // tiến về phía cửa nhà
     cam.position.x = snap ? tx : THREE.MathUtils.damp(cam.position.x, tx, 4, dt);
     cam.position.y = snap ? ty : THREE.MathUtils.damp(cam.position.y, ty, 3.2, dt);
     cam.position.z = CAM_D - d * 4.6;
