@@ -65,6 +65,13 @@ const CRISIS_KEY = "nguyet_crisis";
 const CRISIS_RETURN: ReaderLine[] = [{ tag: "gentle", text: "Đèn vẫn sáng. Hôm nay ta cất bài rồi. Ta chỉ muốn biết cậu đang an toàn." }];
 /** Lời mời viết câu hỏi: Nguyệt nói câu này ngay trên ô nhập, form không thay giọng của nàng bằng tiêu đề. */
 const FORM_INVITE = "Kể ta nghe điều cậu đang băn khoăn. Viết thật lòng, càng cụ thể ta càng đọc rõ.";
+/** Lời báo lỗi: nói cái gì chưa xong, lỗi ở phía ai, và bước tiếp theo. Không hứa điều máy không biết chắc. */
+const FAIL = {
+  askNetwork: "Ta chưa xào được bài. Đường tới đây vừa chập chờn. Câu hỏi ta vẫn giữ, cậu hỏi lại nhé.",
+  askServer: "Ta chưa xào được bài. Trục trặc ở phía ta, không phải do cậu. Câu hỏi ta vẫn giữ, cậu hỏi lại nhé.",
+  clarify: "Lá làm rõ chưa rút được, đường tới đây vừa chập chờn. Cậu rút lại, hoặc để ta gom lại cũng được.",
+  finish: "Ta chưa gom lại được, đường tới đây vừa chập chờn. Bài vẫn nằm nguyên trên bàn, cậu bấm lại nhé.",
+};
 /** "Ngồi thêm một lúc": Nguyệt ở lại bầu bạn, không bài, không khuyên; lần lượt từng câu. */
 const CRISIS_STAY: ReaderLine[] = [
   { tag: "gentle", text: "Ừ, ngồi đi. Ta không cất đèn đâu." },
@@ -98,6 +105,9 @@ export default function HomeClient() {
   const [farewell, setFarewell] = useState<ReaderLine | null>(null);
   // câu hỏi vừa gửi, để sổ đã ghi được câu hỏi ngay trong lúc xào bài (trước khi máy chủ trả lá)
   const [askedQuestion, setAskedQuestion] = useState("");
+  const [lastAsk, setLastAsk] = useState<{ q: string; topic: Topic; spread: SpreadId } | null>(null);
+  // chỉ điền sẵn form khi "Hỏi lại" sau lỗi; "Trải bài", "Hỏi điều khác" luôn mở form trống
+  const [prefill, setPrefill] = useState<typeof lastAsk>(null);
   // Desktop: sổ nằm mở sẵn bên phải khăn.
   const docked = useMedia("(min-width: 1024px) and (min-aspect-ratio: 4/3)");
 
@@ -196,6 +206,7 @@ export default function HomeClient() {
     }
     resetTable();
     toFace();
+    setPrefill(null);
     say([{ tag: "think", text: FORM_INVITE }], "form");
   };
 
@@ -232,6 +243,7 @@ export default function HomeClient() {
     toTable();
     // form gập lại, hộp thoại báo Nguyệt đang xào bài trong lúc hai tay xào trên bàn
     setAskedQuestion(question);
+    setLastAsk({ q: question, topic, spread });
     setPhase("shuffling");
     const startedAt = performance.now();
     try {
@@ -250,7 +262,8 @@ export default function HomeClient() {
       if (r.ok) await shuffleTime(startedAt);
       if (r.status === 401) return say([{ tag: "tease", text: j.error }], "login");
       if (j.error === "quota") return say([{ tag: "concern", text: j.message }], "quota");
-      if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc. Cậu thử lại nhé." }], "message");
+      // 400 là lời nhắc về chính câu hỏi (ngắn quá, dài quá); còn lại là trục trặc phía máy chủ
+      if (!r.ok) return say([{ tag: "concern", text: r.status === 400 && j.error ? j.error : FAIL.askServer }], "message");
       setCtx({ question, readingId: j.readingId, demo: j.demo, topic, spread, draws: j.draws ?? [], clarifiers: [], clarifiersLeft: j.clarifiersLeft });
       setCards(j.cards);
       setPendingLines(j.lines);
@@ -260,7 +273,7 @@ export default function HomeClient() {
     } catch {
       // mất mạng giữa chừng: ngẩng lên, Nguyệt báo và cho quay lại
       toFace();
-      say([{ tag: "concern", text: "Có gì đó trục trặc. Cậu thử lại nhé." }], "message");
+      say([{ tag: "concern", text: FAIL.askNetwork }], "message");
     } finally {
       setBusy(false);
     }
@@ -306,11 +319,14 @@ export default function HomeClient() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ readingId: ctx.readingId, demo: ctx.demo ? { topic: ctx.topic, spread: ctx.spread, draws: ctx.draws, clarifiers: ctx.clarifiers } : undefined }),
       });
-      const j = await r.json();
-      if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc." }], "deciding");
+      const j = await r.json().catch(() => ({}));
+      // 409: phiên đã khép hoặc đủ lá, lời máy chủ nói đúng tình huống
+      if (!r.ok) return say([{ tag: "concern", text: r.status === 409 && j.error ? j.error : FAIL.clarify }], "deciding");
       setCards((c) => [...c, j.card]);
       setCtx({ ...ctx, clarifiers: j.draw ? [...ctx.clarifiers, j.draw] : [...ctx.clarifiers, { cardId: j.card.card.id, reversed: j.card.reversed }], clarifiersLeft: j.clarifiersLeft });
       say(j.lines, "reading");
+    } catch {
+      say([{ tag: "concern", text: FAIL.clarify }], "deciding");
     } finally {
       setBusy(false);
     }
@@ -326,8 +342,8 @@ export default function HomeClient() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ readingId: ctx.readingId, demo: ctx.demo ? { topic: ctx.topic, draws: ctx.draws, clarifiers: ctx.clarifiers } : undefined }),
       });
-      const j = await r.json();
-      if (!r.ok) return say([{ tag: "concern", text: j.error ?? "Có gì đó trục trặc." }], "done");
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) return r.status === 409 && j.error ? say([{ tag: "concern", text: j.error }], "done") : say([{ tag: "concern", text: FAIL.finish }], "deciding");
       setRecap({ themes: j.themes ?? [], advice: j.advice ?? "" });
       // phần gom nói trên bàn; câu chào ra về để dành tới lúc ngẩng lên
       const all = j.lines as ReaderLine[];
@@ -336,6 +352,8 @@ export default function HomeClient() {
       setFarewell(bye);
       currentCard.current = null;
       say(bye ? all.slice(0, -1) : all, "closing");
+    } catch {
+      say([{ tag: "concern", text: FAIL.finish }], "deciding");
     } finally {
       setBusy(false);
     }
@@ -489,7 +507,7 @@ export default function HomeClient() {
 
           <div className="dialogue-zone">
             {phase === "form" ? (
-              <QuestionForm onSubmit={submitQuestion} onCancel={backToMenu} busy={busy} quotaText={quotaText} />
+              <QuestionForm onSubmit={submitQuestion} onCancel={backToMenu} busy={busy} quotaText={quotaText} initial={prefill} />
             ) : (
               <Dialogue key={greetingNow ? "greet" : script.id} lines={lines} onLine={onLine} onDone={onDone} busy={busy} portrait={onTable ? <Portrait /> : undefined}>
                 {phase === "menu" && (
@@ -510,9 +528,14 @@ export default function HomeClient() {
                 {phase === "deciding" && ctx && (
                   <>
                     {ctx.clarifiersLeft > 0 && (
-                      <button className="btn-pixel" onClick={clarify} disabled={busy}>Rút thêm một lá ({ctx.clarifiersLeft})</button>
+                      <button className="btn-pixel" onClick={clarify} disabled={busy}>
+                        Rút thêm một lá · còn {ctx.clarifiersLeft}
+                      </button>
                     )}
-                    <button className="btn-pixel btn-gold" onClick={finish} disabled={busy}>Nói đi, ta nghe</button>
+                    {/* lời của khách (xưng "mình"), nói rõ bấm là Nguyệt gom lại và khép phiên */}
+                    <button className="btn-pixel btn-gold" onClick={finish} disabled={busy}>
+                      Gom lại giúp mình
+                    </button>
                   </>
                 )}
                 {phase === "summary" && (
@@ -525,7 +548,7 @@ export default function HomeClient() {
                       say([farewell ?? { tag: "farewell", text: "Đường về vẫn sáng. Ta để đèn chờ." }], "done");
                     }}
                   >
-                    Gập sổ, ngẩng lên
+                    Ngẩng lên chào Nguyệt
                   </button>
                 )}
                 {phase === "done" && (
@@ -548,7 +571,20 @@ export default function HomeClient() {
                   </>
                 )}
                 {phase === "message" && (
-                  <button className="btn-pixel btn-gold" onClick={backToMenu}>Quay lại</button>
+                  <>
+                    {lastAsk && (
+                      <button className="btn-pixel btn-gold" onClick={() => {
+                          setPrefill(lastAsk);
+                          say([{ tag: "think", text: FORM_INVITE }], "form");
+                        }}
+                      >
+                        Hỏi lại
+                      </button>
+                    )}
+                    <button className={`btn-pixel ${lastAsk ? "btn-ghost" : "btn-gold"}`} onClick={backToMenu}>
+                      Quay lại
+                    </button>
+                  </>
                 )}
               </Dialogue>
             )}
@@ -592,10 +628,23 @@ function SupportCard({ onStay, onLeave }: { onStay: () => void; onLeave: () => v
  * Form câu hỏi nằm trong khung hộp thoại và vẫn là lượt nói của Nguyệt: thẻ tên "Nguyệt", lời mời của nàng làm nhãn ô nhập.
  * Hai hàng chip có nhãn nhìn thấy được; mô tả cách trải đang chọn hiện ngay dưới.
  */
-function QuestionForm({ onSubmit, onCancel, busy, quotaText }: { onSubmit: (q: string, t: Topic, s: SpreadId) => void; onCancel: () => void; busy: boolean; quotaText: string | null }) {
-  const [q, setQ] = useState("");
-  const [topic, setTopic] = useState<Topic>("ban_than");
-  const [spread, setSpread] = useState<SpreadId>("past_present_path");
+function QuestionForm({
+  onSubmit,
+  onCancel,
+  busy,
+  quotaText,
+  initial,
+}: {
+  onSubmit: (q: string, t: Topic, s: SpreadId) => void;
+  onCancel: () => void;
+  busy: boolean;
+  quotaText: string | null;
+  /** "Hỏi lại" sau lỗi: điền sẵn câu hỏi, chủ đề, cách trải vừa gửi để khách không phải gõ lại */
+  initial: { q: string; topic: Topic; spread: SpreadId } | null;
+}) {
+  const [q, setQ] = useState(initial?.q ?? "");
+  const [topic, setTopic] = useState<Topic>(initial?.topic ?? "ban_than");
+  const [spread, setSpread] = useState<SpreadId>(initial?.spread ?? "past_present_path");
   const topics = useMemo(() => Object.entries(TOPIC_LABELS) as [Topic, string][], []);
   const spreads = useMemo(() => Object.values(SPREADS).map((s) => [s.id, s.name] as [SpreadId, string]), []);
   const formRef = useRef<HTMLFormElement>(null);
