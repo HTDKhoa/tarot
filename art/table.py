@@ -12,72 +12,123 @@ import characters
 
 # ------------------------------------------------------------------ mặt bàn
 def tabletop(W, H, seed, CW=None):
-    """Mặt bàn của Nguyệt nhìn từ trên xuống, cùng tấm khăn ở góc mặt Nguyệt (interior.table):
-    khăn tím mận phủ kín tới mép bàn, một đường viền thêu vàng chạy quanh, mép gần phía khách là chỗ
-    khăn gập xuống với dải viền vàng đính hạt; sao thêu và chòm sao như mặt khăn bên kia; vòng đọc bài
-    chấm vàng; trăng khuyết thêu ở mép gần. Mép xa để trơn: vạt áo của Nguyệt phủ lên đó (DOM, .table-robe).
-    CW: bề rộng vùng giữa dùng để đặt vòng đọc bài và chừa chỗ sao; phần thêm hai bên cho máy lia ngang
-    khi sổ nằm ở góc bàn. Ánh nến đến từ góc trên phải (dither Bayer)."""
+    """Mặt bàn của Nguyệt nhìn từ chỗ khách ngồi, hơi chếch xuống: mép xa hẹp hơn mép gần (phối cảnh),
+    hai mép bên chéo dần, ngoài mép bàn là sàn nhà chìm trong bóng tối. Khăn tím mận như ở góc mặt Nguyệt
+    (interior.table) phủ kín mặt bàn rồi rủ qua mép (dải nếp gấp tối, viền vàng ở mép), mép gần phía khách
+    là dải viền vàng đính hạt; sao thêu thưa dần về phía xa; vòng đọc bài chấm vàng; trăng khuyết ở mép gần.
+    Vạt áo và hai tay nghỉ của Nguyệt ở mép xa là lớp DOM (.table-robe).
+    CW: bề rộng vùng giữa để đặt vòng đọc bài; phần thêm hai bên cho máy lia ngang khi sổ nằm ở góc bàn.
+    Ánh nến đến từ góc trên phải mặt bàn (dither Bayer)."""
     CW = CW or W
-    img = new(W, H, 'p0')
+    landscape = CW > H
+    img = new(W, H, 'out')
     px = img.load()
-    lx, ly = (W - CW) // 2 + CW * 0.82, H * 0.12    # nguồn sáng: ngọn nến
-    diag = math.hypot(CW, H)
+    cx0 = W / 2
+    # Mép xa ngay dưới thanh trên cùng (vạt áo Nguyệt phủ lên đó). Hai mép bên hội tụ về tâm máy:
+    # bản dọc đối xứng; bản ngang dùng cho desktop có sổ ghim, máy lệch phải nên mép trái chéo rõ
+    # và hiện trong khung, mép phải nằm ngoài cột sổ để sổ vẫn nằm trên bàn.
+    if landscape:
+        far_y, far_l, far_r, near_l, near_r = 40, 286, 890, -130, 1090
+    else:
+        far_y, far_l, far_r, near_l, near_r = 52, 64, W - 64, -14, W + 14
+
+    def edges(y):
+        t = (y - far_y) / max(1, H - far_y)
+        return far_l + (near_l - far_l) * t, far_r + (near_r - far_r) * t
+
+    def hw(y):  # nửa bề rộng quanh tâm vòng đọc bài (dùng để chừa sao)
+        l, r_ = edges(y)
+        return min(cx0 - l, r_ - cx0)
+
+    # sàn nhà trong bóng tối: ván mờ, rất tối
     for y in range(H):
         for x in range(W):
-            light = 1 - math.hypot(x - lx, y - ly) / diag      # 0..1
-            col = 'p0'
-            if bayer(x, y, max(0, light - .25) * 1.6):
-                col = 'p1'
-            if bayer(x, y, max(0, light - .62) * 2.2):
-                col = 'p2'
-            px[x, y] = c(col)
+            if bayer(x, y, 0.10 + 0.08 * ((x // 7 + y // 40) % 2)):
+                px[x, y] = c('n0')
+    lx, ly = (730 if landscape else W - 84), far_y + H * 0.10   # nguồn sáng: ngọn nến gần góc xa bên phải
+    diag = math.hypot(W, H)
+    drape = 7                                          # dải khăn rủ qua mép bên
+    for y in range(far_y, H):
+        el, er = edges(y)
+        depth = (y - far_y) / (H - far_y)              # 0 ở mép xa, 1 ở mép gần
+        for x in range(W):
+            out_by = max(el - x, x - er)               # >0: ngoài mép bàn
+            if out_by <= 0:
+                light = 1 - math.hypot(x - lx, y - ly) / diag
+                light -= (1 - depth) * 0.08            # xa thì tối hơn một chút
+                col = 'p0'
+                if bayer(x, y, max(0, light - .25) * 1.6):
+                    col = 'p1'
+                if bayer(x, y, max(0, light - .62) * 2.2):
+                    col = 'p2'
+                px[x, y] = c(col)
+            elif out_by <= drape:
+                # khăn rủ xuống qua mép bên: nếp gấp tối, nhạt dần vào bóng
+                k = out_by
+                col = 'p0' if (x + y // 3) % 5 else 'out'
+                if k > 4 and bayer(x, y, 0.5):
+                    col = 'out'
+                px[x, y] = c(col)
     d = draw(img)
-    # đường viền thêu một nét quanh mặt bàn, như mặt khăn ở góc mặt Nguyệt
-    d.rectangle([6, 4, W - 7, H - 12], outline=c('au1'))
-    # mép gần: khăn gập xuống phía khách, hai đường vàng rồi dải viền đính hạt
-    d.line([(4, H - 9), (W - 5, H - 9)], fill=c('au0'))
+    # mép bàn: viền thêu vàng chạy theo mép khăn (hai bên và mép xa)
+    for y in range(far_y, H):
+        el, er = edges(y)
+        put(img, int(el), y, 'au0')
+        put(img, int(er), y, 'au0')
+        if y > far_y + 4:
+            put(img, int(el + 5), y, 'au1')
+            put(img, int(er - 5), y, 'au1')
+    d.line([(far_l, far_y), (far_r, far_y)], fill=c('au0'))
+    d.line([(far_l + 5, far_y + 4), (far_r - 5, far_y + 4)], fill=c('au1'))
+    # mép gần: khăn gập xuống phía khách, dải viền vàng đính hạt
+    d.line([(0, H - 9), (W, H - 9)], fill=c('au0'))
     d.line([(0, H - 7), (W, H - 7)], fill=c('au2'))
     d.rectangle([0, H - 6, W, H - 3], fill=c('au0'))
     d.line([(0, H - 5), (W, H - 5)], fill=c('au1'))
     for x in range(2, W, 6):
         put(img, x, H - 5, 'au2')
     d.rectangle([0, H - 2, W, H - 1], fill=c('out'))
-    # sao thêu: chấm vàng, một phần là sao bốn cánh, cùng mật độ cảm giác như mặt khăn bên kia;
-    # chừa vòng đọc bài để lá bài nằm trên nền yên
+    # sao thêu, thưa dần về phía xa; chừa vòng đọc bài
     r = rng(seed)
-    rx, ry = (CW * 0.30, H * 0.33) if CW > H else (CW * 0.40, H * 0.27)
-    cx, cy = W / 2, H * 0.46
+    # phối cảnh: vòng tròn trên mặt bàn hiện ra thành elip dẹt (rộng hơn cao), cả ở bản dọc
+    rx, ry = (CW * 0.30, H * 0.30) if landscape else (CW * 0.36, CW * 0.36 * 0.9)
+    cy0 = H * 0.46
+
+    def inside(x, y, pad):
+        el, er = edges(y)
+        return el + pad < x < er - pad and y > far_y + pad
 
     def star(x, y, big):
         put(img, x, y, 'au0')
         if big:
-            for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
-                put(img, x + dx, y + dy, 'au0')
+            for ddx, ddy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                put(img, x + ddx, y + ddy, 'au0')
             put(img, x, y, 'au1')
 
     for _ in range(int(W * H / 1500)):
-        x, y = r.randint(12, W - 13), r.randint(10, H - 16)
-        if ((x - cx) / (rx + 10)) ** 2 + ((y - cy) / (ry + 10)) ** 2 < 1:
+        x, y = r.randint(8, W - 9), r.randint(far_y + 8, H - 16)
+        if not inside(x, y, 9) or ((x - cx0) / (rx + 10)) ** 2 + ((y - cy0) / (ry + 10)) ** 2 < 1:
             continue
-        star(x, y, r.random() < .3)
-    # vài chòm sao nhỏ (ba tới năm sao nối nhau) ngoài vòng đọc bài
+        if r.random() > 0.35 + 0.65 * (y - far_y) / (H - far_y):
+            continue
+        star(x, y, r.random() < .3 * (y - far_y) / (H - far_y) + .05)
     for _ in range(max(3, int(W * H / 60000))):
-        for _try in range(20):
-            x, y = r.randint(24, W - 25), r.randint(18, H - 30)
-            if ((x - cx) / (rx + 24)) ** 2 + ((y - cy) / (ry + 24)) ** 2 >= 1:
+        for _try in range(30):
+            x, y = r.randint(20, W - 21), r.randint(far_y + 30, H - 30)
+            if inside(x, y, 24) and ((x - cx0) / (rx + 24)) ** 2 + ((y - cy0) / (ry + 24)) ** 2 >= 1:
                 break
         for _k in range(r.randint(3, 5)):
-            star(x, y, True)
+            if inside(x, y, 10):
+                star(x, y, True)
             x += r.randint(-9, 9)
             y += r.randint(-6, 6)
     # vòng đọc bài: elip chấm vàng
     steps = int(2 * math.pi * max(rx, ry) / 4)
     for i in range(steps):
         a = 2 * math.pi * i / steps
-        put(img, round(cx + rx * math.cos(a)), round(cy + ry * math.sin(a)), 'au0' if i % 3 else 'au1')
-    # trăng khuyết thêu ở mép gần (phía khách), như trăng trên vạt khăn ở góc mặt Nguyệt
-    mx, my = int(W / 2), int(H - (34 if CW > H else 44))
+        put(img, round(cx0 + rx * math.cos(a)), round(cy0 + ry * math.sin(a)), 'au0' if i % 3 else 'au1')
+    # trăng khuyết thêu ở mép gần (phía khách)
+    mx, my = int(W / 2), int(H - (34 if landscape else 44))
     for y in range(my - 9, my + 10):
         for x in range(mx - 9, mx + 10):
             if (x - mx) ** 2 + (y - my) ** 2 <= 7 ** 2 and (x - mx + 3) ** 2 + (y - my + 2) ** 2 > 6 ** 2:
