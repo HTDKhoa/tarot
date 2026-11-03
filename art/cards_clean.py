@@ -7,6 +7,7 @@
 
 Ảnh .aseprite được Aseprite xuất ra PNG ở art/aseprite/cards/_png/ trước khi xử lý.
 Lá mới 97×181: khung 4 px, tranh 89×156 tại (4, 4), dải tên kem ở dưới (web viết tên bằng DOM).
+Ảnh trên web phóng sẵn ×4 (388×724, tranh 356×624); web thu nhỏ mượt.
 """
 import glob
 import json
@@ -36,8 +37,11 @@ BAND = (162, 177)         # hàng kem của dải tên (y đầu, y cuối khôn
 TITLE = 7                 # số hàng chữ tên cũ ở đáy tranh, cắt bỏ
 MINOR = (77, 135)         # ô tranh lá phụ trước khi phóng, cùng tỉ lệ với AW×AH (×1,156)
 COLORS = 160              # cỡ bảng màu chung cả bộ
+WEB_SCALE = 4             # ảnh trên web phóng sẵn 4 lần (xem cmd_publish)
 # Lá mà cách chọn tự động lấy nhầm nguồn vá số La Mã: chỉ định 'right' (chép ngang) hoặc 'down'.
 PATCH_FROM = {'major_21_the_world': 'right'}  # vá từ dưới kéo đầu thiên thần lên thành vệt cam
+# File lá chính đặt tên lệch với tranh bên trong (soát theo chữ tên vẽ trên lá gốc): tên file → số lá thật.
+MAJOR_IS = {'major_12_the_hanged_man': 14, 'major_13_death': 15, 'major_14_temperance': 12, 'major_15_the_devil': 13}
 
 INK = (22, 12, 28)
 GOLD_DK = (150, 112, 52)
@@ -110,19 +114,21 @@ RANKS = {'ace': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven'
 
 
 def card_ids():
-    """tên file → (id trong tarot_vi.json, arcana, số). Lá phụ nhận theo chữ trong tên, không theo số
-    đầu tên file (bộ kiếm, gậy để số 13/14 ngược với chữ)."""
+    """tên file → (id trong tarot_vi.json, arcana, số, slug theo tên Anh). Lá phụ nhận theo chữ trong
+    tên, không theo số đầu tên file (bộ kiếm, gậy để số 13/14 ngược với chữ); lá chính lệch tên sửa
+    bằng MAJOR_IS."""
     with open(DATA, encoding='utf-8') as f:
         data = json.load(f)['cards']
-    by = {(c['arcana'], c.get('suit'), c['number']): c['id'] for c in data}
+    by = {(c['arcana'], c.get('suit'), c['number']): c for c in data}
     out = {}
     for name, _ in export():
         group, num, *words = name.split('_')
         if group == 'major':
-            key = ('major', None, int(num))
+            key = ('major', None, MAJOR_IS.get(name, int(num)))
         else:
             key = ('minor', SUITS[group], RANKS[words[0]])
-        out[name] = (by[key],) + key[::2]
+        c = by[key]
+        out[name] = (c['id'], key[0], key[2], c['name_en'].lower().replace(' ', '_'))
     return out
 
 
@@ -405,8 +411,8 @@ def clean_all():
         minor = not name.startswith('major')
         art, box = patch_numeral(crop_art(src, minor), PATCH_FROM.get(name))
         art = repair_edges(art)
-        cid, arcana, number = ids[name]
-        cards[name] = dict(id=cid, arcana=arcana, number=number, before=src, art=art, patch=box, minor=minor)
+        cid, arcana, number, slug = ids[name]
+        cards[name] = dict(id=cid, arcana=arcana, number=number, slug=slug, before=src, art=art, patch=box, minor=minor)
     # Về bảng màu chung trước khi phóng lá phụ: dither trời mới lặp đúng từng màu để nhận ra,
     # và phóng (EPX + màu trội) không sinh màu mới nên không cần ánh xạ lại.
     pal = deck_palette([c['art'] for c in cards.values()])
@@ -438,7 +444,7 @@ def cmd_build(*flags):
     cards, pal = clean_all()
     os.makedirs(CLEAN, exist_ok=True)
     for name, c in cards.items():
-        path = os.path.join(CLEAN, f"{c['id']:02d}_{name.split('_', 2)[2]}.aseprite")
+        path = os.path.join(CLEAN, f"{c['id']:02d}_{c['slug']}.aseprite")
         if os.path.exists(path) and '--force' not in flags:
             print(f"{c['id']:2d} {name:34s} giữ bản đã có")
             continue
@@ -453,7 +459,8 @@ def cmd_build(*flags):
 
 def cmd_publish():
     """Xuất tranh từ cards/clean/*.aseprite (kể cả chỗ sửa tay) ra public/assets/cards/art/<id>.png,
-    cùng khung và mặt sau."""
+    cùng khung và mặt sau, phóng sẵn WEB_SCALE lần bằng nearest. Web thu nhỏ mượt từ ảnh này nên
+    pixel đều nhau ở mọi cỡ lá (thu nhỏ nearest ở tỉ lệ lẻ làm nét dày mỏng không đều)."""
     out = os.path.join(HERE, '..', 'public', 'assets', 'cards')
     os.makedirs(os.path.join(out, 'art'), exist_ok=True)
     total = 0
@@ -461,11 +468,12 @@ def cmd_publish():
         png = os.path.join(PNG, 'clean_' + os.path.basename(f)[:-9] + '.png')
         subprocess.run([ASEPRITE, '-b', f, '--save-as', png], check=True, capture_output=True)
         art = Image.open(png).convert('RGB').crop((4, 4, 4 + AW, 4 + AH))
+        art = art.resize((AW * WEB_SCALE, AH * WEB_SCALE), Image.NEAREST)
         dest = os.path.join(out, 'art', os.path.basename(f)[:2] + '.png')
         save_indexed(art, sorted(set(art.getdata())), dest)
         total += os.path.getsize(dest)
     for name in ('card_frame.png', 'card_back.png'):
-        Image.open(os.path.join(CLEAN, name)).save(os.path.join(out, name), optimize=True)
+        Image.open(os.path.join(CLEAN, name)).resize((W * WEB_SCALE, H * WEB_SCALE), Image.NEAREST)             .save(os.path.join(out, name), optimize=True)
     print(f'đã xuất tranh, {total // 1024} KB')
 
 

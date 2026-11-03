@@ -105,7 +105,7 @@ Mọi thay đổi phải qua được `typecheck`, `lint` và `build` trước k
 2. **An toàn trước vai diễn:** câu hỏi có dấu hiệu khủng hoảng/tự hại → dừng trải bài, không tính hạn mức, hiện hỗ trợ (115). Y tế/pháp lý/tài chính → nói rõ giới hạn, không khuyên mua/bán/dùng thuốc/kiện. Không ghi số đường dây hỗ trợ tâm lý chưa xác minh.
 3. **Giá và hạn mức:** 69.000đ/tháng, 399.000đ/năm; free 3 lượt/tháng, trả phí 30 lượt/tháng (`src/lib/plans.ts`). Thanh toán QR không tự gia hạn.
 4. **Chi phí 0đ hạ tầng:** Cloudflare Workers free (bundle < 3 MiB gzip — kiểm bằng `npx wrangler deploy --dry-run`), Supabase free, payOS free. Không thêm dịch vụ trả phí, không thêm R2.
-5. **Thẩm mỹ HD-2D pixel là cố ý:** pixel sắc nét (nearest, `image-rendering: pixelated`), bảng màu đêm (navy/tím mận/vàng nến), font VT323 cho tiêu đề và nút, Be Vietnam Pro cho đoạn văn. Đừng "hiện đại hóa" thành giao diện SaaS phẳng. Không dùng `filter` lên phần tử có transform 3D.
+5. **Thẩm mỹ HD-2D pixel là cố ý:** pixel sắc nét (nearest, `image-rendering: pixelated`; riêng ảnh lá bài là bản phóng sẵn ×4 bằng nearest rồi thu nhỏ mượt, để pixel đều ở mọi cỡ lá, chủ dự án duyệt 2026-11-03), bảng màu đêm (navy/tím mận/vàng nến), font VT323 cho tiêu đề và nút, Be Vietnam Pro cho đoạn văn. Đừng "hiện đại hóa" thành giao diện SaaS phẳng. Không dùng `filter` lên phần tử có transform 3D.
 6. **Giọng Nguyệt** theo `docs/PERSONA.md`: xưng "ta–cậu", câu ngắn, không emoji, không gạch đầu dòng trong lời thoại, không giọng thầy bói, không giọng trợ lý ảo.
 7. **Dữ liệu lá bài** có phần từ Tarotoo (MIT) — giữ `THIRD_PARTY_NOTICES.md`. Không chép nội dung từ các trang tarot thương mại.
 

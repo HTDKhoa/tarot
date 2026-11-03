@@ -11,6 +11,7 @@ Trạng thái (2026-11-03): **đủ 78 lá trên web**, là tranh chủ dự án
 | Dải tên kem | hàng 162–176, khớp `.tarot-band`; tên tiếng Anh do DOM viết |
 | Khung | mực, vàng, kem, vàng sẫm từ ngoài vào (`card_frame.png`); mặt sau `card_back.png` cùng cỡ |
 | Lá nhỏ trong sổ | giữ khung 48×80 cũ `card_mini.png` + biểu tượng chất (art/cards.py) |
+| Ảnh trên web | `publish` phóng sẵn ×4 bằng nearest (lá 388×724, tranh 356×624); CSS hiển thị `image-rendering: auto` để pixel đều ở mọi cỡ lá |
 
 `cards_clean.py` làm, theo thứ tự:
 
@@ -31,7 +32,7 @@ python art/cards_clean.py publish            # clean/*.aseprite → public/asset
 
 Sửa tay: mở `clean/<id>_<slug>.aseprite`, vẽ trên layer `tranh`, lưu, chạy `publish`. `build` không có `--force` sẽ không ghi đè.
 
-Tên file trong `tarot_minor_arcana_all/aseprite_swords` và `aseprite_wands` để số 13/14 ngược với chữ (king/queen); script nhận lá theo chữ trong tên, không theo số.
+Tên file trong `tarot_minor_arcana_all/aseprite_swords` và `aseprite_wands` để số 13/14 ngược với chữ (king/queen); script nhận lá theo chữ trong tên, không theo số. Bốn file lá chính đặt tên lệch với tranh bên trong (`12_the_hanged_man` là Temperance, `13_death` là The Devil, `14_temperance` là The Hanged Man, `15_the_devil` là Death; soát theo chữ tên vẽ trên lá gốc), sửa bằng bảng `MAJOR_IS`. File trong `clean/` đặt tên theo `name_en` của `tarot_vi.json` (chất tiền là `pentacles`).
 
 Biết là chưa tốt: trời trong tranh gốc không phải dither Bayer đều mà là chấm nhiễu nhẹ (lá phụ càng rõ). Muốn trời sạch như phần "Phong cách" bên dưới thì phải dựng lại vùng trời từng lá.
 
