@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NavLinks } from "./NavLinks";
 
 export function PageShell({ title, lead, children }: { title: string; lead?: string; children: React.ReactNode }) {
   return (
@@ -6,10 +7,7 @@ export function PageShell({ title, lead, children }: { title: string; lead?: str
       <header className="topbar">
         <Link href="/" className="brand">☾ Ngôi Nhà Trong Rừng</Link>
         <nav className="topnav">
-          <Link href="/?vao=1">Vào nhà</Link>
-          <Link href="/la-bai">Bộ bài</Link>
-          <Link href="/goi">Gói</Link>
-          <Link href="/nhat-ky">Nhật ký</Link>
+          <NavLinks show={["home", "deck", "plans", "journal"]} />
         </nav>
       </header>
       <main className="page-inner">

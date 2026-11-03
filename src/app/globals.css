@@ -263,6 +263,53 @@ img {
   opacity: 1;
   color: var(--gold-hi);
 }
+/* Lối đi chính: tấm biển pixel nhỏ (nền đêm, viền khói sương, hình đồ vật trong nhà), đủ rõ để biết bấm vào được
+   mà không tranh ánh nến với nút chính. Rê: viền vàng, nhấc 2px. Trang đang mở: viền vàng, chữ ngọn lửa. */
+.topnav .nav-sign {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0.05rem 0.65rem 0.05rem 0.45rem;
+  color: var(--cream);
+  opacity: 1;
+  background: rgba(8, 6, 13, 0.62);
+  border: 2px solid rgba(185, 176, 201, 0.55);
+  box-shadow: 0 3px 0 var(--ink-dark);
+  transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.topnav .nav-sign:hover,
+.topnav .nav-sign:focus-visible {
+  color: var(--gold-hi);
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+.topnav .nav-sign:focus-visible {
+  outline: 2px dashed var(--gold-hi);
+  outline-offset: 3px;
+}
+.topnav .nav-sign[aria-current="page"] {
+  color: var(--gold-hi);
+  border-color: var(--gold);
+}
+.nav-icon {
+  flex: none;
+  height: 22px;
+  width: auto;
+  image-rendering: pixelated;
+}
+.nav-icon.is-plans {
+  height: 18px;
+}
+.nav-icon.is-journal {
+  height: 16px;
+}
+/* cài đặt đồ họa: phụ, nhỏ, mờ */
+.topnav .nav-setting {
+  font-size: 1.05rem;
+  opacity: 0.6;
+}
 /* điện thoại: nút Menu và khung liên kết thả xuống, cùng chất khung pixel */
 .topnav .menu-button {
   padding: 0 0.6rem;
@@ -276,7 +323,19 @@ img {
   min-width: 12rem;
   display: flex;
   flex-direction: column;
-  padding: 0.4rem;
+  gap: 0.4rem;
+  padding: 0.6rem;
+}
+.topmenu .nav-sign {
+  min-height: 44px;
+}
+/* điện thoại: nút Menu là biển viền vàng, rõ là chỗ mở các lối đi */
+.topnav .menu-button {
+  color: var(--gold-hi);
+  border-color: var(--gold);
+  background: rgba(8, 6, 13, 0.62);
+  box-shadow: 0 3px 0 var(--ink-dark);
+  opacity: 1;
 }
 .topmenu a,
 .topmenu button {
@@ -2042,9 +2101,32 @@ img {
   }
   .page-wrap .topnav {
     justify-content: flex-start;
-    gap: 0.9rem;
+    gap: 0.45rem;
+    flex-wrap: nowrap;
+  }
+  /* bốn biển một hàng trên màn 320–390 */
+  .page-wrap .nav-sign {
+    gap: 0.3rem;
+    padding: 0 0.4rem 0 0.3rem;
+    font-size: 1.1rem;
+  }
+  .page-wrap .nav-icon {
+    height: 18px;
+  }
+  .page-wrap .nav-icon.is-plans {
+    height: 15px;
+  }
+  .page-wrap .nav-icon.is-journal {
+    height: 13px;
   }
   .page-wrap .page-inner {
-    padding-top: 7rem;
+    padding-top: 7.5rem;
+  }
+}
+
+/* màn rất hẹp (≤360): biển trang phụ bỏ hình, chỉ giữ chữ, để bốn lối vẫn một hàng */
+@media (max-width: 360px) {
+  .page-wrap .nav-icon {
+    display: none;
   }
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { storageSet } from "@/lib/storage";
 import { sceneStore, useScene } from "@/lib/store";
 import { useMedia } from "@/lib/useMedia";
+import { NavLinks } from "./NavLinks";
 import type { ReaderLine } from "@/lib/tarot/types";
 import type { PlanId } from "@/lib/plans";
 
@@ -56,11 +57,10 @@ export function TopBar({ me, onLogin }: { me: Me | null; onLogin: () => void }) 
 
   const items = (
     <>
-      {!reading && <Link href="/la-bai">Bộ bài</Link>}
-      <Link href="/goi">Gói</Link>
-      {me?.user && <Link href="/nhat-ky">Nhật ký</Link>}
+      <NavLinks show={[...(reading ? [] : (["deck"] as const)), "plans", ...(me?.user ? (["journal"] as const) : [])]} />
       {/* tên đọc theo đúng chữ hiển thị (gồm trạng thái); title nói rõ việc nút làm */}
-      <button type="button" onClick={toggleQuality} title="Đổi mức đồ họa">
+      {/* cài đặt, không phải lối đi: chữ nhỏ, mờ, đứng sau các biển */}
+      <button type="button" className="nav-setting" onClick={toggleQuality} title="Đổi mức đồ họa">
         {quality === "high" ? "Đồ họa: cao" : "Đồ họa: nhẹ"}
       </button>
       {me?.configured &&
