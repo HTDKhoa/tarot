@@ -7,6 +7,7 @@ export function PageShell({ title, lead, children }: { title: string; lead?: str
         <Link href="/" className="brand">☾ Ngôi Nhà Trong Rừng</Link>
         <nav className="topnav">
           <Link href="/?vao=1">Vào nhà</Link>
+          <Link href="/la-bai">Bộ bài</Link>
           <Link href="/goi">Gói</Link>
           <Link href="/nhat-ky">Nhật ký</Link>
         </nav>

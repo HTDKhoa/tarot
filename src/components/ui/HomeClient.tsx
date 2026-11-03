@@ -505,7 +505,7 @@ export default function HomeClient() {
             </div>
           )}
           <p className="hero-note">
-            Dành cho giải trí và tự chiêm nghiệm, không thay thế lời khuyên y tế, pháp lý hay tài chính. <Link href="/dieu-khoan">Điều khoản</Link> · <Link href="/rieng-tu">Quyền riêng tư</Link>
+            Dành cho giải trí và tự chiêm nghiệm, không thay thế lời khuyên y tế, pháp lý hay tài chính. <Link href="/la-bai">Bộ bài</Link> · <Link href="/dieu-khoan">Điều khoản</Link> · <Link href="/rieng-tu">Quyền riêng tư</Link>
           </p>
         </section>
       )}

@@ -422,3 +422,7 @@ Cuốn sổ bìa da nâu ghi lại câu hỏi và lời giải từng lá để 
 - **Don't** dùng VT323 cho đoạn văn nhiều dòng.
 - **Don't** dùng đỏ báo động cho khủng hoảng hay lỗi; dùng tro hồng ấm.
 - **Don't** để bàn tay Nguyệt che tên hay hình lá, hay đưa màn khủng hoảng xuống góc mặt bàn.
+
+
+### Trang Bộ bài (tra cứu)
+`/la-bai`: cả bộ 78 lá chia Ẩn Chính, Gậy, Cốc, Kiếm, Tiền; mỗi lá là mặt lá đứng yên (`CardFace`, cùng khung và tranh với lá trên bàn) kèm tên Việt (VT323 ngọn lửa) và tên Anh (khói sương); ô tìm theo tên Việt hoặc Anh, có dấu hay không dấu. `/la-bai/[slug]` (78 trang dựng sẵn): tranh lớn kèm lời tả tranh, xuôi và ngược cạnh nhau (từ khóa thành ô viền, nghĩa), theo từng chuyện, lời khuyên, và khối "Nguyệt nói riêng" cùng kiểu thẻ tên của hộp thoại; cuối trang có lá trước, lá sau. Tiêu đề là tên Việt, tên Anh ghi dưới. Lối vào: thanh trên cùng (ẩn khi đang ở bàn trải bài, để khách tập trung), thanh của các trang phụ, bìa rừng (cạnh Điều khoản), và tên lá trong nhật ký. Trong lúc đọc bài không có lối vào trang này.

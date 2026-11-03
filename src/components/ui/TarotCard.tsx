@@ -19,6 +19,26 @@ interface Props {
   pressed?: boolean;
 }
 
+/**
+ * Mặt lá đứng yên (không phải nút, không lật): dùng ở trang tra cứu bộ bài, nằm trong một liên kết.
+ * Cùng khung, tranh và dải tên với lá trên bàn.
+ */
+export function CardFace({ card, size = "md", reversed = false }: { card: DrawnCard["card"]; size?: "sm" | "md" | "lg" | "xl"; reversed?: boolean }) {
+  const art = assetUrl(`/assets/cards/art/${String(card.id).padStart(2, "0")}.png`);
+  return (
+    <span className={`tarot-slot tarot-${size}`}>
+      <span className="tarot-card is-revealed is-still">
+        <span className={`tarot-face tarot-front ${reversed ? "is-reversed" : ""}`} style={{ backgroundImage: `url("${assetUrl("/assets/cards/card_frame.png")}")` }}>
+          <span className="tarot-art">
+            <img src={art} alt="" />
+          </span>
+          <span className="tarot-band">{card.arcana === "major" ? card.name_en.replace(/^The /, "") : SUIT[card.suit ?? ""]}</span>
+        </span>
+      </span>
+    </span>
+  );
+}
+
 /** Lá bài DOM: mặt sau / mặt trước pixel, lật bằng CSS 3D. Lá ngược thì xoay 180° mặt trước. */
 export function TarotCard({ drawn, revealed, onClick, selected, label, size = "md", highlight, name, pressed }: Props) {
   const c = drawn?.card;

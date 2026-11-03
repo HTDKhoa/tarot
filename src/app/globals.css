@@ -718,6 +718,14 @@ img {
 .tarot-lg {
   --w: clamp(110px, 20vw, 168px);
 }
+.tarot-xl {
+  --w: clamp(180px, 46vw, 300px);
+}
+/* mặt lá đứng yên (trang tra cứu): không lật lúc tải trang */
+.tarot-card.is-still,
+.tarot-card.is-still .tarot-front {
+  animation: none;
+}
 .tarot-card {
   position: relative;
   width: var(--w);
@@ -1697,5 +1705,220 @@ img {
   /* link nằm giữa câu: đệm trong dòng nới vùng chạm mà không đẩy dòng chữ */
   .hero-note a {
     padding: 0.7rem 0.2rem;
+  }
+}
+
+/* ---------- trang Bộ bài (tra cứu 78 lá) ---------- */
+.deck-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.8rem;
+  margin-bottom: 1.6rem;
+}
+.deck-search-label,
+.deck-search-count {
+  font-family: var(--font-pixel);
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+.deck-search input {
+  flex: 1 1 16rem;
+  min-height: 44px;
+  padding: 0.4rem 0.7rem;
+  font: inherit;
+  color: var(--cream);
+  background: rgba(8, 6, 13, 0.6);
+  border: 2px solid rgba(185, 176, 201, 0.5);
+}
+.deck-search input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.deck-empty {
+  color: var(--muted);
+}
+.deck-group + .deck-group {
+  margin-top: 2.2rem;
+}
+.deck-group h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.3rem;
+  font-family: var(--font-pixel);
+  font-size: 1.8rem;
+  color: var(--gold-hi);
+  border-bottom: 2px solid rgba(214, 172, 80, 0.35);
+}
+.deck-group h2 span {
+  font-size: 1.15rem;
+  color: var(--muted);
+}
+/* lưới lá: 3 cột trên điện thoại hẹp, tự thêm cột khi rộng */
+.deck-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(92px, 26vw, 128px), 1fr));
+  gap: 1.4rem 0.9rem;
+  list-style: none;
+}
+.deck-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+}
+.deck-item .tarot-md {
+  --w: clamp(80px, 22vw, 112px);
+}
+.deck-item:hover .tarot-card,
+.deck-item:focus-visible .tarot-card {
+  transform: translateY(-6px);
+}
+.deck-item:focus-visible {
+  outline: 2px dashed var(--gold-hi);
+  outline-offset: 4px;
+}
+.deck-name {
+  font-family: var(--font-pixel);
+  font-size: 1.2rem;
+  line-height: 1.05;
+  color: var(--gold-hi);
+}
+.deck-name-en {
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+  line-height: 1.05;
+  color: var(--muted);
+}
+
+/* ---------- trang một lá ---------- */
+.deck-crumb {
+  margin: -1rem 0 1.4rem;
+  font-family: var(--font-pixel);
+  font-size: 1.2rem;
+}
+.card-sheet {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2.4rem;
+  align-items: start;
+}
+.card-sheet-art {
+  position: sticky;
+  top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  max-width: 300px;
+}
+.card-sheet-art figcaption {
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.card-sheet-text h2:first-child {
+  margin-top: 0;
+}
+.card-sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.4rem;
+}
+.prose-dark .card-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.2rem 0 0.7rem;
+  padding: 0;
+  list-style: none;
+}
+.prose-dark .card-keys li {
+  margin: 0;
+  padding: 0 0.45rem;
+  font-family: var(--font-pixel);
+  font-size: 1.1rem;
+  line-height: 1.4;
+  color: var(--cream);
+  border: 2px solid rgba(185, 176, 201, 0.4);
+}
+.card-topics {
+  display: grid;
+  gap: 1rem;
+}
+.card-topics dt {
+  font-family: var(--font-pixel);
+  font-size: 1.3rem;
+  color: var(--gold-hi);
+}
+.card-topics dd {
+  margin: 0.2rem 0 0;
+  line-height: 1.65;
+  color: var(--cream);
+}
+.card-dir {
+  margin-right: 0.35rem;
+  font-family: var(--font-pixel);
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+.card-nguyet {
+  position: relative;
+  margin-top: 2.2rem;
+  padding: 1.5rem 1.2rem 1rem;
+}
+.card-nguyet-name {
+  position: absolute;
+  top: -0.95rem;
+  left: 1rem;
+  padding: 0.05rem 0.6rem;
+  font-family: var(--font-pixel);
+  font-size: 1.35rem;
+  color: var(--gold-hi);
+  background: var(--plum);
+  border: 2px solid var(--gold);
+}
+.prose-dark .card-nguyet p {
+  margin: 0;
+}
+.card-pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.6rem;
+}
+@media (max-width: 720px) {
+  .card-sheet {
+    grid-template-columns: 1fr;
+    gap: 1.6rem;
+  }
+  .card-sheet-art {
+    position: static;
+    margin: 0 auto;
+  }
+  .card-sides {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* trang phụ trên điện thoại: thương hiệu một hàng, các liên kết một hàng ngay dưới, không vỡ dòng lộn xộn */
+@media (max-width: 640px) {
+  .page-wrap .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+  .page-wrap .topnav {
+    justify-content: flex-start;
+    gap: 0.9rem;
+  }
+  .page-wrap .page-inner {
+    padding-top: 7rem;
   }
 }

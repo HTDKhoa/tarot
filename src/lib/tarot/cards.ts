@@ -17,6 +17,15 @@ const CARDS = (data as { cards: CardData[] }).cards.map((c) => ({ ...c, name_vi:
 
 export const DECK_SIZE = CARDS.length;
 
+/** Cả bộ 78 lá theo thứ tự id (Ẩn Chính 0–21, rồi Gậy, Cốc, Kiếm, Tiền), cho trang tra cứu. */
+export function allCards(): CardData[] {
+  return CARDS;
+}
+
+export function getCardBySlug(slug: string): CardData | undefined {
+  return CARDS.find((c) => c.slug === slug);
+}
+
 export function getCard(id: number): CardData {
   const card = CARDS[id];
   if (!card || card.id !== id) throw new Error(`Không có lá bài id=${id}`);

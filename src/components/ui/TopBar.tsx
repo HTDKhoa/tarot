@@ -20,6 +20,8 @@ export interface Me {
  */
 export function TopBar({ me, onLogin }: { me: Me | null; onLogin: () => void }) {
   const quality = useScene((s) => s.quality);
+  // đang ở bàn trải bài thì không mời sang trang tra cứu: khách cần tập trung vào buổi đọc
+  const reading = useScene((s) => s.stage === "table");
   const compact = useMedia("(max-width: 640px)");
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -54,6 +56,7 @@ export function TopBar({ me, onLogin }: { me: Me | null; onLogin: () => void }) 
 
   const items = (
     <>
+      {!reading && <Link href="/la-bai">Bộ bài</Link>}
       <Link href="/goi">Gói</Link>
       {me?.user && <Link href="/nhat-ky">Nhật ký</Link>}
       {/* tên đọc theo đúng chữ hiển thị (gồm trạng thái); title nói rõ việc nút làm */}

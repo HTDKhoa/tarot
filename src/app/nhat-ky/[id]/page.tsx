@@ -32,7 +32,10 @@ export default async function JournalEntry({ params }: PageProps<"/nhat-ky/[id]"
             return (
               <li key={c.position} style={{ fontFamily: "var(--font-pixel)", fontSize: "1.35rem" }}>
                 <span style={{ color: "var(--muted)" }}>{label}:</span>{" "}
-                <span style={{ color: "var(--gold-hi)" }}>{card.name_en}</span>
+                {/* tên lá dẫn sang trang tra cứu lá đó, để đọc kỹ sau buổi đọc */}
+                <Link href={`/la-bai/${card.slug}`} style={{ color: "var(--gold-hi)" }}>
+                  {card.name_en}
+                </Link>
                 {c.reversed && <span style={{ color: "var(--moonlit-blue)" }}> · ngược</span>}
               </li>
             );
