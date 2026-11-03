@@ -77,7 +77,7 @@ function Arms({ mode }: { mode: "point" | "shuffle" | null }) {
       raf = requestAnimationFrame(tick);
       const root = layer.current?.parentElement;
       if (!root) return;
-      const s = (armRig.px * 1) / HAND_SPRITE; // px CSS cho một pixel của sprite tay
+      const s = armRig.px / HAND_SPRITE; // px CSS cho một pixel của sprite tay
       const aw = 34 * s;
       const want: Record<"left" | "right", { x: number; y: number } | null> = { left: null, right: null };
       if (armRig.ready && mode === "shuffle") {

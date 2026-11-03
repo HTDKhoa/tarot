@@ -298,6 +298,14 @@ export default function HomeClient() {
     if (picked.includes(i) || picked.length >= cards.length) return;
     const next = [...picked, i];
     setPicked(next);
+    // lá vừa chọn bị khoá nên mất focus: đưa focus sang lá chưa chọn kế bên, không để rơi về <body>
+    if (next.length < cards.length) {
+      requestAnimationFrame(() => {
+        const free = [...document.querySelectorAll<HTMLButtonElement>(".fan-card .tarot-card:not(:disabled)")];
+        const target = free.find((_, k) => k >= i - next.filter((p) => p < i).length) ?? free.at(-1);
+        target?.focus({ preventScroll: true });
+      });
+    }
     if (next.length === cards.length) setTimeout(() => say(pendingLines, "reading"), 500);
   };
 
@@ -353,6 +361,9 @@ export default function HomeClient() {
 
   const finish = async () => {
     if (!ctx) return;
+    // gom lại là nói về cả bàn: thôi thắp lá cuối và thu tay chỉ về
+    setActive(null);
+    currentCard.current = null;
     setBusy(true);
     setLines([]);
     try {
@@ -417,6 +428,8 @@ export default function HomeClient() {
     const nav = { notebookOpen, docked, hasNotebook, setNotebookOpen };
     const onKey = (e: KeyboardEvent) => {
       if (isInteractive(e.target) && !(e.target instanceof HTMLButtonElement)) return;
+      // đang đi giữa các lá trong dải bài bằng bàn phím: phím mũi tên không lia máy hay mở sổ
+      if (e.target instanceof Element && e.target.closest(".fan-zone")) return;
       if (e.key === "ArrowUp") verticalStep("up", nav);
       if (e.key === "ArrowDown") verticalStep("down", nav);
     };

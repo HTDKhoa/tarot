@@ -540,7 +540,7 @@ img {
 }
 .portrait-spacer {
   float: right;
-  width: calc(var(--pw, 72px) - 0.4rem);
+  width: calc(var(--pw, 72px) + 0.2rem);
   height: calc(var(--pw, 72px) * 0.55 - 1rem);
 }
 @media (min-width: 900px) {
@@ -703,15 +703,6 @@ img {
 }
 
 /* ---------- lá bài ---------- */
-.table-zone {
-  flex: none;
-  display: flex;
-  gap: clamp(0.5rem, 2.5vw, 1.6rem);
-  align-items: flex-end;
-  justify-content: center;
-  width: min(96vw, 900px);
-  flex-wrap: wrap;
-}
 .tarot-slot {
   display: flex;
   flex-direction: column;

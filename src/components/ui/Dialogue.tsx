@@ -91,6 +91,13 @@ export function Dialogue({ lines, onLine, onShown, onDone, children, busy, portr
     target?.focus({ preventScroll: true });
   }, [finished, idx]);
 
+  // Nút hành động có thể hiện sau khi câu đã xong (đọc xong lá cuối thì "Gom lại giúp mình" mới hiện): nếu lúc đó
+  // focus đang ở <body> thì đưa tới nút đầu tiên. Chỉ nhặt focus bị rơi, không giành focus của chỗ khác.
+  useEffect(() => {
+    if (!finished || document.activeElement !== document.body) return;
+    rootRef.current?.querySelector<HTMLElement>(".dialogue-actions button, .dialogue-actions a")?.focus({ preventScroll: true });
+  });
+
   const advance = () => {
     if (typing) setShown(full.length);
     else if (idx < lines.length - 1) {
