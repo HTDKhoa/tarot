@@ -54,3 +54,9 @@ art/__pycache__
 
 # impeccable (file làm việc cục bộ)
 .impeccable/
+art/src/
+
+# cache xuất PNG và ảnh soát của art/cards_clean.py (sinh lại được)
+art/aseprite/cards/_png/
+art/aseprite/cards/_view/
+art/aseprite/cards/_sheets/

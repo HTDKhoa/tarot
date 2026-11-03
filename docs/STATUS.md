@@ -8,6 +8,7 @@ Demo online (một file HTML, chạy trong trình duyệt): https://claude.ai/ar
 - Next.js 16 + TS + Tailwind 4; deploy Cloudflare Workers qua @opennextjs/cloudflare (bundle ~1,8 MiB gzip, đo bằng `wrangler deploy --dry-run`).
 - Cảnh HD-2D: bìa rừng parallax (sương, đom đóm, trăng) → camera tiến vào cửa → trong nhà (ánh nến chập chờn, bloom, vignette). Nguyệt thở/chớp mắt/nói; mắt và mặt dây chuyền đổi màu theo tag; Bấc chớp mắt/nghiêng đầu; tự hạ đồ họa khi FPS < 38. Không có WebGL hoặc cảnh 3D lỗi thì hiện ảnh tĩnh (`public/assets/fallback/`, `SceneStage.tsx`).
 - Pixel art: `public/assets`, script vẽ lại ở `art/`.
+- 78 tranh lá bài (vẽ tay, 97×181, khung vàng + dải tên kem) và mặt sau cùng cỡ; làm sạch và xuất bằng `art/cards_clean.py` (xem `docs/CARD_ART.md`).
 - Luồng đọc bài: khách chỉ viết câu hỏi, máy chủ chọn chủ đề và kiểu trải (1 lá; Quá khứ–Hiện tại–Hướng đi; Tình huống–Trở ngại–Lời khuyên) theo từ khóa trong `choose.ts` → khách chọn lá từ dải bài → lật từng lá theo lời thoại → chỉ mời bốc thêm khi có lý do (tối đa 3) → trang "Bàn hôm nay" trong sổ. Hai góc máy (mặt Nguyệt / mặt bàn): trải bài diễn ra trên mặt bàn với tay Nguyệt, lá theo đúng hình trải, cuốn sổ của Bấc (câu hỏi, lời Nguyệt theo từng lá, trang tổng kết) và ô chân dung trong hộp thoại. Lá bài của ngày cố định theo người/ngày.
 - Giọng: dữ liệu lá giữ giọng trung tính; `reader.ts` đổi "người hỏi" thành "cậu" và tách thành các lượt ≤ 28 từ.
 - An toàn: lọc từ khóa (`src/lib/safety.ts`); khủng hoảng thì khóa trải bài tới hết phiên (sessionStorage), câu hỏi khủng hoảng bị chặn ngay ở trình duyệt (cùng hàm với máy chủ) nên không hạ máy, không xào bài; thẻ hỗ trợ cố định có "Ngồi thêm một lúc" và "Ra về".
@@ -18,7 +19,8 @@ Demo online (một file HTML, chạy trong trình duyệt): https://claude.ai/ar
 
 ## Còn thiếu / biết là chưa tốt
 - Chưa có AI: `src/lib/tarot/reader.ts` ghép câu từ dữ liệu (đúng nghĩa nhưng lặp khuôn).
-- Mặt trước lá bài mới là biểu tượng chất + số + tên; chưa có 78 tranh.
+- Trời trong tranh lá là chấm nhiễu nhẹ, chưa phải dither đều; vài góc chỗ xóa số La Mã cũ còn thấy đường nối nếu soi kỹ.
+- `npm run build:demo`: bước Vite cần cài lại `node_modules` trên Windows (thiếu `@rolldown/binding-win32-x64-msvc`).
 - Chưa có test tự động trong repo (migration đã được thử trên PGlite trong lúc làm, nhưng chưa thành bộ test).
 - Chưa có âm thanh, tổng kết tháng, bộ nhớ dài hạn, "quên chuyện này", cài đặt xưng hô.
 - Trang Gói/Nhật ký/Điều khoản dùng layout đơn giản, chưa được chăm chút như cảnh chính. Lúc tổng kết, lá trên bàn che một phần mặt Nguyệt; bàn 6 lá trên mobile phải cuộn nhẹ.

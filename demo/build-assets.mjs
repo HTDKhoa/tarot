@@ -1,8 +1,10 @@
 // Gom toàn bộ public/assets thành data URI để bản demo là một file HTML duy nhất.
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { join, relative, extname } from "node:path";
+import { join, relative, extname, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = new URL("../public", import.meta.url).pathname;
+// fileURLToPath thay vì .pathname: trên Windows .pathname ra "/E:/..." và join thành "E:\E:\..."
+const root = fileURLToPath(new URL("../public", import.meta.url));
 const out = {};
 const walk = (dir) => {
   for (const name of readdirSync(dir)) {
@@ -12,7 +14,7 @@ const walk = (dir) => {
       const ext = extname(p).toLowerCase();
       const mime = ext === ".png" ? "image/png" : ext === ".json" ? "application/json" : null;
       if (!mime) continue;
-      out["/" + relative(root, p)] = `data:${mime};base64,${readFileSync(p).toString("base64")}`;
+      out["/" + relative(root, p).split(sep).join("/")] = `data:${mime};base64,${readFileSync(p).toString("base64")}`;
     }
   }
 };

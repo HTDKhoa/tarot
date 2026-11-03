@@ -721,7 +721,7 @@ img {
 .tarot-card {
   position: relative;
   width: var(--w);
-  height: calc(var(--w) * 80 / 48);
+  height: calc(var(--w) * 181 / 97);
   background: none;
   border: 0;
   padding: 0;
@@ -803,32 +803,24 @@ img {
 .tarot-front.is-reversed .tarot-art {
   transform: rotate(180deg);
 }
+/* ô tranh 89×156 tại (4, 4) trong lá 97×181 (art/cards_clean.py) */
 .tarot-art {
-  margin-top: 8.3%;
-  width: 83%;
-  height: 75%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8%;
-  background: radial-gradient(circle at 50% 40%, rgba(243, 214, 139, 0.18), transparent 70%);
+  margin-top: calc(4 / 97 * 100%); /* % của margin tính theo bề ngang */
+  width: calc(89 / 97 * 100%);
+  height: calc(156 / 181 * 100%);
 }
-.tarot-icon {
-  width: 46%;
+.tarot-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
-.tarot-numeral {
-  font-family: var(--font-pixel);
-  color: var(--gold-hi);
-  font-size: calc(var(--w) * 0.2);
-  line-height: 1;
-}
+/* dải kem hàng 162–176 */
 .tarot-band {
   position: absolute;
-  bottom: 4%;
-  left: 8%;
-  right: 8%;
-  height: 13%;
+  bottom: calc(4 / 181 * 100%);
+  left: calc(4 / 97 * 100%);
+  right: calc(4 / 97 * 100%);
+  height: calc(15 / 181 * 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -862,7 +854,7 @@ img {
   position: relative;
   flex: none;
   width: min(96vw, 820px);
-  height: calc(clamp(54px, 9vw, 88px) * 80 / 48 + 40px);
+  height: calc(clamp(54px, 9vw, 88px) * 181 / 97 + 40px);
 }
 .fan-card {
   position: absolute;
@@ -942,7 +934,7 @@ img {
 /* dải bài chọn lá nằm gọn trong cột bàn bên trái sổ, không tràn mép màn hay chui dưới sổ (1024×768) */
 .table-field.has-notebook .fan-zone {
   width: 100%;
-  height: calc(clamp(54px, 6.5vw, 88px) * 80 / 48 + 40px);
+  height: calc(clamp(54px, 6.5vw, 88px) * 181 / 97 + 40px);
 }
 .table-field.has-notebook .fan-card .tarot-sm {
   --w: clamp(54px, 6.5vw, 88px);
@@ -1078,7 +1070,7 @@ img {
 }
 .shuffle-deck {
   width: var(--w);
-  height: calc(var(--w) * 80 / 48);
+  height: calc(var(--w) * 181 / 97);
   background-size: 100% 100%;
   image-rendering: pixelated;
   box-shadow: -2px 2px 0 rgba(8, 6, 13, 0.7), -4px 4px 0 rgba(8, 6, 13, 0.28), 0 -3px 0 var(--ink-dark) inset;
@@ -1530,7 +1522,7 @@ img {
   }
   /* dải bài hai vòng cung: vòng sau lùi lên, vòng trước đè nửa dưới; mỗi lá lộ ra ~48px bề ngang */
   .fan-zone {
-    height: calc(clamp(54px, 9vw, 88px) * 80 / 48 + 40px + 64px);
+    height: calc(clamp(54px, 9vw, 88px) * 181 / 97 + 40px + 64px);
   }
   /* bước giữa hai lá tính theo bề rộng màn: vòng cung 7 lá luôn nằm trọn trong màn, kể cả màn 320px */
   .fan-zone {

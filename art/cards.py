@@ -206,8 +206,9 @@ def icon_major_star():
 
 
 def build():
-    save(card_back(), 'cards/card_back.png')
-    save(card_frame(), 'cards/card_frame.png')
+    # Lá cỡ thật (97×181: card_back, card_frame, art/) do art/cards_clean.py xuất. Ở đây chỉ còn
+    # khung nhỏ 48×80 cho lá vẽ trong sổ; card_back() vẫn là thiết kế gốc mà cards_clean phóng lên.
+    save(card_frame(), 'cards/card_mini.png')
     save(icon_wands(), 'cards/suit_wands.png')
     save(icon_cups(), 'cards/suit_cups.png')
     save(icon_swords(), 'cards/suit_swords.png')

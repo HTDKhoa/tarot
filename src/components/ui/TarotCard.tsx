@@ -2,15 +2,8 @@
 import type { DrawnCard } from "@/lib/tarot/types";
 import { assetUrl } from "@/lib/assets";
 
-const ROMAN = ["0", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI"];
 // Trên bàn tên lá chỉ dùng tiếng Anh (chủ dự án chốt); tên Việt chỉ có trong lời Nguyệt.
-const RANK: Record<number, string> = { 1: "Ace", 11: "Page", 12: "Knight", 13: "Queen", 14: "King" };
 const SUIT: Record<string, string> = { wands: "Wands", cups: "Cups", swords: "Swords", pentacles: "Pentacles" };
-
-export function cardNumeral(c: DrawnCard["card"]) {
-  if (c.arcana === "major") return ROMAN[c.number] ?? String(c.number);
-  return RANK[c.number] ?? String(c.number);
-}
 
 interface Props {
   drawn?: DrawnCard;
@@ -29,7 +22,8 @@ interface Props {
 /** Lá bài DOM: mặt sau / mặt trước pixel, lật bằng CSS 3D. Lá ngược thì xoay 180° mặt trước. */
 export function TarotCard({ drawn, revealed, onClick, selected, label, size = "md", highlight, name, pressed }: Props) {
   const c = drawn?.card;
-  const icon = c ? assetUrl(c.arcana === "major" ? "/assets/cards/major_star.png" : `/assets/cards/suit_${c.suit}.png`) : null;
+  // tranh lá do art/cards_clean.py xuất, số La Mã đã vẽ sẵn trong tranh
+  const art = c ? assetUrl(`/assets/cards/art/${String(c.id).padStart(2, "0")}.png`) : null;
   return (
     <div className={`tarot-slot tarot-${size}`}>
       <button
@@ -44,10 +38,7 @@ export function TarotCard({ drawn, revealed, onClick, selected, label, size = "m
         <span className={`tarot-face tarot-front ${drawn?.reversed ? "is-reversed" : ""}`} style={{ backgroundImage: `url("${assetUrl("/assets/cards/card_frame.png")}")` }}>
           {c && (
             <>
-              <span className="tarot-art">
-                {icon && <img src={icon} alt="" className="tarot-icon" />}
-                <span className="tarot-numeral">{cardNumeral(c)}</span>
-              </span>
+              <span className="tarot-art">{art && <img src={art} alt="" />}</span>
               <span className="tarot-band">{c.arcana === "major" ? c.name_en.replace(/^The /, "") : SUIT[c.suit ?? ""]}</span>
             </>
           )}

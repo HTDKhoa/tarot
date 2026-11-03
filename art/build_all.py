@@ -67,13 +67,13 @@ def interior_scene():
 def cards_row():
     row = Image.new('RGBA', (640, 100), PAL['out'] + (255,))
     x = 12
-    for rel in ['cards/card_back.png', 'cards/card_frame.png']:
-        row.alpha_composite(load(rel), (x, 10))
+    for im in [cards.card_back(), load('cards/card_mini.png')]:
+        row.alpha_composite(im.convert('RGBA'), (x, 10))
         x += 58
     # a card front with the window filled, to show how art sits inside
     demo = Image.new('RGBA', (48, 80))
     ImageDraw.Draw(demo).rectangle([4, 4, 43, 63], fill=PAL['n2'] + (255,))
-    demo.alpha_composite(load('cards/card_frame.png'))
+    demo.alpha_composite(load('cards/card_mini.png'))
     demo.alpha_composite(load('cards/major_star.png'), (16, 26))
     row.alpha_composite(demo, (x, 10))
     x += 66
@@ -120,7 +120,8 @@ def write_manifest():
                          'candle_pos': list(interior.CANDLE_POS),
                          'flame_offset_in_candle': [interior.WICK[0] - interior.FLAME_BASE[0], interior.WICK[1] - interior.FLAME_BASE[1] + 1],
                          'crystal_pos': list(interior.CRYSTAL_POS)},
-            'card_frame': {'art_window': [4, 4, 43, 63], 'name_band': [4, 66, 43, 76]},
+            'card_frame': {'art_window': [4, 4, 92, 159], 'name_band': [4, 162, 92, 176]},
+            'card_mini': {'art_window': [4, 4, 43, 63], 'name_band': [4, 66, 43, 76]},
         },
     }
     with open(os.path.join(ROOT, 'manifest.json'), 'w') as f:

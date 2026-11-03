@@ -48,12 +48,407 @@
   ],
   "files": [
     {
+      "path": "cards/art/00.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/01.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/02.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/03.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/04.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/05.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/06.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/07.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/08.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/09.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/10.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/11.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/12.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/13.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/14.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/15.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/16.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/17.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/18.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/19.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/20.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/21.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/22.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/23.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/24.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/25.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/26.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/27.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/28.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/29.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/30.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/31.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/32.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/33.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/34.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/35.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/36.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/37.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/38.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/39.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/40.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/41.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/42.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/43.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/44.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/45.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/46.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/47.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/48.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/49.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/50.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/51.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/52.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/53.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/54.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/55.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/56.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/57.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/58.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/59.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/60.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/61.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/62.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/63.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/64.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/65.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/66.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/67.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/68.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/69.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/70.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/71.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/72.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/73.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/74.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/75.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/76.png",
+      "w": 89,
+      "h": 156
+    },
+    {
+      "path": "cards/art/77.png",
+      "w": 89,
+      "h": 156
+    },
+    {
       "path": "cards/card_back.png",
-      "w": 48,
-      "h": 80
+      "w": 97,
+      "h": 181
     },
     {
       "path": "cards/card_frame.png",
+      "w": 97,
+      "h": 181
+    },
+    {
+      "path": "cards/card_mini.png",
       "w": 48,
       "h": 80
     },
@@ -326,6 +721,20 @@
       ]
     },
     "card_frame": {
+      "art_window": [
+        4,
+        4,
+        92,
+        159
+      ],
+      "name_band": [
+        4,
+        162,
+        92,
+        176
+      ]
+    },
+    "card_mini": {
       "art_window": [
         4,
         4,

@@ -41,7 +41,7 @@ const OPINION_OPEN = /^Còn đây là ý riêng của ta\.\s*/;
 function MiniCard({ c }: { c: DrawnCard }) {
   const icon = assetUrl(c.card.arcana === "major" ? "/assets/cards/major_star.png" : `/assets/cards/suit_${c.card.suit}.png`);
   return (
-    <span className={`nb-card ${c.reversed ? "is-reversed" : ""}`} style={{ backgroundImage: `url("${assetUrl("/assets/cards/card_frame.png")}")` }} aria-hidden>
+    <span className={`nb-card ${c.reversed ? "is-reversed" : ""}`} style={{ backgroundImage: `url("${assetUrl("/assets/cards/card_mini.png")}")` }} aria-hidden>
       <img src={icon} alt="" />
     </span>
   );
