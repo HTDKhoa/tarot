@@ -152,6 +152,26 @@ def sleeve_and_hand(point=True):
     return outline(img)
 
 
+def cloth_tile():
+    """Mảnh khăn tím mận 96x96 lặp được (trang Bộ bài): dither hai tông như khăn trên bàn, vài sao thêu vàng.
+    Mép trái/phải và trên/dưới khớp nhau vì dither Bayer theo toạ độ tuyệt đối và sao không chạm mép."""
+    W = H = 96
+    img = new(W, H, 'p0')
+    for y in range(H):
+        for x in range(W):
+            if bayer(x, y, 0.22):
+                put(img, x, y, 'p1')
+    r = rng(23)
+    for _ in range(7):
+        x, y = r.randint(4, W - 5), r.randint(4, H - 5)
+        put(img, x, y, 'au0')
+        if r.random() < .4:
+            for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                put(img, x + dx, y + dy, 'au0')
+            put(img, x, y, 'au1')
+    return img
+
+
 def sleeve_tile():
     """Đoạn ống tay áo 34x8 lặp dọc (repeat-y) phía trên hand_*.png, để cánh tay vươn từ mép xa của bàn."""
     W, H = 34, 8
@@ -281,6 +301,7 @@ def build():
     save(book(), 'table/book.png')
     save(book_frame(), 'table/book_frame.png', opaque=True)
     save(sleeve_tile(), 'table/sleeve_tile.png')
+    save(cloth_tile(), 'table/cloth_tile.png', opaque=True)
     for rel, im in portraits().items():
         save(im, rel)
 

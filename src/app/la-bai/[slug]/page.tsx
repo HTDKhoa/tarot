@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageShell } from "@/components/ui/PageShell";
 import { CardFace } from "@/components/ui/TarotCard";
+import { assetUrl } from "@/lib/assets";
 import { allCards, getCardBySlug, toPublic } from "@/lib/tarot/cards";
 import { TOPIC_LABELS, type Topic } from "@/lib/tarot/types";
 
@@ -34,12 +35,25 @@ export default async function CardPage({ params }: { params: Promise<{ slug: str
         <Link href="/la-bai">← Cả bộ bài</Link>
       </nav>
       <div className="card-sheet">
-        <figure className="card-sheet-art">
+        {/* bên trái: lá nằm trên khăn của Nguyệt dưới ánh nến; bên phải: trang sổ của Bấc ghi nghĩa lá */}
+        <figure
+          className="card-sheet-art"
+          style={{ backgroundImage: `radial-gradient(ellipse 80% 55% at 70% 8%, rgba(255, 190, 110, 0.22), transparent 70%), url("${assetUrl("/assets/table/cloth_tile.png")}")` }}
+        >
           <CardFace card={pub} size="xl" />
           <figcaption>{card.hinh_anh}</figcaption>
         </figure>
 
-        <div className="card-sheet-text prose-dark">
+        <div className="card-sheet-text card-paper" style={{ borderImageSource: `url("${assetUrl("/assets/table/book_frame.png")}")` }}>
+          <div className="card-paper-head">
+            <img src={assetUrl("/assets/characters/owl_idle_0.png")} alt="" />
+            <span>
+              Bấc chép về lá
+              <b>
+                {card.name_vi} · {card.name_en}
+              </b>
+            </span>
+          </div>
           {/* xuôi và ngược đứng cạnh nhau trên màn rộng, chồng lên nhau trên điện thoại */}
           <div className="card-sides">
             <section aria-labelledby="xuoi">
@@ -84,13 +98,15 @@ export default async function CardPage({ params }: { params: Promise<{ slug: str
           <p>
             <span className="card-dir">Ngược</span> {card.loi_khuyen.nguoc}
           </p>
-
-          <aside className="card-nguyet pixel-frame" aria-label="Nguyệt nói riêng">
-            <span className="card-nguyet-name">Nguyệt nói riêng</span>
-            <p>{card.nguyet}</p>
-          </aside>
         </div>
       </div>
+
+      {/* lời riêng của Nguyệt trong chính hộp thoại của nàng: thẻ tên, ô chân dung, giọng ta–cậu */}
+      <aside className="card-nguyet pixel-frame" aria-label="Nguyệt nói riêng">
+        <span className="card-nguyet-name">Nguyệt</span>
+        <img className="card-nguyet-face" src={assetUrl("/assets/portrait/nguyet_idle.png")} alt="" />
+        <p>{card.nguyet}</p>
+      </aside>
 
       <nav className="card-pager" aria-label="Lá trước, lá sau">
         <Link href={`/la-bai/${prev.slug}`} className="btn-pixel">

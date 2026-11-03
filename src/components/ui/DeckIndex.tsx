@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CardFace } from "./TarotCard";
+import { assetUrl } from "@/lib/assets";
 import type { PublicCard } from "@/lib/tarot/types";
 
 /** Các nhóm của bộ bài theo thứ tự quen thuộc; tên chất theo cách gọi tiếng Việt trong tên lá ("Bảy Kiếm"). */
@@ -12,6 +13,10 @@ const GROUPS: Array<{ key: string; title: string; match: (c: PublicCard) => bool
   { key: "swords", title: "Kiếm", match: (c) => c.suit === "swords" },
   { key: "pentacles", title: "Tiền", match: (c) => c.suit === "pentacles" },
 ];
+
+/** Lá đặt tay lên khăn: nghiêng lệch nhau một chút, không thẳng hàng như lưới ảnh. */
+const TILTS = [-2, 1.5, -1, 2, -1.5, 1, -0.5, 1.8];
+const CLOTH = `radial-gradient(ellipse 70% 60% at 82% 0%, rgba(255, 190, 110, 0.16), transparent 70%), url("${assetUrl("/assets/table/cloth_tile.png")}")`;
 
 /** Bỏ dấu và viết thường, để gõ "bay kiem" hay "seven of" đều tìm ra. */
 const fold = (s: string) =>
@@ -46,14 +51,15 @@ export function DeckIndex({ cards }: { cards: PublicCard[] }) {
         const list = shown.filter(g.match);
         if (!list.length) return null;
         return (
-          <section key={g.key} className="deck-group" aria-labelledby={`nhom-${g.key}`}>
+          // mỗi nhóm là một tấm khăn trải bài: lá nằm trên khăn dưới ánh nến, nhãn nhóm thêu như thẻ tên
+          <section key={g.key} className="deck-group" aria-labelledby={`nhom-${g.key}`} style={{ backgroundImage: CLOTH }}>
             <h2 id={`nhom-${g.key}`}>
               {g.title}
               <span>{list.length} lá</span>
             </h2>
             <ul className="deck-grid">
-              {list.map((c) => (
-                <li key={c.id}>
+              {list.map((c, i) => (
+                <li key={c.id} style={{ "--tilt": `${TILTS[i % TILTS.length]}deg` } as React.CSSProperties}>
                   <Link href={`/la-bai/${c.slug}`} className="deck-item">
                     <CardFace card={c} size="md" />
                     <span className="deck-name">{c.name_vi}</span>

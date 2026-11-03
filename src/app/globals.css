@@ -1708,13 +1708,16 @@ img {
   }
 }
 
-/* ---------- trang Bộ bài (tra cứu 78 lá) ---------- */
+/* ---------- trang Bộ bài (tra cứu 78 lá) ----------
+   Mỗi nhóm lá là một tấm khăn tím mận của Nguyệt trải dưới ánh nến, viền thêu vàng, nhãn nhóm như thẻ tên;
+   lá đặt tay lên khăn, nghiêng lệch nhau. Trang một lá: lá trên khăn bên trái, trang sổ của Bấc bên phải,
+   lời riêng của Nguyệt trong chính hộp thoại của nàng. */
 .deck-search {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem 0.8rem;
-  margin-bottom: 1.6rem;
+  margin-bottom: 2.6rem;
 }
 .deck-search-label,
 .deck-search-count {
@@ -1738,140 +1741,248 @@ img {
 .deck-empty {
   color: var(--muted);
 }
-.deck-group + .deck-group {
-  margin-top: 2.2rem;
+/* tấm khăn: dither tím mận lặp, ánh nến góc trên phải, viền thêu một nét vàng, bóng đặc xuống bàn */
+.deck-group,
+.card-sheet-art {
+  background-color: var(--plum);
+  background-size: auto, 192px 192px;
+  image-rendering: pixelated;
+  border: 3px solid var(--ink-dark);
+  box-shadow:
+    inset 0 0 0 6px var(--plum),
+    inset 0 0 0 8px rgba(214, 172, 80, 0.75),
+    0 8px 0 rgba(0, 0, 0, 0.45);
 }
+.deck-group {
+  position: relative;
+  padding: 2.4rem clamp(0.8rem, 3vw, 2rem) 1.6rem;
+}
+.deck-group + .deck-group {
+  margin-top: 3rem;
+}
+/* nhãn nhóm thêu lên mép khăn, như thẻ tên trên hộp thoại */
 .deck-group h2 {
+  position: absolute;
+  top: -1.1rem;
+  left: 1.2rem;
   display: flex;
   align-items: baseline;
-  gap: 0.7rem;
-  margin-bottom: 0.9rem;
-  padding-bottom: 0.3rem;
+  gap: 0.6rem;
+  padding: 0.1rem 0.8rem;
   font-family: var(--font-pixel);
-  font-size: 1.8rem;
+  font-size: 1.6rem;
+  line-height: 1.1;
   color: var(--gold-hi);
-  border-bottom: 2px solid rgba(214, 172, 80, 0.35);
+  background: var(--plum);
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 0 3px var(--ink-dark);
 }
 .deck-group h2 span {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   color: var(--muted);
 }
-/* lưới lá: 3 cột trên điện thoại hẹp, tự thêm cột khi rộng */
 .deck-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(clamp(92px, 26vw, 128px), 1fr));
-  gap: 1.4rem 0.9rem;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(92px, 26vw, 124px), 1fr));
+  gap: 1.6rem 0.8rem;
   list-style: none;
 }
 .deck-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.35rem;
   text-align: center;
   text-decoration: none;
   color: inherit;
 }
 .deck-item .tarot-md {
-  --w: clamp(80px, 22vw, 112px);
+  --w: clamp(78px, 21vw, 108px);
+}
+/* lá nằm trên khăn: nghiêng tay, bóng tiếp xúc sát mép (như lá trên bàn trải bài) */
+.deck-item .tarot-card {
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 0.2s ease;
+}
+.deck-item .tarot-face {
+  box-shadow: -2px 2px 0 rgba(8, 6, 13, 0.7), -4px 4px 0 rgba(8, 6, 13, 0.3);
 }
 .deck-item:hover .tarot-card,
 .deck-item:focus-visible .tarot-card {
-  transform: translateY(-6px);
+  transform: translateY(-8px) rotate(0deg);
+}
+.deck-item:hover .tarot-face,
+.deck-item:focus-visible .tarot-face {
+  box-shadow: 0 0 14px rgba(243, 214, 139, 0.55), -3px 8px 0 rgba(8, 6, 13, 0.5);
 }
 .deck-item:focus-visible {
   outline: 2px dashed var(--gold-hi);
   outline-offset: 4px;
 }
-.deck-name {
+/* tên lá trên tấm mực, đọc được trên khăn như chú thích lá ở bàn */
+.deck-name,
+.deck-name-en {
+  padding: 0 0.35rem;
   font-family: var(--font-pixel);
+  line-height: 1.1;
+  background: rgba(8, 6, 13, 0.6);
+}
+.deck-name {
+  margin-top: 0.3rem;
   font-size: 1.2rem;
-  line-height: 1.05;
   color: var(--gold-hi);
 }
 .deck-name-en {
-  font-family: var(--font-pixel);
   font-size: 1rem;
-  line-height: 1.05;
   color: var(--muted);
 }
 
 /* ---------- trang một lá ---------- */
 .deck-crumb {
-  margin: -1rem 0 1.4rem;
+  margin: -1rem 0 1.6rem;
   font-family: var(--font-pixel);
   font-size: 1.2rem;
 }
 .card-sheet {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 2.4rem;
+  grid-template-columns: minmax(240px, 340px) 1fr;
+  gap: 1.6rem;
   align-items: start;
 }
+/* lá trên khăn dưới ánh nến, như vừa được lật trên bàn */
 .card-sheet-art {
   position: sticky;
   top: 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.8rem;
-  max-width: 300px;
+  gap: 1rem;
+  margin: 0;
+  padding: 2rem 1.2rem 1.4rem;
+}
+.card-sheet-art .tarot-face {
+  box-shadow: 0 0 22px rgba(243, 214, 139, 0.35), -3px 3px 0 rgba(8, 6, 13, 0.7), -6px 6px 0 rgba(8, 6, 13, 0.3);
 }
 .card-sheet-art figcaption {
-  font-size: 0.9rem;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.88rem;
   font-style: italic;
   line-height: 1.55;
-  color: var(--muted);
+  color: var(--cream);
+  background: rgba(8, 6, 13, 0.55);
 }
-.card-sheet-text h2:first-child {
-  margin-top: 0;
+/* trang sổ của Bấc: khung giấy pixel 9 mảnh, mực nâu trên giấy kem, cùng chất liệu cuốn sổ trên bàn */
+.card-paper {
+  border-style: solid;
+  border-color: transparent;
+  border-width: 20px 20px 24px 36px;
+  border-image-slice: 10 10 12 18 fill;
+  border-image-repeat: round;
+  image-rendering: pixelated;
+  padding: 0.4rem 0.6rem 1rem;
+  color: var(--ink);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.45);
+}
+.card-paper-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 4px double var(--leather);
+}
+.card-paper-head img {
+  width: 30px;
+  height: 33px;
+  object-fit: contain;
+  object-position: bottom;
+  image-rendering: pixelated;
+}
+.card-paper-head span {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-pixel);
+  font-size: 1.05rem;
+  line-height: 1.1;
+  color: var(--ink-soft);
+}
+.card-paper-head b {
+  font-size: 1.45rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+.card-paper h2 {
+  margin: 1.4rem 0 0.4rem;
+  font-family: var(--font-pixel);
+  font-size: 1.45rem;
+  font-weight: 400;
+  color: var(--ink);
+  border-bottom: 2px dashed rgba(58, 36, 16, 0.35);
+}
+.card-paper p,
+.card-paper dd {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
 }
 .card-sides {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.4rem;
+  gap: 1.2rem;
 }
-.prose-dark .card-keys {
+.card-sides h2 {
+  margin-top: 0;
+}
+.card-keys {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-  margin: 0.2rem 0 0.7rem;
+  margin: 0.3rem 0 0.7rem;
   padding: 0;
   list-style: none;
 }
-.prose-dark .card-keys li {
-  margin: 0;
-  padding: 0 0.45rem;
+/* từ khóa: dấu đóng mực nghiêng, như "Các lá nói về" trong sổ */
+.card-keys li {
+  padding: 0 0.4rem;
   font-family: var(--font-pixel);
-  font-size: 1.1rem;
-  line-height: 1.4;
-  color: var(--cream);
-  border: 2px solid rgba(185, 176, 201, 0.4);
+  font-size: 1.05rem;
+  line-height: 1.35;
+  color: var(--ink);
+  border: 2px solid rgba(58, 36, 16, 0.55);
+  transform: rotate(-1.5deg);
+}
+.card-keys li:nth-child(even) {
+  transform: rotate(1.5deg);
 }
 .card-topics {
   display: grid;
-  gap: 1rem;
+  gap: 0.9rem;
 }
 .card-topics dt {
   font-family: var(--font-pixel);
-  font-size: 1.3rem;
-  color: var(--gold-hi);
+  font-size: 1.25rem;
+  color: var(--ink-soft);
 }
 .card-topics dd {
-  margin: 0.2rem 0 0;
-  line-height: 1.65;
-  color: var(--cream);
+  margin: 0.15rem 0 0;
 }
 .card-dir {
   margin-right: 0.35rem;
+  padding: 0 0.3rem;
   font-family: var(--font-pixel);
-  font-size: 1.1rem;
-  color: var(--muted);
+  font-size: 1rem;
+  color: var(--ink-soft);
+  border: 1px solid rgba(116, 80, 29, 0.6);
 }
+/* lời riêng của Nguyệt: chính hộp thoại của nàng, thẻ tên tím mận và ô chân dung */
 .card-nguyet {
   position: relative;
-  margin-top: 2.2rem;
-  padding: 1.5rem 1.2rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 2.6rem;
+  padding: 1.6rem 1.2rem 1.2rem;
 }
 .card-nguyet-name {
   position: absolute;
@@ -1884,26 +1995,41 @@ img {
   background: var(--plum);
   border: 2px solid var(--gold);
 }
-.prose-dark .card-nguyet p {
+.card-nguyet-face {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  image-rendering: pixelated;
+  background: var(--navy);
+  border: 3px solid var(--gold);
+  box-shadow: 0 0 0 3px var(--ink-dark);
+}
+.card-nguyet p {
   margin: 0;
+  font-size: clamp(0.98rem, 2.3vw, 1.08rem);
+  line-height: 1.6;
+  color: var(--cream);
 }
 .card-pager {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: 2.6rem;
+  margin-top: 2.4rem;
 }
-@media (max-width: 720px) {
+@media (max-width: 760px) {
   .card-sheet {
     grid-template-columns: 1fr;
-    gap: 1.6rem;
+    gap: 1.4rem;
   }
   .card-sheet-art {
     position: static;
-    margin: 0 auto;
   }
   .card-sides {
     grid-template-columns: 1fr;
+  }
+  .card-nguyet-face {
+    width: 56px;
+    height: 56px;
   }
 }
 
