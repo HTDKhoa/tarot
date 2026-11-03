@@ -420,6 +420,29 @@ img {
 }
 
 /* ---------- hộp thoại ---------- */
+/* Góc mặt bàn: hộp thoại giữ một chiều cao (4 dòng, câu dài hơn thì cuộn trong khung) để bàn phía trên không
+   nhảy lên xuống theo từng câu, lá không trôi khỏi vòng chấm vẽ trên khăn */
+.play-zone.is-table .dialogue-text {
+  min-height: 6.4em;
+  max-height: 6.4em;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+/* màn rộng: câu Nguyệt ít khi quá ba dòng, nên giữ ba dòng cho khỏi một khoảng trống lớn trong khung */
+@media (min-width: 900px) {
+  .play-zone.is-table .dialogue-text {
+    min-height: 4.8em;
+    max-height: 4.8em;
+  }
+}
+/* desktop có sổ ghim: hộp thoại đứng giữa cột bàn (cùng trục với hình trải và vòng chấm), không giữa màn */
+.play-zone.is-table:has(.notebook.is-docked) > .dialogue-zone {
+  --col: calc(min(30vw, 360px) + 24px);
+  --dw: min(calc(96vw - var(--col) - 2rem), 780px);
+  align-self: flex-start;
+  width: var(--dw);
+  margin-left: calc(2vw + (96vw - var(--col) - var(--dw)) / 2);
+}
 .dialogue-zone {
   position: relative;
   z-index: 1;
@@ -909,21 +932,37 @@ img {
   display: flex;
   justify-content: center;
 }
+/* lá làm rõ là một hàng phụ, rõ ràng nhỏ hơn hình trải chính (khoảng 0.55 lần) chứ không thành lưới 2×3 */
 .spread-clarifiers .table-slot {
-  --w: clamp(54px, min(7.5vw, 10vh), 96px);
+  --w: clamp(44px, min(6vw, 8vh), 80px);
 }
-/* desktop có sổ ghim: khăn rộng, lá lớn theo chiều cao màn để hình trải đầy vòng chấm.
-   Hình trải dồn xuống gần hộp thoại để phía trên còn chỗ cho bàn tay Nguyệt vươn từ mép xa của bàn. */
+/* một lá: lá duy nhất trên bàn được trải lớn, không đứng lọt thỏm giữa khăn */
+.spread-one .table-slot {
+  --w: clamp(96px, min(34vw, 22vh), 176px);
+}
+/* desktop có sổ ghim: khăn rộng, lá lớn theo chiều cao màn để hình trải đầy vòng chấm. */
 .table-field.has-notebook > .table-spread:not(.spread-clarifiers) .table-slot {
   --w: clamp(96px, min(13vw, 18.5vh), 176px);
 }
+/* hình trải nằm giữa vòng chấm; khoảng đệm trên chừa chỗ cho bàn tay Nguyệt vươn từ phía nàng ngồi */
 .table-field.has-notebook:not(.has-extra) {
-  justify-content: safe flex-end;
-  padding-bottom: 1.5rem;
+  padding-top: clamp(2rem, 7vh, 5rem);
+}
+/* dải bài chọn lá nằm gọn trong cột bàn bên trái sổ, không tràn mép màn hay chui dưới sổ (1024×768) */
+.table-field.has-notebook .fan-zone {
+  width: 100%;
+  height: calc(clamp(54px, 6.5vw, 88px) * 80 / 48 + 40px);
+}
+.table-field.has-notebook .fan-card .tarot-sm {
+  --w: clamp(54px, 6.5vw, 88px);
+}
+/* bộ đếm "Đã chọn n/3" đứng sát dải bài, không lơ lửng xa phía trên */
+.table-field:has(> .fan-zone) {
+  gap: 0.75rem;
 }
 /* có thêm hàng lá làm rõ thì hình trải chính nhỏ lại để cả bàn vừa một màn */
 .table-field.has-extra > .table-spread:not(.spread-clarifiers) .table-slot {
-  --w: clamp(64px, min(17vw, 11vh), 112px);
+  --w: clamp(64px, min(21.5vw, 14vh), 136px);
 }
 /* tam giác: Trở ngại ở đỉnh, Tình huống và Lời khuyên thấp hơn hai bên */
 .spread-triangle .table-slot:not(:nth-child(2)) {
@@ -1098,6 +1137,31 @@ img {
   }
   .table-field:has(> .notebook-peek) .table-slot {
     --w: clamp(56px, min(21.5vw, 9.5vh), 136px);
+  }
+  .table-field.has-extra:has(> .notebook-peek) > .table-spread:not(.spread-clarifiers) .table-slot {
+    --w: clamp(52px, min(21.5vw, 9vh), 136px);
+  }
+  .table-field:has(> .notebook-peek) .spread-clarifiers .table-slot {
+    --w: clamp(36px, 6vh, 64px);
+  }
+  .table-field.has-extra:has(> .notebook-peek) {
+    gap: 0.6rem;
+  }
+  /* hàng lá làm rõ: bỏ dòng "Làm rõ n" (hàng đã có nhãn cho trình đọc màn hình), giữ tên lá */
+  .table-field:has(> .notebook-peek) .spread-clarifiers .tarot-pos {
+    display: none;
+  }
+  .table-field:has(> .notebook-peek) .spread-clarifiers .tarot-caption {
+    min-height: 0;
+  }
+  /* tên lá làm rõ một dòng (cắt bằng dấu ba chấm), tên đầy đủ vẫn có trong sổ và lời Nguyệt */
+  .table-field:has(> .notebook-peek) .spread-clarifiers .tarot-name {
+    -webkit-line-clamp: 1;
+    font-size: 1.05rem;
+  }
+  /* có hàng làm rõ: mép sổ chỉ một dòng câu hỏi, chừa chỗ cho bàn */
+  .table-field.has-extra > .notebook-peek .notebook-edge-text {
+    -webkit-line-clamp: 1;
   }
   /* tam giác dẹt hơn: hai lá bên chỉ thấp hơn lá đỉnh nửa chừng, chừa chỗ cho chú thích bốn dòng (vị trí, ngược, tên hai dòng) */
   .table-field:has(> .notebook-peek) .spread-triangle .table-slot:not(:nth-child(2)) {

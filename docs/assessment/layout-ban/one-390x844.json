@@ -1,0 +1,355 @@
+{
+ "W": "390",
+ "H": "844",
+ "KIND": "one",
+ "fan": {
+  "vw": 390,
+  "vh": 844,
+  "zone": {
+   "l": 0,
+   "t": 51,
+   "r": 390,
+   "b": 828,
+   "w": 390,
+   "h": 777
+  },
+  "zoneScroll": [
+   777,
+   777,
+   0
+  ],
+  "field": {
+   "l": 8,
+   "t": 63,
+   "r": 382,
+   "b": 633,
+   "w": 374,
+   "h": 570
+  },
+  "fieldScroll": [
+   570,
+   570
+  ],
+  "fieldPad": "72px 0px",
+  "fieldGap": "12px",
+  "slots": [],
+  "peek": {
+   "l": 8,
+   "t": 573,
+   "r": 291,
+   "b": 633,
+   "w": 283,
+   "h": 60
+  },
+  "book": null,
+  "dlg": {
+   "l": 12,
+   "t": 670,
+   "r": 378,
+   "b": 828,
+   "w": 367,
+   "h": 158
+  },
+  "dtext": {
+   "l": 34,
+   "t": 696,
+   "r": 356,
+   "b": 796,
+   "w": 322,
+   "h": 100
+  },
+  "count": {
+   "l": 143,
+   "t": 229,
+   "r": 247,
+   "b": 261,
+   "w": 104,
+   "h": 32
+  },
+  "fan": {
+   "l": 8,
+   "r": 382,
+   "t": 311,
+   "b": 473,
+   "w": 67,
+   "fz": {
+    "l": 8,
+    "t": 273,
+    "r": 382,
+    "b": 467,
+    "w": 374,
+    "h": 194
+   }
+  },
+  "spreads": [],
+  "collide": [],
+  "tab": [
+   "brand:☾ Ngôi Nhà Trong R",
+   "menu-button:Menu",
+   "tarot-card:Lá thứ 1 trên 13",
+   "tarot-card:Lá thứ 2 trên 13",
+   "tarot-card:Lá thứ 3 trên 13",
+   "tarot-card:Lá thứ 4 trên 13",
+   "tarot-card:Lá thứ 5 trên 13",
+   "tarot-card:Lá thứ 6 trên 13",
+   "tarot-card:Lá thứ 7 trên 13",
+   "tarot-card:Lá thứ 8 trên 13",
+   "tarot-card:Lá thứ 9 trên 13",
+   "tarot-card:Lá thứ 10 trên 13",
+   "tarot-card:Lá thứ 11 trên 13",
+   "tarot-card:Lá thứ 12 trên 13",
+   "tarot-card:Lá thứ 13 trên 13",
+   "notebook-peek:Cậu hỏi: Hôm nay t",
+   "portrait-look:Nhìn Nguyệt"
+  ]
+ },
+ "read": {
+  "vw": 390,
+  "vh": 844,
+  "zone": {
+   "l": 0,
+   "t": 51,
+   "r": 390,
+   "b": 828,
+   "w": 390,
+   "h": 777
+  },
+  "zoneScroll": [
+   777,
+   777,
+   0
+  ],
+  "field": {
+   "l": 8,
+   "t": 63,
+   "r": 382,
+   "b": 646,
+   "w": 374,
+   "h": 583
+  },
+  "fieldScroll": [
+   583,
+   583
+  ],
+  "fieldPad": "72px 0px",
+  "fieldGap": "33.76px",
+  "slots": [
+   {
+    "pos": "0",
+    "clar": false,
+    "card": {
+     "l": 129,
+     "t": 213,
+     "r": 261,
+     "b": 434,
+     "w": 133,
+     "h": 221
+    },
+    "cap": {
+     "l": 153,
+     "t": 439,
+     "r": 237,
+     "b": 497,
+     "w": 85,
+     "h": 58
+    },
+    "pos_": {
+     "l": 153,
+     "t": 439,
+     "r": 237,
+     "b": 460,
+     "w": 85,
+     "h": 21
+    },
+    "name": {
+     "l": 155,
+     "t": 462,
+     "r": 235,
+     "b": 483,
+     "w": 80,
+     "h": 22
+    },
+    "nameTxt": "The Tower",
+    "posTxt": "Thông điệp",
+    "slot": {
+     "l": 109,
+     "t": 213,
+     "r": 281,
+     "b": 497,
+     "w": 172,
+     "h": 284
+    }
+   }
+  ],
+  "peek": {
+   "l": 8,
+   "t": 586,
+   "r": 291,
+   "b": 646,
+   "w": 283,
+   "h": 60
+  },
+  "book": null,
+  "dlg": {
+   "l": 12,
+   "t": 683,
+   "r": 378,
+   "b": 828,
+   "w": 367,
+   "h": 145
+  },
+  "dtext": {
+   "l": 34,
+   "t": 709,
+   "r": 356,
+   "b": 809,
+   "w": 322,
+   "h": 100
+  },
+  "count": null,
+  "fan": null,
+  "spreads": [
+   {
+    "l": 109,
+    "t": 213,
+    "r": 281,
+    "b": 497,
+    "w": 172,
+    "h": 284
+   }
+  ],
+  "collide": [],
+  "tab": [
+   "brand:☾ Ngôi Nhà Trong R",
+   "menu-button:Menu",
+   "notebook-peek:Cậu hỏi: Hôm nay t",
+   "portrait-look:Nhìn Nguyệt",
+   "dialogue-next:Câu tiếp"
+  ]
+ },
+ "extreme": {
+  "vw": 390,
+  "vh": 844,
+  "zone": {
+   "l": 0,
+   "t": 51,
+   "r": 390,
+   "b": 828,
+   "w": 390,
+   "h": 777
+  },
+  "zoneScroll": [
+   777,
+   777,
+   0
+  ],
+  "field": {
+   "l": 8,
+   "t": 63,
+   "r": 382,
+   "b": 646,
+   "w": 374,
+   "h": 583
+  },
+  "fieldScroll": [
+   583,
+   583
+  ],
+  "fieldPad": "72px 0px",
+  "fieldGap": "33.76px",
+  "slots": [
+   {
+    "pos": "0",
+    "clar": false,
+    "card": {
+     "l": 129,
+     "t": 213,
+     "r": 261,
+     "b": 434,
+     "w": 133,
+     "h": 221
+    },
+    "cap": {
+     "l": 120,
+     "t": 439,
+     "r": 270,
+     "b": 497,
+     "w": 149,
+     "h": 58
+    },
+    "pos_": {
+     "l": 123,
+     "t": 439,
+     "r": 267,
+     "b": 460,
+     "w": 144,
+     "h": 21
+    },
+    "name": {
+     "l": 120,
+     "t": 462,
+     "r": 270,
+     "b": 483,
+     "w": 149,
+     "h": 22
+    },
+    "nameTxt": "Queen of Pentacles",
+    "posTxt": "Thông điệp · ngược",
+    "slot": {
+     "l": 109,
+     "t": 213,
+     "r": 281,
+     "b": 497,
+     "w": 172,
+     "h": 284
+    }
+   }
+  ],
+  "peek": {
+   "l": 8,
+   "t": 586,
+   "r": 291,
+   "b": 646,
+   "w": 283,
+   "h": 60
+  },
+  "book": null,
+  "dlg": {
+   "l": 12,
+   "t": 683,
+   "r": 378,
+   "b": 828,
+   "w": 367,
+   "h": 145
+  },
+  "dtext": {
+   "l": 34,
+   "t": 709,
+   "r": 356,
+   "b": 809,
+   "w": 322,
+   "h": 100
+  },
+  "count": null,
+  "fan": null,
+  "spreads": [
+   {
+    "l": 109,
+    "t": 213,
+    "r": 281,
+    "b": 497,
+    "w": 172,
+    "h": 284
+   }
+  ],
+  "collide": [],
+  "tab": [
+   "brand:☾ Ngôi Nhà Trong R",
+   "menu-button:Menu",
+   "notebook-peek:Cậu hỏi: Hôm nay t",
+   "portrait-look:Nhìn Nguyệt",
+   "dialogue-next:Câu tiếp"
+  ]
+ },
+ "errs": []
+}
