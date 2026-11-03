@@ -6,9 +6,8 @@ import type { SpreadId } from "@/lib/tarot/spreads";
 import type { DrawnCard } from "@/lib/tarot/types";
 import { TarotCard } from "./TarotCard";
 
-const FAN_SIZE = 13;
-/** số lá ở vòng cung phía sau khi dải bài tách hai hàng trên điện thoại */
-const BACK_ROW = 7;
+/** Cả bộ 78 lá úp trải thành một dải dài để khách tự chọn. Chọn ô nào cũng không đổi lá: lá đã rút ở máy chủ. */
+const FAN_SIZE = 78;
 
 /** Hình trải trên khăn: một lá ở giữa, ba lá thành hàng, hay tam giác (Trở ngại ở đỉnh). */
 const SHAPE: Record<SpreadId | "daily", string> = {
@@ -129,6 +128,57 @@ function Arms({ mode }: { mode: "point" | "shuffle" | null }) {
   );
 }
 
+/**
+ * Dải bài: 78 lá úp chồng nhau thành một dải dài trên khăn, như người đọc bài trải cả bộ ra bàn. Dải dài hơn
+ * màn nên cuộn ngang (vuốt, kéo thanh cuộn, hoặc lăn chuột dọc cũng đi ngang); mở ra ở giữa bộ bài. Mỗi lá lộ ra
+ * một khe đủ rộng để chạm trúng; lá hơi gợn lên xuống và nghiêng nhẹ cho khỏi thành một hàng thẳng đơ.
+ */
+function Ribbon({ picked, onPick }: { picked: number[]; onPick: (i: number) => void }) {
+  const zone = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = zone.current;
+    if (!el) return;
+    // mở ra ở giữa bộ bài; hai đầu mờ dần để thấy còn bài ở hai bên
+    el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+    // lăn chuột dọc thì đi ngang trong dải, không lia máy hay cuộn trang
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+  return (
+    // data-focus-next: hộp thoại nói xong mà không có nút thì focus về lá đầu tiên của dải, không rơi về body
+    // data-scrollable: vuốt / lăn trong dải không tính là đổi góc máy
+    <div ref={zone} className="fan-zone" role="group" aria-label="Dải bài úp, 78 lá" data-focus-next data-scrollable>
+      <div className="fan-ribbon">
+        {Array.from({ length: FAN_SIZE }, (_, i) => {
+          const order = picked.indexOf(i);
+          const vars = {
+            // gợn nhẹ: lên xuống vài pixel và nghiêng một chút, như bài trải tay
+            "--wave": `${Math.round(Math.sin(i * 0.9) * 4 + Math.sin(i * 0.37) * 3)}px`,
+            "--tilt": `${(Math.sin(i * 1.7) * 2.2).toFixed(1)}deg`,
+          } as React.CSSProperties;
+          return (
+            <div key={i} className={`fan-card ${order >= 0 ? "is-picked" : ""}`} style={vars}>
+              <TarotCard
+                revealed={false}
+                size="sm"
+                onClick={order >= 0 ? undefined : () => onPick(i)}
+                selected={order >= 0}
+                name={`Lá thứ ${i + 1} trên ${FAN_SIZE}`}
+                pressed={order >= 0}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Slot({ c, i, revealed, active }: { c: DrawnCard; i: number; revealed: boolean; active: boolean }) {
   return (
     <div className={`table-slot ${active ? "is-active" : ""}`} data-pos={i}>
@@ -167,37 +217,8 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
         <p className="table-count" aria-live="polite">
           Đã chọn {picked.length}/{cards.length}
         </p>
-        {/* data-focus-next: hộp thoại nói xong mà không có nút thì focus về lá đầu tiên của dải, không rơi về body */}
-        <div className="fan-zone" role="group" aria-label="Dải bài úp" data-focus-next>
-          {Array.from({ length: FAN_SIZE }, (_, i) => {
-            const mid = (FAN_SIZE - 1) / 2;
-            const order = picked.indexOf(i);
-            // điện thoại: hai vòng cung (7 lá sau, 6 lá trước) để mỗi lá lộ ra đủ rộng cho ngón tay
-            const back = i < BACK_ROW;
-            const n = back ? BACK_ROW : FAN_SIZE - BACK_ROW;
-            const j = back ? i : i - BACK_ROW;
-            const mid2 = (n - 1) / 2;
-            const vars = {
-              "--angle": `${(i - mid) * 5}deg`,
-              "--offset": `${(i - mid) * 7}%`,
-              // vòng sau nghiêng ít hơn để lá ở mép không nhô ra ngoài màn; vòng trước giữ 4° để khe giữa các lá đủ rộng cho ngón tay
-              "--angle2": `${(j - mid2) * (back ? 3 : 4)}deg`,
-              "--k2": j - mid2,
-            } as React.CSSProperties;
-            return (
-              <div key={i} className={`fan-card ${back ? "is-back" : "is-front"} ${order >= 0 ? "is-picked" : ""}`} style={vars}>
-                <TarotCard
-                  revealed={false}
-                  size="sm"
-                  onClick={order >= 0 ? undefined : () => onPick(i)}
-                  selected={order >= 0}
-                  name={`Lá thứ ${i + 1} trên ${FAN_SIZE}`}
-                  pressed={order >= 0}
-                />
-              </div>
-            );
-          })}
-        </div>
+        <p className="fan-hint">Cả bộ 78 lá. Kéo ngang để đi dọc bộ bài.</p>
+        <Ribbon picked={picked} onPick={onPick} />
         {children}
       </div>
     );
