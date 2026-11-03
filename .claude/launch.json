@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tarot-demo",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "start", "-p", "3020"],
+      "env": { "DEMO_MODE": "1" },
+      "port": 3020
+    }
+  ]
+}
