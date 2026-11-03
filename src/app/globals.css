@@ -895,9 +895,17 @@ img {
   box-shadow: 0 0 14px rgba(243, 214, 139, 0.9), 0 6px 0 rgba(0, 0, 0, 0.45);
 }
 .fan-hint {
-  font-family: var(--font-pixel);
   font-size: 1.05rem;
   color: var(--muted);
+}
+/* điện thoại: dải bài hạ xuống ngay trên mép sổ, vào tầm ngón cái, thay vì lơ lửng giữa khăn */
+.table-field:has(> .fan-zone):has(> .notebook-peek) {
+  justify-content: safe flex-end;
+  padding-bottom: 6rem;
+}
+/* màn chọn lá: lá úp đủ lớn để chạm (điện thoại) và để dải lấp đầy vòng chấm (desktop) */
+.fan-zone .tarot-sm {
+  --w: clamp(72px, 20vw, 96px);
 }
 /* ---------- cảnh mặt bàn: lá nằm đúng hình trải trên khăn ---------- */
 .play-zone.is-table {
@@ -965,7 +973,7 @@ img {
   width: 100%;
 }
 .table-field.has-notebook .fan-card .tarot-sm {
-  --w: clamp(54px, 6.5vw, 88px);
+  --w: clamp(70px, 6.5vw, 96px);
 }
 /* bộ đếm "Đã chọn n/3" đứng sát dải bài, không lơ lửng xa phía trên */
 .table-field:has(> .fan-zone) {
@@ -1069,11 +1077,16 @@ img {
   image-rendering: pixelated;
 }
 .table-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
   font-family: var(--font-pixel);
   font-size: 1.2rem;
+  line-height: 1.15;
   color: var(--cream);
   background: rgba(8, 6, 13, 0.66);
-  padding: 0.1rem 0.6rem;
+  padding: 0.2rem 0.8rem 0.25rem;
 }
 /* Nguyệt xào bài: hai nửa bộ bài dưới hai bàn tay tách ra rồi gập vào */
 .table-shuffle {

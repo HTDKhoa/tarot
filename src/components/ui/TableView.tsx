@@ -214,10 +214,13 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
   if (picking) {
     return (
       <div className={field()}>
-        <p className="table-count" aria-live="polite">
-          Đã chọn {picked.length}/{cards.length}
-        </p>
-        <p className="fan-hint">Cả bộ 78 lá. Kéo ngang để đi dọc bộ bài.</p>
+        {/* bộ đếm và lời nhắc chung một tấm mực, ngay trên dải bài */}
+        <div className="table-count">
+          <span aria-live="polite">
+            Đã chọn {picked.length}/{cards.length}
+          </span>
+          <span className="fan-hint">Cả bộ 78 lá · kéo ngang để xem hết</span>
+        </div>
         <Ribbon picked={picked} onPick={onPick} />
         {children}
       </div>
