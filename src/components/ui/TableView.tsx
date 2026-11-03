@@ -56,7 +56,7 @@ function Arm({ hand, side, armRef }: { hand: "point" | "rest"; side: "left" | "r
 /** Hàng sprite tay (hand_*.png 34×66): bàn tay rộng 15 px ảnh, bằng bàn tay Nguyệt rộng 20 px khung ở góc mặt Nguyệt. */
 const HAND_SPRITE = 15 / 20;
 /** Hàng dưới cùng của đầu ngón trỏ (tay chỉ) và của lòng bàn tay (tay úp) trong ảnh cao 66. */
-const TIP_ROW = { point: 62, rest: 43 };
+const TIP_ROW = { point: 54, rest: 43 };
 
 /**
  * Hai cánh tay Nguyệt, vẽ một lớp trên cả bàn: mỗi tay vươn từ khuỷu tay thật của nàng (CameraRig chiếu từ cảnh 3D

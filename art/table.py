@@ -133,10 +133,11 @@ def sleeve_and_hand(point=True):
     # ngón cái
     d.polygon([(24, 34), (28, 37), (27, 41), (24, 40)], fill=c('k2'))
     if point:
-        # ngón trỏ duỗi thẳng xuống; các ngón khác co lại
-        d.rectangle([13, 43, 16, 62], fill=c('k2'))
-        d.line([(13, 44), (13, 62)], fill=c('k1'))
-        d.line([(13, 63), (16, 63)], fill=c('k1'))
+        # ngón trỏ duỗi thẳng xuống, dài hơn ngón đặt phẳng một chút (10 px so với 8): ngón người thật ngắn hơn
+        # lòng bàn tay, bản cũ 20 px trông như que chỉ; các ngón khác co lại
+        d.rectangle([13, 43, 16, 52], fill=c('k2'))
+        d.line([(13, 44), (13, 52)], fill=c('k1'))
+        d.line([(13, 53), (16, 53)], fill=c('k1'))
         d.rectangle([17, 43, 24, 46], fill=c('k1'))
         d.rectangle([9, 43, 12, 46], fill=c('k1'))
     else:
