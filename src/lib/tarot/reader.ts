@@ -53,6 +53,9 @@ const wordCount = (s: string) => s.split(/\s+/).filter(Boolean).length;
  * Tách một đoạn thành nhiều lượt thoại, mỗi lượt gồm vài câu trọn vẹn.
  * `first` (ví dụ revealPosition) chỉ gắn vào lượt đầu, để lá được lật đúng lúc bắt đầu nói.
  */
+/** Gắn loại câu (tả tranh, nghĩa, ý riêng) cho cả một đoạn đã tách lượt. */
+const kind = (lines: ReaderLine[], k: NonNullable<ReaderLine["kind"]>) => lines.map((l) => ({ ...l, kind: k }));
+
 function turns(text: string, tag: EmotionTag, first?: Partial<ReaderLine>): ReaderLine[] {
   const sentences = speak(text).split(/(?<=[.!?…])\s+(?=[\p{Lu}"“])/u);
   const chunks: string[] = [];
@@ -145,9 +148,9 @@ export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offe
     const card = getCard(d.cardId);
     const o = orient(d);
     const label = spread.positions[i];
-    lines.push(...turns(`${label}: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: i }));
-    lines.push(...turns(`${card.y_nghia[o]} ${card.chu_de[topic][o]}`, tagFor(card, d.reversed)));
-    if (i === opinionIdx) lines.push(...turns(`Còn đây là ý riêng của ta. ${card.nguyet}`, d.reversed ? "concern" : "tease"));
+    lines.push(...kind(turns(`${label}: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: i }), "image"));
+    lines.push(...kind(turns(`${card.y_nghia[o]} ${card.chu_de[topic][o]}`, tagFor(card, d.reversed)), "meaning"));
+    if (i === opinionIdx) lines.push(...kind(turns(`Còn đây là ý riêng của ta. ${card.nguyet}`, d.reversed ? "concern" : "tease"), "opinion"));
   });
 
   const reversedCount = draws.filter((d) => d.reversed).length;
@@ -174,8 +177,8 @@ export function composeClarifier(d: Draw, topic: Topic, index: number): ReaderLi
   const card = getCard(d.cardId);
   const o = orient(d);
   const lines: ReaderLine[] = [
-    ...turns(`Lá làm rõ: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: -1 }),
-    ...turns(`${card.chu_de[topic][o]} ${card.loi_khuyen[o]}`, tagFor(card, d.reversed)),
+    ...kind(turns(`Lá làm rõ: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: -1 }), "image"),
+    ...kind(turns(`${card.chu_de[topic][o]} ${card.loi_khuyen[o]}`, tagFor(card, d.reversed)), "meaning"),
   ];
   // Lá làm rõ không tự mời thêm lá nữa; hết lượt thì nói rõ vì sao dừng.
   if (index + 1 >= MAX_CLARIFIERS) {

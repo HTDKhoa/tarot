@@ -1244,11 +1244,28 @@ img {
   padding: 0.1rem 0.4rem 0.4rem;
   border-bottom: 2px solid rgba(58, 36, 16, 0.35);
 }
+/* Bấc đứng ở đầu trang sổ của mình; tên sổ và đêm hôm nay như dòng ghi đầu trang */
+.nb-owl {
+  flex: none;
+  width: 30px;
+  height: 33px;
+  object-fit: contain;
+  object-position: bottom;
+  image-rendering: pixelated;
+}
 .notebook-head h2 {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
   font-family: var(--font-pixel);
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   line-height: 1;
   color: var(--ink);
+}
+.nb-date {
+  font-size: 1.05rem;
+  color: var(--ink-soft);
 }
 .notebook-head h2:focus {
   outline: none;
@@ -1288,12 +1305,110 @@ img {
   color: var(--ink-soft);
   margin-bottom: 0.25rem;
 }
-.notebook-page h4 {
-  font-family: var(--font-pixel);
-  font-size: 1.2rem;
-  color: var(--ink);
-  margin: 0.8rem 0 0.2rem;
+/* ---- một mục lá trong sổ: lá vẽ nhỏ, vị trí, tên, dấu ngược; rồi lời tả tranh, nghĩa, ý riêng ---- */
+.nb-entry {
+  margin-top: 1.3rem;
+}
+.nb-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.45rem;
   border-bottom: 2px dashed rgba(58, 36, 16, 0.35);
+}
+.nb-card {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 50px;
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+  box-shadow: -1px 1px 0 rgba(58, 36, 16, 0.45);
+}
+.nb-card img {
+  width: 62%;
+  margin-top: -18%;
+  image-rendering: pixelated;
+}
+.nb-card.is-reversed img {
+  transform: rotate(180deg);
+  margin-top: 0;
+  margin-bottom: -18%;
+}
+.notebook-page h4 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.5rem;
+  margin: 0;
+  font-family: var(--font-pixel);
+  font-weight: 400;
+}
+.nb-pos {
+  flex-basis: 100%;
+  font-size: 1.05rem;
+  line-height: 1.1;
+  color: var(--ink-soft);
+}
+.nb-name {
+  font-size: 1.45rem;
+  line-height: 1;
+  color: var(--ink);
+}
+/* lá ngược: dấu đóng mực nghiêng, như Bấc ấn con dấu bên cạnh tên lá */
+.nb-rev {
+  padding: 0 0.3rem;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--ink-soft);
+  border: 2px solid rgba(116, 80, 29, 0.7);
+  transform: rotate(-5deg);
+}
+/* lời tả tranh: chữ nghiêng nhỏ, mực nhạt, như chú thích Bấc ghi dưới hình */
+.notebook-page p.nb-image {
+  font-size: 0.86rem;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+/* ý riêng của Nguyệt: một khối riêng trên nền da mờ, mở bằng dấu ngoặc kép lớn */
+.notebook-page p.nb-opinion {
+  position: relative;
+  margin: 0;
+  padding: 0 0.6rem 0.5rem 1.7rem;
+  background: rgba(90, 60, 46, 0.09);
+}
+.notebook-page p.nb-opinion.is-first {
+  margin-top: 0.6rem;
+  padding-top: 0.5rem;
+}
+.notebook-page p.nb-opinion.is-first::before {
+  content: "“";
+  position: absolute;
+  left: 0.35rem;
+  top: 0.2rem;
+  font-family: var(--font-pixel);
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--ink-soft);
+}
+.nb-opinion-label {
+  display: block;
+  font-family: var(--font-pixel);
+  font-size: 1.05rem;
+  font-style: normal;
+  line-height: 1.2;
+  color: var(--ink-soft);
+}
+.notebook-page p.nb-opinion + p:not(.nb-opinion) {
+  margin-top: 0.6rem;
+}
+/* lời Nguyệt ngoài các lá (mời rút thêm, gom lại): lùi vào, mực nhạt hơn */
+.notebook-page p.nb-aside {
+  margin-top: 0.9rem;
+  color: var(--ink-soft);
 }
 .notebook-page p,
 .notebook-page li {
@@ -1303,25 +1418,104 @@ img {
 }
 .notebook-question {
   font-weight: 600;
+  font-size: 1rem;
+}
+.nb-ask .notebook-question::before {
+  content: "“";
+}
+.nb-ask .notebook-question::after {
+  content: "”";
 }
 .notebook-recap {
   padding-top: 0.6rem;
   border-top: 4px double var(--leather);
 }
 .notebook-recap ul {
-  list-style: square;
-  padding-left: 1.1rem;
-  margin-bottom: 0.6rem;
+  list-style: none;
+  margin: 1rem 0 0.8rem;
+  padding-top: 0.6rem;
+  border-top: 2px dashed rgba(58, 36, 16, 0.35);
+}
+.notebook-recap li + li {
+  margin-top: 0.5rem;
 }
 .notebook-recap b {
+  display: block;
   font-family: var(--font-pixel);
   font-size: 1.15rem;
   font-weight: 400;
-  margin-right: 0.3rem;
+  line-height: 1.2;
+  color: var(--ink);
 }
+/* lời dặn: điều khách mang về, đứng giữa trang giữa hai vạch đôi da */
 .notebook-advice {
-  padding: 0.4rem 0.5rem;
+  margin: 0.5rem 0 0.2rem;
+  padding: 0.7rem 0.7rem 0.6rem;
+  text-align: center;
   background: rgba(90, 60, 46, 0.1);
+  border-block: 4px double var(--leather);
+}
+.notebook-advice b {
+  color: var(--ink-soft);
+}
+.notebook-page .notebook-advice p {
+  margin: 0.2rem 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+/* hình trải vẽ lại bằng lá nhỏ, đúng hình trên bàn */
+.nb-spread {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1rem;
+  margin: 1rem 0 0.2rem;
+}
+.nb-spread-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+.nb-spread .nb-card {
+  width: 36px;
+  height: 60px;
+}
+.nb-spread .nb-pos {
+  flex-basis: auto;
+  font-family: var(--font-pixel);
+  font-size: 0.95rem;
+}
+.nb-spread.is-triangle .nb-spread-slot:not(:nth-child(2)) {
+  margin-top: 22px;
+}
+.nb-spread.is-clarifiers {
+  gap: 0.6rem;
+  margin: 0.3rem 0 0.8rem;
+}
+.nb-spread.is-clarifiers .nb-card {
+  width: 24px;
+  height: 40px;
+}
+/* các lá nói về: từng chữ là một dấu đóng mực, nghiêng lệch nhau một chút */
+.nb-themes b {
+  margin-bottom: 0.3rem;
+}
+.nb-stamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.nb-stamp {
+  padding: 0 0.4rem;
+  font-family: var(--font-pixel);
+  font-size: 1.05rem;
+  color: var(--ink);
+  border: 2px solid rgba(58, 36, 16, 0.55);
+  transform: rotate(-2deg);
+}
+.nb-stamp:nth-child(even) {
+  transform: rotate(1.5deg);
 }
 
 @media (max-width: 640px) {

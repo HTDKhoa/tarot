@@ -540,6 +540,7 @@ export default function HomeClient() {
                   docked={docked}
                   toRecap={phase === "summary"}
                   onOpenChange={setNotebookOpen}
+                  spread={ctx?.spread}
                 />
               )}
             </TableView>

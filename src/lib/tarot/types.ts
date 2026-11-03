@@ -62,6 +62,8 @@ export interface ReaderLine {
   text: string;
   /** Lật lá ở vị trí này trước khi nói câu. */
   revealPosition?: number;
+  /** Câu thuộc phần nào của lời về một lá: tả tranh, nghĩa lá, hay ý riêng của Nguyệt (sổ của Bấc trình bày khác nhau). */
+  kind?: "image" | "meaning" | "opinion";
 }
 
 export const TOPIC_LABELS: Record<Topic, string> = {
