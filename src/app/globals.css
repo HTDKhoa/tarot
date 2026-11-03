@@ -870,6 +870,15 @@ img {
 @media (hover: hover) and (pointer: fine) {
   .fan-zone {
     --step: 22px;
+    cursor: grab;
+  }
+  /* đang giữ chuột kéo dải: con trỏ nắm, lá không nhấc lên theo con trỏ, chữ không bị bôi chọn */
+  .fan-zone.is-dragging {
+    cursor: grabbing;
+    user-select: none;
+  }
+  .fan-zone.is-dragging .tarot-card {
+    pointer-events: none;
   }
 }
 .fan-ribbon {

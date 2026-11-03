@@ -147,7 +147,43 @@ function Ribbon({ picked, onPick }: { picked: number[]; onPick: (i: number) => v
       el.scrollLeft += e.deltaY;
     };
     el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
+    // chuột: giữ và kéo để đi dọc dải như vuốt bằng ngón tay; kéo quá vài pixel thì không tính là chọn lá
+    let drag: { x: number; left: number; moved: boolean } | null = null;
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
+      drag = { x: e.clientX, left: el.scrollLeft, moved: false };
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!drag) return;
+      const dx = e.clientX - drag.x;
+      if (!drag.moved && Math.abs(dx) > 5) {
+        drag.moved = true;
+        el.classList.add("is-dragging");
+      }
+      if (drag.moved) el.scrollLeft = drag.left - dx;
+    };
+    const onUp = () => {
+      if (drag?.moved) {
+        // nuốt cú nhấp ngay sau khi thả, để lá dưới con trỏ không bị chọn
+        // (gỡ ngay ở nhịp sau: thả chuột ngoài dải thì không có cú nhấp nào, đừng để nó nuốt cú nhấp thật sau đó)
+        const swallow = (ev: MouseEvent) => ev.stopPropagation();
+        el.addEventListener("click", swallow, { capture: true });
+        setTimeout(() => {
+          el.removeEventListener("click", swallow, { capture: true });
+          el.classList.remove("is-dragging");
+        }, 0);
+      }
+      drag = null;
+    };
+    el.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
   }, []);
   return (
     // data-focus-next: hộp thoại nói xong mà không có nút thì focus về lá đầu tiên của dải, không rơi về body
