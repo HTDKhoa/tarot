@@ -139,7 +139,9 @@ export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offe
   if (input.sensitive) lines.push(sensitiveCaveat(input.sensitive));
 
   const n = spread.positions.length;
-  lines.push({
+  const ai = input.ai;
+  // Có lời AI thì Nguyệt vào thẳng lá đầu: lời mời chọn lá đã nói vì sao trải như vậy, không cần câu khuôn ở đây.
+  if (!ai) lines.push({
     tag: "shuffle",
     text: input.byAI
       ? n === 1
@@ -155,13 +157,13 @@ export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offe
   });
 
   const opinionIdx = opinionIndex(draws);
-  const ai = input.ai;
 
   draws.forEach((d, i) => {
     const card = getCard(d.cardId);
     const o = orient(d);
     const label = spread.positions[i];
-    lines.push(...kind(turns(`${label}: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: i }), "image"));
+    // Có lời AI thì chỉ gọi tên lá; chi tiết tranh Nguyệt tự lồng vào lời nói (chỉ dùng chi tiết có trong dữ liệu).
+    lines.push(...kind(turns(`${label}: ${cardTitle(card, d.reversed)}.${ai ? "" : ` ${card.hinh_anh}`}`, "reveal", { revealPosition: i }), "image"));
     lines.push(...kind(turns(ai ? ai.meanings[i] : `${card.y_nghia[o]} ${card.chu_de[topic][o]}`, tagFor(card, d.reversed)), "meaning"));
     if (i === opinionIdx) lines.push(...kind(turns(ai ? ai.opinion : `Còn đây là ý riêng của ta. ${card.nguyet}`, d.reversed ? "concern" : "tease"), "opinion"));
   });
@@ -191,7 +193,7 @@ export function composeClarifier(d: Draw, topic: Topic, index: number, ai?: stri
   const card = getCard(d.cardId);
   const o = orient(d);
   const lines: ReaderLine[] = [
-    ...kind(turns(`Lá làm rõ: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: -1 }), "image"),
+    ...kind(turns(`Lá làm rõ: ${cardTitle(card, d.reversed)}.${ai ? "" : ` ${card.hinh_anh}`}`, "reveal", { revealPosition: -1 }), "image"),
     ...kind(turns(ai ?? `${card.chu_de[topic][o]} ${card.loi_khuyen[o]}`, tagFor(card, d.reversed)), "meaning"),
   ];
   // Lá làm rõ không tự mời thêm lá nữa; hết lượt thì nói rõ vì sao dừng.
@@ -218,16 +220,18 @@ export function composeClosing(input: {
   const themes = ai && ai.themes.length >= 2 ? ai.themes : words;
   const summary = ai ? ai.synthesis : `Các lá nói về: ${words.join(", ")}. Lời dặn: ${advice}`;
   const lines: ReaderLine[] = [
+    // Có lời AI thì lời gom lại đã tự kết bằng điều khách mang về; không chen câu khuôn "Nếu cậu chỉ nhớ một điều".
     ...(ai
-      ? turns(ai.synthesis, "think")
-      : [{ tag: "think" as const, text: `Gom lại thì bàn này nói về ${words.slice(0, -1).join(", ")}${words.length > 1 ? " và " : ""}${words.at(-1)}.` }]),
-    ...turns(`Nếu cậu chỉ nhớ một điều, thì hãy nhớ: ${advice.charAt(0).toLowerCase()}${advice.slice(1)}`, "warm"),
+      ? turns(ai.synthesis, "warm")
+      : [
+          { tag: "think" as const, text: `Gom lại thì bàn này nói về ${words.slice(0, -1).join(", ")}${words.length > 1 ? " và " : ""}${words.at(-1)}.` },
+          ...turns(`Nếu cậu chỉ nhớ một điều, thì hãy nhớ: ${advice.charAt(0).toLowerCase()}${advice.slice(1)}`, "warm"),
+        ]),
     {
       tag: "farewell",
       text: pick([
         "Đường về vẫn sáng. Ta để đèn chờ.",
         "Bấc sẽ ghi lại hôm nay vào cuốn sổ của ta. Khi nào cần thì quay lại.",
-        "Lá bài không quyết định thay cậu đâu. Nó chỉ soi đèn thôi. Đi cẩn thận nhé.",
       ]),
     },
   ];
