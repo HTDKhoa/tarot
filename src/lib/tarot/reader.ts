@@ -121,6 +121,8 @@ export interface ComposeInput {
   spread: Spread;
   draws: Draw[];
   sensitive: "health" | "legal" | "money" | null;
+  /** Cách trải do AI chọn theo đúng câu hỏi (chooseAI.ts): lý do đã nói lúc mời chọn lá, nên câu mở không nhắc chủ đề đoán từ khóa. */
+  byAI?: boolean;
 }
 
 export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offerClarifier: boolean } {
@@ -128,10 +130,14 @@ export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offe
   const lines: ReaderLine[] = [];
   if (input.sensitive) lines.push(sensitiveCaveat(input.sensitive));
 
+  const n = spread.positions.length;
   lines.push({
     tag: "shuffle",
-    text:
-      spread.positions.length === 1
+    text: input.byAI
+      ? n === 1
+        ? "Một lá. Để ta xem."
+        : `${spread.positions[0]}, ${spread.positions.slice(1).join(", ").toLowerCase()}. ${pick(["Đừng vội. Nến còn dài.", "Cậu thở chậm lại một chút.", "Bấc, ngồi yên nào."])}`
+      : spread.positions.length === 1
         ? `Một câu hỏi về ${TOPIC_LABELS[topic].toLowerCase()}, một lá. Để ta xem.`
         : `${TOPIC_LABELS[topic]}, trải ${spread.positions.length} lá: ${spread.positions.join(", ").toLowerCase()}. ${pick([
             "Đừng vội. Nến còn dài.",

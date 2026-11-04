@@ -4,7 +4,6 @@ import { PageShell } from "@/components/ui/PageShell";
 import { getUser } from "@/lib/supabase/server";
 import { getCard } from "@/lib/tarot/cards";
 import { SPREADS, type SpreadId } from "@/lib/tarot/spreads";
-import { TOPIC_LABELS, type Topic } from "@/lib/tarot/types";
 import { NoteEditor } from "./NoteEditor";
 import { DeleteButton } from "@/components/ui/DeleteButton";
 
@@ -14,7 +13,7 @@ export default async function JournalEntry({ params }: PageProps<"/nhat-ky/[id]"
   if (!supabase || !user) notFound();
   const { data: r } = await supabase
     .from("readings")
-    .select("id, question, topic, spread, summary, advice, note, happened, created_at, reading_cards(position, card_id, reversed, clarifier), messages(id, role, text)")
+    .select("id, question, spread, summary, advice, note, happened, created_at, reading_cards(position, card_id, reversed, clarifier), messages(id, role, text)")
     .eq("id", id)
     .maybeSingle();
   if (!r) notFound();
@@ -23,7 +22,7 @@ export default async function JournalEntry({ params }: PageProps<"/nhat-ky/[id]"
   const messages = [...r.messages].sort((a, b) => a.id - b.id);
 
   return (
-    <PageShell title={r.question} lead={`${new Date(r.created_at).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })} · ${TOPIC_LABELS[r.topic as Topic]} · ${spread?.name ?? r.spread}`}>
+    <PageShell title={r.question} lead={`${new Date(r.created_at).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })} · ${spread?.name ?? r.spread}`}>
       <section className="pixel-frame" style={{ padding: "1rem 1.2rem", marginBottom: "1.5rem" }}>
         <ul style={{ display: "grid", gap: "0.4rem" }}>
           {cards.map((c) => {

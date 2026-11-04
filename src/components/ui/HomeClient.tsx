@@ -283,7 +283,7 @@ export default function HomeClient() {
       setCards(j.cards);
       setPendingLines(j.lines);
       setPicked([]);
-      say([{ tag: "shuffle", text: `Ta xào xong rồi. Cậu chọn ${j.cards.length === 1 ? "một lá" : `${j.cards.length} lá`} trong dải bài này, theo cảm giác của cậu.` }], "picking");
+      say([{ tag: "shuffle", text: `${typeof j.reason === "string" ? j.reason : "Ta xào xong rồi."} Cậu chọn ${j.cards.length === 1 ? "một lá" : `${j.cards.length} lá`} trong dải bài này, theo cảm giác của cậu.` }], "picking");
       loadMe();
     } catch {
       // mất mạng giữa chừng: ngẩng lên, Nguyệt báo và cho quay lại
