@@ -1,8 +1,8 @@
 import "server-only";
-import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
-import { allCards } from "./cards";
+import { claude, logClaudeError, NGUYET_MODEL } from "@/lib/claude";
+import { voiceProblem } from "./aiGuard";
 import { chooseSpread } from "./choose";
 import { SPREADS, type SpreadId } from "./spreads";
 
@@ -14,7 +14,6 @@ import { SPREADS, type SpreadId } from "./spreads";
  * khách không bao giờ bị kẹt vì AI.
  */
 
-const MODEL = "claude-haiku-5-5";
 const TIMEOUT_MS = 5000;
 
 const SPREAD_IDS = Object.keys(SPREADS) as [SpreadId, ...SpreadId[]];
@@ -55,40 +54,28 @@ export interface SpreadChoice {
   by: "ai" | "keywords";
 }
 
-let client: Anthropic | null = null;
-
-/** Tên mọi lá, viết thường: câu lý do được viết trước khi rút, nên không được chứa tên lá nào (bất biến 1). */
-let cardNames: string[] | null = null;
-const names = () => (cardNames ??= allCards().flatMap((c) => [c.name_vi.toLowerCase(), c.name_en.toLowerCase()]));
-
-/** Giữ câu lý do chỉ khi đúng giọng Nguyệt: ngắn, không emoji, không tên lá. Sai thì bỏ câu, vẫn giữ cách trải. */
+/** Giữ câu lý do chỉ khi đúng giọng Nguyệt và ngắn; câu viết trước khi rút nên không được nhắc lá nào. Sai thì bỏ câu, vẫn giữ cách trải. */
 function cleanReason(raw: string): string | null {
   const text = raw.replace(/\s+/g, " ").trim();
-  if (!text || text.length > 120) return null;
-  // lộ vai: Nguyệt không bao giờ xưng "tôi"
-  if (/(?<![\p{L}])tôi(?![\p{L}])/iu.test(text)) return null;
-  if (/\p{Extended_Pictographic}/u.test(text)) return null;
-  const lower = text.toLowerCase();
-  if (names().some((n) => lower.includes(n))) return null;
+  if (text.length > 120 || voiceProblem(text)) return null;
   return text;
 }
 
 export async function chooseSpreadWithAI(question: string): Promise<SpreadChoice> {
   const fallback: SpreadChoice = { spread: chooseSpread(question), reason: null, by: "keywords" };
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return fallback;
-  client ??= new Anthropic({ apiKey, timeout: TIMEOUT_MS, maxRetries: 0 });
+  const client = claude();
+  if (!client) return fallback;
 
   try {
     const res = await client.messages.parse({
-      model: MODEL,
+      model: NGUYET_MODEL,
       max_tokens: 300,
       // việc chọn nhanh và đơn giản: tắt suy nghĩ, effort thấp để khách không phải chờ
       thinking: { type: "disabled" },
       output_config: { effort: "low", format: zodOutputFormat(Choice) },
       system: SYSTEM,
       messages: [{ role: "user", content: `<cau_hoi>${question}</cau_hoi>` }],
-    });
+    }, { timeout: TIMEOUT_MS });
     if (res.stop_reason !== "end_turn" || !res.parsed_output) {
       console.warn("[chooseAI] không dùng được câu trả lời, stop_reason:", res.stop_reason);
       return fallback;
@@ -97,9 +84,7 @@ export async function chooseSpreadWithAI(question: string): Promise<SpreadChoice
     if (!parsed.success) return fallback;
     return { spread: parsed.data.spread, reason: cleanReason(parsed.data.reason), by: "ai" };
   } catch (err) {
-    // không ghi câu hỏi của khách vào log, chỉ ghi loại lỗi
-    if (err instanceof Anthropic.APIError) console.warn("[chooseAI] lỗi API", err.status, err.name);
-    else console.warn("[chooseAI] lỗi", err instanceof Error ? err.name : "không rõ");
+    logClaudeError("chooseAI", err);
     return fallback;
   }
 }

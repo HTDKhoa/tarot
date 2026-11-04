@@ -4,7 +4,8 @@ import { getUser } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { drawCards } from "@/lib/tarot/draw";
 import { SPREADS, MAX_CLARIFIERS, type SpreadId } from "@/lib/tarot/spreads";
-import { composeReading, crisisLines } from "@/lib/tarot/reader";
+import { composeReading, crisisLines, opinionIndex } from "@/lib/tarot/reader";
+import { writeReadingWithAI } from "@/lib/tarot/readAI";
 import { isCrisis, sensitiveKind } from "@/lib/safety";
 import { chooseTopic } from "@/lib/tarot/choose";
 import { chooseSpreadWithAI } from "@/lib/tarot/chooseAI";
@@ -58,7 +59,10 @@ export async function POST(req: Request) {
   const spread = SPREADS[spreadId];
   // AI chỉ quyết định số lá qua cách trải; lá vẫn rút ở đây bằng crypto RNG.
   const draws = drawCards(spread.positions.length);
-  const { lines, offerClarifier } = composeReading({ question, topic, spread, draws, sensitive: sensitiveKind(question), byAI: choice.by === "ai" });
+  const sensitive = sensitiveKind(question);
+  // Claude viết nghĩa từng lá theo đúng câu hỏi; lỗi hay chưa có khóa thì ghép câu từ dữ liệu như trước.
+  const ai = await writeReadingWithAI({ question, spread, draws, opinionIndex: opinionIndex(draws), sensitive });
+  const { lines, offerClarifier } = composeReading({ question, topic, spread, draws, sensitive, byAI: choice.by === "ai", ai });
   const cards = toDrawnCards(draws, spread.positions);
 
   let readingId: string | null = null;

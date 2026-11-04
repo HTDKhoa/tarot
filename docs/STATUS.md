@@ -18,7 +18,7 @@ Demo online (một file HTML, chạy trong trình duyệt): https://claude.ai/ar
 - Trang: /goi, /nhat-ky, /nhat-ky/[id], /thanh-toan, /dieu-khoan, /rieng-tu (bản nháp).
 
 ## Còn thiếu / biết là chưa tốt
-- AI mới chọn cách trải; lời đọc vẫn do `src/lib/tarot/reader.ts` ghép từ dữ liệu (đúng nghĩa nhưng lặp khuôn, vẫn dùng chủ đề đoán từ khóa để lấy đoạn `chu_de`). Ticket sau: AI viết lời đọc từ lá đã rút.
+- Lời đọc: tên lá và lời tả tranh lấy từ dữ liệu theo kết quả rút; nghĩa từng lá và ý riêng "còn ta thì…" do Claude Haiku 5.5 viết theo đúng câu hỏi, chỉ dựa trên dữ liệu lá được đưa (`readAI.ts`), qua bộ kiểm giọng `aiGuard.ts` (không "tôi", emoji, gạch đầu dòng, giọng thầy bói, tên lá chưa rút); sai một chỗ hay lỗi/quá 15 giây thì cả bàn quay về ghép câu (`reader.ts`). Chờ máy chủ thêm khoảng 3–7 giây cho hai lượt gọi. Lá làm rõ và lời kết vẫn ghép từ dữ liệu.
 - Trời trong tranh lá là chấm nhiễu nhẹ, chưa phải dither đều; vài góc chỗ xóa số La Mã cũ còn thấy đường nối nếu soi kỹ.
 - `npm run build:demo`: bước Vite cần cài lại `node_modules` trên Windows (thiếu `@rolldown/binding-win32-x64-msvc`).
 - Chưa có test tự động trong repo (migration đã được thử trên PGlite trong lúc làm, nhưng chưa thành bộ test).

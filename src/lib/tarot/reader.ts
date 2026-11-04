@@ -1,8 +1,8 @@
 import "server-only";
 /**
- * NGƯỜI ĐỌC BÀI TẠM THỜI (chưa có AI).
- * Ghép lời thoại của Nguyệt từ dữ liệu 78 lá theo các mẫu câu trong persona bible.
- * Khi gắn agent Claude, thay các hàm trong file này bằng lời gọi model; giao diện và API giữ nguyên.
+ * NGƯỜI ĐỌC BÀI: dựng lời thoại của Nguyệt theo đúng thứ tự lá đã rút.
+ * Tên lá và lời tả tranh luôn lấy từ dữ liệu 78 lá. Nghĩa từng lá và ý riêng lấy từ lời Claude viết (readAI.ts) khi có,
+ * không thì ghép từ dữ liệu theo các mẫu câu trong persona bible. Lá làm rõ và lời kết vẫn ghép từ dữ liệu.
  */
 import { getCard } from "./cards";
 import { randomInt, type Draw } from "./draw";
@@ -123,6 +123,14 @@ export interface ComposeInput {
   sensitive: "health" | "legal" | "money" | null;
   /** Cách trải do AI chọn theo đúng câu hỏi (chooseAI.ts): lý do đã nói lúc mời chọn lá, nên câu mở không nhắc chủ đề đoán từ khóa. */
   byAI?: boolean;
+  /** Lời Claude viết cho nghĩa từng lá và ý riêng (readAI.ts); không có thì ghép từ dữ liệu. */
+  ai?: { meanings: string[]; opinion: string } | null;
+}
+
+/** Lá được Nguyệt nói thêm ý riêng: ưu tiên Major Arcana, nếu không thì lá cuối. */
+export function opinionIndex(draws: Draw[]): number {
+  const majorIdx = draws.findIndex((d) => getCard(d.cardId).arcana === "major");
+  return majorIdx >= 0 ? majorIdx : draws.length - 1;
 }
 
 export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offerClarifier: boolean } {
@@ -146,17 +154,16 @@ export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offe
           ])}`,
   });
 
-  // Lá được Nguyệt nói thêm ý riêng: ưu tiên Major Arcana, nếu không thì lá cuối.
-  const majorIdx = draws.findIndex((d) => getCard(d.cardId).arcana === "major");
-  const opinionIdx = majorIdx >= 0 ? majorIdx : draws.length - 1;
+  const opinionIdx = opinionIndex(draws);
+  const ai = input.ai;
 
   draws.forEach((d, i) => {
     const card = getCard(d.cardId);
     const o = orient(d);
     const label = spread.positions[i];
     lines.push(...kind(turns(`${label}: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: i }), "image"));
-    lines.push(...kind(turns(`${card.y_nghia[o]} ${card.chu_de[topic][o]}`, tagFor(card, d.reversed)), "meaning"));
-    if (i === opinionIdx) lines.push(...kind(turns(`Còn đây là ý riêng của ta. ${card.nguyet}`, d.reversed ? "concern" : "tease"), "opinion"));
+    lines.push(...kind(turns(ai ? ai.meanings[i] : `${card.y_nghia[o]} ${card.chu_de[topic][o]}`, tagFor(card, d.reversed)), "meaning"));
+    if (i === opinionIdx) lines.push(...kind(turns(ai ? ai.opinion : `Còn đây là ý riêng của ta. ${card.nguyet}`, d.reversed ? "concern" : "tease"), "opinion"));
   });
 
   const reversedCount = draws.filter((d) => d.reversed).length;
