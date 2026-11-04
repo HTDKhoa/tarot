@@ -59,14 +59,11 @@ export async function POST(req: Request) {
   const spread = SPREADS[spreadId];
   // AI chỉ quyết định số lá qua cách trải; lá vẫn rút ở đây bằng crypto RNG.
   const draws = drawCards(spread.positions.length);
-  const sensitive = sensitiveKind(question);
-  // Claude viết nghĩa từng lá theo đúng câu hỏi; lỗi hay chưa có khóa thì ghép câu từ dữ liệu như trước.
-  const ai = await writeReadingWithAI({ question, spread, draws, opinionIndex: opinionIndex(draws), sensitive });
-  const { lines, offerClarifier } = composeReading({ question, topic, spread, draws, sensitive, byAI: choice.by === "ai", ai });
   const cards = toDrawnCards(draws, spread.positions);
 
   let readingId: string | null = null;
-  if (supabase && user) {
+  const admin = supabase && user ? createAdminClient() : null;
+  if (supabase && user && admin) {
     const { data, error } = await supabase
       .from("readings")
       .insert({ user_id: user.id, question, topic, spread: spreadId })
@@ -78,21 +75,19 @@ export async function POST(req: Request) {
     }
     const id: string = data.id;
     // Lá bài và lời thoại chỉ server được ghi (RLS chặn khách), nên dùng client secret key.
-    const admin = createAdminClient();
     const failed =
       (await admin.from("reading_cards").insert(draws.map((d, i) => ({ reading_id: id, position: i, card_id: d.cardId, reversed: d.reversed })))).error ??
       (await admin.from("messages").insert({ reading_id: id, role: "user", text: question })).error ??
-      (await saveLines(admin, id, lines)) ??
       (await admin.from("reading_usage").insert({ user_id: user.id })).error;
     if (failed) {
-      console.error("[reading] không lưu được lá bài / lời thoại", failed.message);
+      console.error("[reading] không lưu được lá bài", failed.message);
       await admin.from("readings").delete().eq("id", id);
       return NextResponse.json({ error: "Không lưu được phiên đọc bài." }, { status: 500 });
     }
     readingId = id;
   }
 
-  return NextResponse.json({
+  const head = {
     readingId,
     demo: !supabase,
     topic,
@@ -102,8 +97,35 @@ export async function POST(req: Request) {
     // Ở chế độ demo, trình duyệt giữ danh sách lá để gửi lại khi bốc thêm hoặc kết thúc.
     draws: supabase ? undefined : draws,
     cards,
-    lines,
-    offerClarifier,
     clarifiersLeft: MAX_CLARIFIERS,
+  };
+
+  // Lời đọc viết sau: Claude viết nghĩa từng lá theo đúng câu hỏi; lỗi hay chưa có khóa thì ghép câu từ dữ liệu.
+  const writeLines = async () => {
+    const sensitive = sensitiveKind(question);
+    const ai = await writeReadingWithAI({ question, spread, draws, opinionIndex: opinionIndex(draws), sensitive });
+    const { lines, offerClarifier } = composeReading({ question, topic, spread, draws, sensitive, byAI: choice.by === "ai", ai });
+    if (admin && readingId) {
+      const lineError = await saveLines(admin, readingId, lines);
+      if (lineError) console.error("[reading] không lưu được lời thoại", lineError.message);
+    }
+    return { lines, offerClarifier };
+  };
+
+  // Trả hai đợt trên cùng một kết nối (NDJSON): lá bài ngay để khách bắt đầu chọn, lời đọc khi Nguyệt viết xong.
+  // Khách chọn lá trong lúc AI viết, nên gần như không phải chờ thêm.
+  const enc = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    async start(ctrl) {
+      ctrl.enqueue(enc.encode(JSON.stringify(head) + "\n"));
+      try {
+        ctrl.enqueue(enc.encode(JSON.stringify(await writeLines()) + "\n"));
+      } catch (err) {
+        console.error("[reading] không viết được lời đọc", err instanceof Error ? err.message : err);
+        ctrl.enqueue(enc.encode(JSON.stringify({ error: "lines" }) + "\n"));
+      }
+      ctrl.close();
+    },
   });
+  return new Response(stream, { headers: { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store" } });
 }

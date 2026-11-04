@@ -63,6 +63,47 @@ const isInteractive = (t: EventTarget | null) => t instanceof Element && !!t.clo
 /** Thời gian lớp đen mờ vào/ra (khớp transition của .stage-fade). */
 const FADE_MS = 550;
 
+interface PendingLines {
+  lines: ReaderLine[] | null;
+  failed: boolean;
+  wait: Promise<void>;
+}
+
+/** Theo dõi lời đọc đang tới: biết ngay đã có chưa, và chờ được khi cần. */
+function pendingFrom(part: Promise<{ lines?: ReaderLine[] }>): PendingLines {
+  const p: PendingLines = { lines: null, failed: false, wait: Promise.resolve() };
+  p.wait = part.then(
+    (x) => {
+      if (Array.isArray(x.lines)) p.lines = x.lines;
+      else p.failed = true;
+    },
+    () => {
+      p.failed = true;
+    },
+  );
+  return p;
+}
+
+/** Đọc phản hồi NDJSON từng dòng: mỗi lần gọi trả về đối tượng JSON kế tiếp. */
+function ndjsonReader(body: ReadableStream<Uint8Array>) {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buf = "";
+  return async function next() {
+    for (;;) {
+      const i = buf.indexOf("\n");
+      if (i >= 0) {
+        const line = buf.slice(0, i);
+        buf = buf.slice(i + 1);
+        return JSON.parse(line);
+      }
+      const { value, done } = await reader.read();
+      if (done) throw new Error("hết dữ liệu");
+      buf += decoder.decode(value, { stream: true });
+    }
+  };
+}
+
 /** Đã dừng vì khủng hoảng thì khóa trải bài tới hết phiên (đóng tab). */
 const CRISIS_KEY = "nguyet_crisis";
 const CRISIS_RETURN: ReaderLine[] = [{ tag: "gentle", text: "Đèn vẫn sáng. Hôm nay ta cất bài rồi. Ta chỉ muốn biết cậu đang an toàn." }];
@@ -98,7 +139,8 @@ export default function HomeClient() {
   const [ctx, setCtx] = useState<Ctx | null>(null);
   const [busy, setBusy] = useState(false);
   const [picked, setPicked] = useState<number[]>([]);
-  const [pendingLines, setPendingLines] = useState<ReaderLine[]>([]);
+  // lời đọc của bàn đang trải: máy chủ gửi sau lá bài (trong lúc khách chọn lá), nên có thể chưa tới khi chọn xong
+  const readingLines = useRef<PendingLines | null>(null);
   // Tổng kết cuối phiên: nằm ở trang cuối cuốn sổ trên bàn.
   const [recap, setRecap] = useState<{ themes: string[]; advice: string } | null>(null);
   // Cuốn sổ của Bấc: mọi câu Nguyệt nói trong phiên, gắn với lá đang được lật lúc đó.
@@ -263,7 +305,9 @@ export default function HomeClient() {
     const startedAt = performance.now();
     try {
       const r = await fetch("/api/reading", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question }) });
-      const j = await r.json().catch(() => ({}));
+      // Máy chủ trả hai đợt (NDJSON): lá bài trước, lời đọc sau. Lỗi, khủng hoảng và bản demo một file vẫn trả JSON một lần.
+      const nextPart = r.ok && r.body && r.headers.get("content-type")?.includes("ndjson") ? ndjsonReader(r.body) : null;
+      const j = nextPart ? await nextPart() : await r.json().catch(() => ({}));
       if (j.crisis) {
         // Khủng hoảng luôn ở góc mặt đối mặt.
         toFace();
@@ -281,7 +325,7 @@ export default function HomeClient() {
       if (!r.ok) return say([{ tag: "concern", text: r.status === 400 && j.error ? j.error : FAIL.askServer }], "message");
       setCtx({ question, readingId: j.readingId, demo: j.demo, topic: j.topic, spread: j.spread, draws: j.draws ?? [], clarifiers: [], clarifiersLeft: j.clarifiersLeft });
       setCards(j.cards);
-      setPendingLines(j.lines);
+      readingLines.current = nextPart ? pendingFrom(nextPart()) : pendingFrom(Promise.resolve(j));
       setPicked([]);
       say([{ tag: "shuffle", text: `${typeof j.reason === "string" ? j.reason : "Ta xào xong rồi."} Cậu chọn ${j.cards.length === 1 ? "một lá" : `${j.cards.length} lá`} trong dải bài này, theo cảm giác của cậu.` }], "picking");
       loadMe();
@@ -306,7 +350,22 @@ export default function HomeClient() {
         target?.focus({ preventScroll: true });
       });
     }
-    if (next.length === cards.length) setTimeout(() => say(pendingLines, "reading"), 500);
+    if (next.length === cards.length) setTimeout(showReading, 500);
+  };
+
+  /** Chọn đủ lá: đọc bài ngay nếu lời đã tới; chưa thì Nguyệt nhìn bài một lúc rồi mới đọc. */
+  const showReading = async () => {
+    const pending = readingLines.current;
+    if (!pending) return;
+    if (!pending.lines && !pending.failed) {
+      setBusy(true);
+      say([{ tag: "think", text: "Để ta nhìn các lá cậu vừa chọn đã." }], "picking");
+      await pending.wait;
+      setBusy(false);
+    }
+    if (pending.lines) return say(pending.lines, "reading");
+    toFace();
+    say([{ tag: "concern", text: FAIL.askNetwork }], "message");
   };
 
   const onLine = (line: ReaderLine) => {
