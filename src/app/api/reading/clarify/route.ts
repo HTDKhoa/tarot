@@ -5,6 +5,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { drawCards, type Draw } from "@/lib/tarot/draw";
 import { SPREADS, MAX_CLARIFIERS, type SpreadId } from "@/lib/tarot/spreads";
 import { composeClarifier } from "@/lib/tarot/reader";
+import { writeClarifierWithAI } from "@/lib/tarot/readAI";
+import { sensitiveKind } from "@/lib/safety";
 import type { Topic } from "@/lib/tarot/types";
 import { saveLines, toDrawnCards } from "@/lib/readings";
 
@@ -14,6 +16,7 @@ const Body = z.object({
   // chỉ dùng ở chế độ demo
   demo: z
     .object({
+      question: z.string().max(500).optional(),
       topic: z.enum(["tinh_cam", "cong_viec", "tai_chinh", "ban_than"]),
       spread: z.string(),
       draws: z.array(DrawSchema).max(10),
@@ -27,6 +30,7 @@ export async function POST(req: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Dữ liệu không hợp lệ" }, { status: 400 });
   const { supabase, user } = await getUser();
 
+  let question: string;
   let topic: Topic;
   let spreadId: SpreadId;
   let draws: Draw[];
@@ -36,10 +40,11 @@ export async function POST(req: Request) {
     if (!user || !parsed.data.readingId) return NextResponse.json({ error: "Cần đăng nhập" }, { status: 401 });
     const { data: reading } = await supabase
       .from("readings")
-      .select("id, topic, spread, status, reading_cards(position, card_id, reversed, clarifier)")
+      .select("id, question, topic, spread, status, reading_cards(position, card_id, reversed, clarifier)")
       .eq("id", parsed.data.readingId)
       .single();
     if (!reading || reading.status !== "open") return NextResponse.json({ error: "Phiên này đã khép lại." }, { status: 409 });
+    question = reading.question;
     topic = reading.topic as Topic;
     spreadId = reading.spread as SpreadId;
     const rc = [...reading.reading_cards].sort((a, b) => a.position - b.position);
@@ -48,6 +53,7 @@ export async function POST(req: Request) {
   } else {
     if (!parsed.data.demo) return NextResponse.json({ error: "Thiếu dữ liệu demo" }, { status: 400 });
     ({ topic, draws, clarifiers } = parsed.data.demo);
+    question = parsed.data.demo.question ?? "";
     spreadId = parsed.data.demo.spread as SpreadId;
   }
 
@@ -56,7 +62,9 @@ export async function POST(req: Request) {
   if (clarifiers.length >= MAX_CLARIFIERS) return NextResponse.json({ error: "Đã đủ 3 lá làm rõ." }, { status: 409 });
 
   const [d] = drawCards(1, [...draws, ...clarifiers].map((x) => x.cardId));
-  const lines = composeClarifier(d, topic, clarifiers.length);
+  // Claude nói lá làm rõ nghiêng bàn về phía nào; lỗi hay chưa có khóa thì ghép câu từ dữ liệu.
+  const ai = question ? await writeClarifierWithAI({ question, spread, draws, clarifiers, card: d, sensitive: sensitiveKind(question) }) : null;
+  const lines = composeClarifier(d, topic, clarifiers.length, ai);
   const position = draws.length + clarifiers.length;
   const [card] = toDrawnCards([d], spread.positions, true, position);
 

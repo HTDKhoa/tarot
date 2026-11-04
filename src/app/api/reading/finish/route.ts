@@ -4,6 +4,9 @@ import { getUser } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Draw } from "@/lib/tarot/draw";
 import { composeClosing } from "@/lib/tarot/reader";
+import { writeClosingWithAI } from "@/lib/tarot/readAI";
+import { SPREADS, type SpreadId } from "@/lib/tarot/spreads";
+import { sensitiveKind } from "@/lib/safety";
 import type { Topic } from "@/lib/tarot/types";
 import { saveLines } from "@/lib/readings";
 
@@ -12,6 +15,8 @@ const Body = z.object({
   readingId: z.string().uuid().nullable().optional(),
   demo: z
     .object({
+      question: z.string().max(500).optional(),
+      spread: z.string().optional(),
       topic: z.enum(["tinh_cam", "cong_viec", "tai_chinh", "ban_than"]),
       draws: z.array(DrawSchema).min(1).max(10),
       clarifiers: z.array(DrawSchema).max(3),
@@ -24,6 +29,8 @@ export async function POST(req: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Dữ liệu không hợp lệ" }, { status: 400 });
   const { supabase, user } = await getUser();
 
+  let question: string;
+  let spreadId: string | undefined;
   let topic: Topic;
   let draws: Draw[];
   let clarifiers: Draw[];
@@ -32,11 +39,13 @@ export async function POST(req: Request) {
     if (!user || !parsed.data.readingId) return NextResponse.json({ error: "Cần đăng nhập" }, { status: 401 });
     const { data: reading } = await supabase
       .from("readings")
-      .select("id, topic, status, reading_cards(position, card_id, reversed, clarifier)")
+      .select("id, question, spread, topic, status, reading_cards(position, card_id, reversed, clarifier)")
       .eq("id", parsed.data.readingId)
       .single();
     if (!reading) return NextResponse.json({ error: "Không tìm thấy phiên" }, { status: 404 });
     if (reading.status !== "open") return NextResponse.json({ error: "Phiên này đã khép lại." }, { status: 409 });
+    question = reading.question;
+    spreadId = reading.spread;
     topic = reading.topic as Topic;
     const rc = [...reading.reading_cards].sort((a, b) => a.position - b.position);
     draws = rc.filter((c) => !c.clarifier).map((c) => ({ cardId: c.card_id, reversed: c.reversed }));
@@ -44,9 +53,14 @@ export async function POST(req: Request) {
   } else {
     if (!parsed.data.demo) return NextResponse.json({ error: "Thiếu dữ liệu demo" }, { status: 400 });
     ({ topic, draws, clarifiers } = parsed.data.demo);
+    question = parsed.data.demo.question ?? "";
+    spreadId = parsed.data.demo.spread;
   }
 
-  const { lines, summary, advice, themes } = composeClosing({ topic, draws, clarifiers });
+  // Claude gom cả bàn lại thành lời kết và lời dặn; lỗi hay chưa có khóa thì ghép câu từ dữ liệu.
+  const spread = spreadId ? SPREADS[spreadId as SpreadId] : undefined;
+  const ai = question && spread ? await writeClosingWithAI({ question, spread, draws, clarifiers, sensitive: sensitiveKind(question) }) : null;
+  const { lines, summary, advice, themes } = composeClosing({ topic, draws, clarifiers, ai });
 
   if (supabase && parsed.data.readingId) {
     // Khách chỉ được sửa note/happened; trạng thái và tóm tắt do server ghi bằng client secret key.

@@ -344,7 +344,7 @@ export default function HomeClient() {
       const r = await fetch("/api/reading/clarify", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ readingId: ctx.readingId, demo: ctx.demo ? { topic: ctx.topic, spread: ctx.spread, draws: ctx.draws, clarifiers: ctx.clarifiers } : undefined }),
+        body: JSON.stringify({ readingId: ctx.readingId, demo: ctx.demo ? { question: ctx.question, topic: ctx.topic, spread: ctx.spread, draws: ctx.draws, clarifiers: ctx.clarifiers } : undefined }),
       });
       const j = await r.json().catch(() => ({}));
       // 409: phiên đã khép hoặc đủ lá, lời máy chủ nói đúng tình huống
@@ -370,7 +370,7 @@ export default function HomeClient() {
       const r = await fetch("/api/reading/finish", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ readingId: ctx.readingId, demo: ctx.demo ? { topic: ctx.topic, draws: ctx.draws, clarifiers: ctx.clarifiers } : undefined }),
+        body: JSON.stringify({ readingId: ctx.readingId, demo: ctx.demo ? { question: ctx.question, topic: ctx.topic, spread: ctx.spread, draws: ctx.draws, clarifiers: ctx.clarifiers } : undefined }),
       });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) return r.status === 409 && j.error ? say([{ tag: "concern", text: j.error }], "done") : say([{ tag: "concern", text: FAIL.finish }], "deciding");

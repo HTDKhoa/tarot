@@ -186,12 +186,13 @@ export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offe
   return { lines, offerClarifier };
 }
 
-export function composeClarifier(d: Draw, topic: Topic, index: number): ReaderLine[] {
+/** `ai`: lời Claude viết cho lá làm rõ (readAI.ts); không có thì ghép từ dữ liệu. */
+export function composeClarifier(d: Draw, topic: Topic, index: number, ai?: string | null): ReaderLine[] {
   const card = getCard(d.cardId);
   const o = orient(d);
   const lines: ReaderLine[] = [
     ...kind(turns(`Lá làm rõ: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: -1 }), "image"),
-    ...kind(turns(`${card.chu_de[topic][o]} ${card.loi_khuyen[o]}`, tagFor(card, d.reversed)), "meaning"),
+    ...kind(turns(ai ?? `${card.chu_de[topic][o]} ${card.loi_khuyen[o]}`, tagFor(card, d.reversed)), "meaning"),
   ];
   // Lá làm rõ không tự mời thêm lá nữa; hết lượt thì nói rõ vì sao dừng.
   if (index + 1 >= MAX_CLARIFIERS) {
@@ -200,15 +201,26 @@ export function composeClarifier(d: Draw, topic: Topic, index: number): ReaderLi
   return lines;
 }
 
-export function composeClosing(input: { topic: Topic; draws: Draw[]; clarifiers: Draw[] }): { lines: ReaderLine[]; summary: string; advice: string; themes: string[] } {
+/** `ai`: lời gom lại, lời dặn và từ khóa do Claude viết (readAI.ts); không có thì ghép từ dữ liệu. */
+export function composeClosing(input: {
+  topic: Topic;
+  draws: Draw[];
+  clarifiers: Draw[];
+  ai?: { synthesis: string; advice: string; themes: string[] } | null;
+}): { lines: ReaderLine[]; summary: string; advice: string; themes: string[] } {
   const all = [...input.draws, ...input.clarifiers];
   const words = all.map((d) => getCard(d.cardId).tu_khoa[orient(d)][0]);
   const last = input.clarifiers.at(-1) ?? input.draws.at(-1)!;
   const lastCard = getCard(last.cardId);
-  const advice = speak(lastCard.loi_khuyen[orient(last)]);
-  const summary = `Các lá nói về: ${words.join(", ")}. Lời dặn: ${advice}`;
+  const ai = input.ai;
+  const advice = ai ? ai.advice : speak(lastCard.loi_khuyen[orient(last)]);
+  // từ khóa AI chọn chỉ dùng khi đủ để làm dấu trong sổ, không thì lấy từ khóa đầu của từng lá
+  const themes = ai && ai.themes.length >= 2 ? ai.themes : words;
+  const summary = ai ? ai.synthesis : `Các lá nói về: ${words.join(", ")}. Lời dặn: ${advice}`;
   const lines: ReaderLine[] = [
-    { tag: "think", text: `Gom lại thì bàn này nói về ${words.slice(0, -1).join(", ")}${words.length > 1 ? " và " : ""}${words.at(-1)}.` },
+    ...(ai
+      ? turns(ai.synthesis, "think")
+      : [{ tag: "think" as const, text: `Gom lại thì bàn này nói về ${words.slice(0, -1).join(", ")}${words.length > 1 ? " và " : ""}${words.at(-1)}.` }]),
     ...turns(`Nếu cậu chỉ nhớ một điều, thì hãy nhớ: ${advice.charAt(0).toLowerCase()}${advice.slice(1)}`, "warm"),
     {
       tag: "farewell",
@@ -219,7 +231,7 @@ export function composeClosing(input: { topic: Topic; draws: Draw[]; clarifiers:
       ]),
     },
   ];
-  return { lines, summary, advice, themes: words };
+  return { lines, summary, advice, themes };
 }
 
 export function composeDaily(d: Draw): ReaderLine[] {
