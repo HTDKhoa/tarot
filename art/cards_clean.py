@@ -4,6 +4,7 @@
     python art/cards_clean.py build [--force]  # làm sạch cả bộ → cards/clean/*.aseprite (giữ file đã sửa tay)
     python art/cards_clean.py publish          # xuất cards/clean/ ra public/assets/cards/
     python art/cards_clean.py sheet major      # bảng trước | sau của một nhóm → _sheets/clean_<nhóm>.png
+    python art/cards_clean.py publish-new      # xuất bộ lá mới (art/aseprite/new_cards/) ra public/assets/cards/art/
 
 Ảnh .aseprite được Aseprite xuất ra PNG ở art/aseprite/cards/_png/ trước khi xử lý.
 Lá mới 97×181: khung 4 px, tranh 89×156 tại (4, 4), dải tên kem ở dưới (web viết tên bằng DOM).
@@ -477,6 +478,38 @@ def cmd_publish():
     print(f'đã xuất tranh, {total // 1024} KB')
 
 
+NEW_CARDS = os.path.join(HERE, 'aseprite', 'new_cards')
+
+
+def cmd_publish_new():
+    """Xuất bộ lá mới (art/aseprite/new_cards/, 97×181, ba lớp Frame / Artwork / Number|Rank, khung trùng từng pixel
+    với khung web) ra public/assets/cards/art/<id>.png: ô tranh 89×156 tại (4, 4) gồm cả bảng số, phóng WEB_SCALE lần.
+    Khung và mặt sau trên web giữ nguyên. Số đầu tên file là id lá; soát slug với tarot_vi.json trước khi ghi."""
+    with open(DATA, encoding='utf-8') as fh:
+        slugs = {c['id']: c['slug'] for c in json.load(fh)['cards']}
+    files = sorted(glob.glob(os.path.join(NEW_CARDS, '**', '[0-9][0-9]_*.aseprite'), recursive=True))
+    assert len(files) == 78, f'cần 78 lá, có {len(files)}'
+    for f in files:
+        name = os.path.basename(f)[:-9]
+        cid, slug = int(name[:2]), name[3:].replace('_', '-')
+        assert slugs[cid] == slug, f'{name}: id {cid} trong dữ liệu là {slugs[cid]}'
+    out = os.path.join(HERE, '..', 'public', 'assets', 'cards', 'art')
+    os.makedirs(out, exist_ok=True)
+    os.makedirs(PNG, exist_ok=True)
+    total = 0
+    for f in files:
+        name = os.path.basename(f)[:-9]
+        png = os.path.join(PNG, 'new_' + name + '.png')
+        subprocess.run([ASEPRITE, '-b', f, '--save-as', png], check=True, capture_output=True)
+        card = Image.open(png).convert('RGB')
+        assert card.size == (W, H), f'{name}: cỡ {card.size}'
+        art = card.crop((4, 4, 4 + AW, 4 + AH)).resize((AW * WEB_SCALE, AH * WEB_SCALE), Image.NEAREST)
+        dest = os.path.join(out, name[:2] + '.png')
+        save_indexed(art, sorted(set(art.getdata())), dest)
+        total += os.path.getsize(dest)
+    print(f'đã xuất {len(files)} lá mới, {total // 1024} KB')
+
+
 def cmd_sheet(*groups):
     cards, _ = clean_all()
     for group in groups:
@@ -523,4 +556,4 @@ def cmd_measure():
 
 if __name__ == '__main__':
     sys.stdout.reconfigure(encoding='utf-8')  # console Windows mặc định cp1252
-    {'measure': cmd_measure, 'build': cmd_build, 'sheet': cmd_sheet, 'publish': cmd_publish}[sys.argv[1]](*sys.argv[2:])
+    {'measure': cmd_measure, 'build': cmd_build, 'sheet': cmd_sheet, 'publish': cmd_publish, 'publish-new': cmd_publish_new}[sys.argv[1]](*sys.argv[2:])
