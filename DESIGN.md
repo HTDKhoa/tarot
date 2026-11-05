@@ -283,10 +283,10 @@ Sprite trong `public/assets` dùng chung một bảng khoảng 43 màu (`art/com
 ### Hierarchy
 - **Display** (400, clamp(2.6rem, 7vw, 4.4rem), 1): tên ngôi nhà ở bìa rừng; quầng sáng vàng và bóng mực đặc bên dưới.
 - **Headline** (400, clamp(2.2rem, 6vw, 3.2rem), 1): tiêu đề trang phụ (Gói, Nhật ký, Điều khoản…).
-- **Title** (400, 1.7rem, 1.1): tiêu đề mục trong trang phụ, tên gói.
+- **Title** (400, 1.7rem, 1.1): tiêu đề mục trong trang phụ, tên gói, nhãn nhóm lá thêu trên mép khăn ở trang Bộ bài.
 - **Label** (400, 1.35rem, 1): chữ trên nút, thẻ tên người nói, thanh trên cùng (cả thương hiệu và liên kết dùng Label nhỏ trên mobile), tiêu đề "Sổ của Bấc", thông báo ngôi nhà đóng cửa, nhãn ghi chú và danh sách lá trong nhật ký.
 - **Label lớn** (400, 1.45rem, 1): tiêu đề "Sổ của Bấc" và tên lá ở đầu mục trong sổ, tên lá trên trang sổ của trang một lá; to hơn chữ đọc trên giấy để đầu mục nhận ra trong một liếc.
-- **Label vừa** (400, 1.2rem, 1.05): tên lá dưới lá bài (desktop có sổ ghim thì tên lá dưới hình trải chính lên Label 1.35rem, tách khỏi dòng vị trí Label nhỏ), nút đổi góc máy, nút "Gập sổ", tên lá và tiêu đề mục trong sổ, bộ đếm "Đã chọn n/3", dãy tên lá trong danh sách nhật ký.
+- **Label vừa** (400, 1.2rem, 1.05): tên chuyện (Tình cảm, Công việc…) trên trang sổ của trang một lá, tên lá dưới lá bài (desktop có sổ ghim thì tên lá dưới hình trải chính lên Label 1.35rem, tách khỏi dòng vị trí Label nhỏ), nút đổi góc máy, nút "Gập sổ", tên lá và tiêu đề mục trong sổ, bộ đếm "Đã chọn n/3", dãy tên lá trong danh sách nhật ký.
 - **Label nhỏ** (400, 1.15rem): chip, gợi ý, bộ đếm ký tự và hạn mức, nhãn vị trí dưới lá, nút ▼, ngày trong danh sách nhật ký, nhãn trong trang tổng kết của sổ.
 - **Body** (400, 1rem, 1.7): đoạn văn trong trang phụ.
 - **Body hội thoại** (400, clamp(1rem, 2.3vw, 1.08rem), 1.6): lời Nguyệt trong hộp thoại, lời mời ở form câu hỏi, lời riêng ở trang một lá; chữ chạy từng ký tự, không dưới 16px vì đây là chữ đọc chính. Không dùng `text-wrap: pretty` ở hộp thoại: chữ đang chạy sẽ làm từ nhảy dòng.
