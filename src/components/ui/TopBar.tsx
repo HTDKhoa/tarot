@@ -57,12 +57,16 @@ export function TopBar({ me, onLogin }: { me: Me | null; onLogin: () => void }) 
 
   const items = (
     <>
-      <NavLinks show={[...(reading ? [] : (["deck"] as const)), "plans", ...(me?.user ? (["journal"] as const) : [])]} />
+      {/* ở bàn trải bài không mời sang Bộ bài hay Gói: khách đang tập trung, và Nguyệt không chào gói giữa lúc giải bài */}
+      <NavLinks show={[...(reading ? [] : (["deck", "plans"] as const)), ...(me?.user ? (["journal"] as const) : [])]} />
       {/* tên đọc theo đúng chữ hiển thị (gồm trạng thái); title nói rõ việc nút làm */}
       {/* cài đặt, không phải lối đi: chữ nhỏ, mờ, đứng sau các biển */}
-      <button type="button" className="nav-setting" onClick={toggleQuality} title="Đổi mức đồ họa">
-        {quality === "high" ? "Đồ họa: cao" : "Đồ họa: nhẹ"}
-      </button>
+      {/* thanh ngang ở bàn bỏ cài đặt cho gọn; trong Menu điện thoại vẫn giữ, phòng khi máy chậm giữa buổi đọc */}
+      {!(reading && !compact) && (
+        <button type="button" className="nav-setting" onClick={toggleQuality} title="Đổi mức đồ họa">
+          {quality === "high" ? "Đồ họa: cao" : "Đồ họa: nhẹ"}
+        </button>
+      )}
       {me?.configured &&
         (me.user ? (
           <form action="/auth/signout" method="post">

@@ -116,7 +116,8 @@ vi_tri: chép đúng tên vị trí của lá (thuộc tính vi_tri), để khô
 hoi: quyết trước lá này có kết bằng câu hỏi ngược khách không. Cả bàn nhiều nhất hai lá có hoi = true;
 nếu opinion kết bằng câu hỏi thì tính là một. hoi = false thì speech không có dấu hỏi nào, kết bằng một câu lặng.
 speech: lời Nguyệt nói về lá ấy theo cách ở trên, khoảng 50 đến 110 chữ.
-Câu đầu tiên không chứa tên lá, tên vị trí hay chữ "xuôi", "ngược": Nguyệt vừa gọi tên rồi, giờ nàng chỉ vào tranh.
+Câu đầu tiên ngắn, dưới 20 chữ (nó đi liền sau câu gọi tên lá trong cùng một khung thoại), và không chứa tên lá,
+tên vị trí hay chữ "xuôi", "ngược": Nguyệt vừa gọi tên rồi, giờ nàng chỉ vào tranh.
 Mỗi lá mở bằng một kiểu câu khác nhau; không phải lá nào cũng kết bằng câu hỏi.
 opinion: cảm nhận riêng của Nguyệt, nói ngay sau lời về lá có y_rieng="co", 1 đến 3 câu. Mở đầu tự nhiên, như "Ta nghĩ…", "Có lẽ…",
 hay đi thẳng vào điều nàng thấy; có thể kết bằng một câu hỏi ngược lại khách.
@@ -131,7 +132,7 @@ Cậu viết phần Nguyệt nói tiếp: lá này nghiêng bàn về phía nào
 
 Định dạng:
 speech: khoảng 40 đến 90 chữ, nói về lá trong <la_lam_ro> theo cách ở trên và nối với một hai lá đã có trên bàn.
-Câu đầu tiên không chứa tên lá. Nhiều nhất một câu hỏi ngược khách.`;
+Câu đầu tiên ngắn, dưới 20 chữ, và không chứa tên lá. Nhiều nhất một câu hỏi ngược khách.`;
 
 const CLOSING_SYSTEM = `${VOICE}
 

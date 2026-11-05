@@ -71,6 +71,14 @@ function turns(text: string, tag: EmotionTag, first?: Partial<ReaderLine>): Read
   return chunks.map((t, i) => ({ tag, text: t, ...(i === 0 ? first : undefined) }));
 }
 
+/**
+ * Tên lá luôn dính vào lượt đầu của lời nói (kể cả khi câu đầu dài), để không thành một trang chỉ có tên.
+ * Lượt đầu lật lá (tag reveal, kèm vị trí để lật đúng lúc bắt đầu nói), các lượt sau mang cảm xúc của lá.
+ */
+function revealWith(title: string, speech: string, tag: EmotionTag, revealPosition: number): ReaderLine[] {
+  return turns(speech, tag).map((l, i) => (i === 0 ? { ...l, text: `${speak(title)} ${l.text}`, tag: "reveal", revealPosition } : l));
+}
+
 export function greeting(opts: { name?: string | null; hour: number; returning: boolean }): ReaderLine[] {
   const who = opts.name ? `${opts.name}` : "cậu";
   const time =
@@ -162,9 +170,14 @@ export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offe
     const card = getCard(d.cardId);
     const o = orient(d);
     const label = spread.positions[i];
-    // Có lời AI thì chỉ gọi tên lá; chi tiết tranh Nguyệt tự lồng vào lời nói (chỉ dùng chi tiết có trong dữ liệu).
-    lines.push(...kind(turns(`${label}: ${cardTitle(card, d.reversed)}.${ai ? "" : ` ${card.hinh_anh}`}`, "reveal", { revealPosition: i }), "image"));
-    lines.push(...kind(turns(ai ? ai.meanings[i] : `${card.y_nghia[o]} ${card.chu_de[topic][o]}`, tagFor(card, d.reversed)), "meaning"));
+    if (ai) {
+      // Có lời AI: Nguyệt gọi tên lá rồi nói tiếp ngay trong cùng một lượt (chi tiết tranh nàng tự lồng vào lời),
+      // không bắt khách chạm qua một trang chỉ có tên lá, vì tên đã ghi dưới lá và trong sổ.
+      lines.push(...kind(revealWith(`${label}: ${cardTitle(card, d.reversed)}.`, ai.meanings[i], tagFor(card, d.reversed), i), "meaning"));
+    } else {
+      lines.push(...kind(turns(`${label}: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: i }), "image"));
+      lines.push(...kind(turns(`${card.y_nghia[o]} ${card.chu_de[topic][o]}`, tagFor(card, d.reversed)), "meaning"));
+    }
     if (i === opinionIdx) lines.push(...kind(turns(ai ? ai.opinion : `Còn đây là ý riêng của ta. ${card.nguyet}`, d.reversed ? "concern" : "tease"), "opinion"));
   });
 
@@ -192,10 +205,12 @@ export function composeReading(input: ComposeInput): { lines: ReaderLine[]; offe
 export function composeClarifier(d: Draw, topic: Topic, index: number, ai?: string | null): ReaderLine[] {
   const card = getCard(d.cardId);
   const o = orient(d);
-  const lines: ReaderLine[] = [
-    ...kind(turns(`Lá làm rõ: ${cardTitle(card, d.reversed)}.${ai ? "" : ` ${card.hinh_anh}`}`, "reveal", { revealPosition: -1 }), "image"),
-    ...kind(turns(ai ?? `${card.chu_de[topic][o]} ${card.loi_khuyen[o]}`, tagFor(card, d.reversed)), "meaning"),
-  ];
+  const lines: ReaderLine[] = ai
+    ? kind(revealWith(`Lá làm rõ: ${cardTitle(card, d.reversed)}.`, ai, tagFor(card, d.reversed), -1), "meaning")
+    : [
+        ...kind(turns(`Lá làm rõ: ${cardTitle(card, d.reversed)}. ${card.hinh_anh}`, "reveal", { revealPosition: -1 }), "image"),
+        ...kind(turns(`${card.chu_de[topic][o]} ${card.loi_khuyen[o]}`, tagFor(card, d.reversed)), "meaning"),
+      ];
   // Lá làm rõ không tự mời thêm lá nữa; hết lượt thì nói rõ vì sao dừng.
   if (index + 1 >= MAX_CLARIFIERS) {
     lines.push({ tag: "neutral", text: "Bàn đã đủ chật rồi. Rút thêm chỉ làm nó rối hơn. Để ta gom lại cho cậu nghe." });

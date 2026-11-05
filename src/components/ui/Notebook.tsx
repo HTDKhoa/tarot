@@ -69,7 +69,9 @@ const tonight = () => {
 
 /** Câu đầu tiên trong lời Nguyệt về một lá, cho trang tổng kết. */
 function firstSentence(entries: LogEntry[]) {
-  const said = (entries.find((e) => e.line.kind === "meaning") ?? entries.find((e) => e.line.tag !== "reveal"))?.line.text ?? "";
+  const entry = entries.find((e) => e.line.kind === "meaning") ?? entries.find((e) => e.line.tag !== "reveal");
+  // lời AI gộp tên lá vào câu đầu; tên đã có ở đề mục nên bỏ đi
+  const said = entry ? (entry.line.revealPosition !== undefined ? withoutTitle(entry.line.text) : entry.line.text) : "";
   const m = said.match(/^.*?[.!?…](\s|$)/);
   return (m ? m[0] : said).trim();
 }
@@ -183,7 +185,8 @@ export function Notebook({ question, cards, log, recap, open, docked, toRecap, o
                     return (
                       <div key={e.key} data-entry className="nb-entry">
                         <CardHead c={cards[e.card]} />
-                        {withoutTitle(e.line.text) && <p className="nb-image">{withoutTitle(e.line.text)}</p>}
+                        {/* phần sau tên lá: lời tả tranh (ghép câu) in nghiêng, lời Nguyệt (AI, đã gộp tên) in thường */}
+                        {withoutTitle(e.line.text) && <p className={k === "image" ? "nb-image" : undefined}>{withoutTitle(e.line.text)}</p>}
                       </div>
                     );
                   }
