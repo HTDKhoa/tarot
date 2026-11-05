@@ -50,6 +50,11 @@ typography:
     fontSize: "1.35rem"
     fontWeight: 400
     lineHeight: 1
+  label-lg:
+    fontFamily: "VT323, ui-monospace, monospace"
+    fontSize: "1.45rem"
+    fontWeight: 400
+    lineHeight: 1
   label-md:
     fontFamily: "VT323, ui-monospace, monospace"
     fontSize: "1.2rem"
@@ -67,7 +72,7 @@ typography:
     lineHeight: 1.7
   body-dialogue:
     fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
-    fontSize: "clamp(0.98rem, 2.3vw, 1.08rem)"
+    fontSize: "clamp(1rem, 2.3vw, 1.08rem)"
     fontWeight: 400
     lineHeight: 1.6
   body-strong:
@@ -280,11 +285,12 @@ Sprite trong `public/assets` dùng chung một bảng khoảng 43 màu (`art/com
 - **Headline** (400, clamp(2.2rem, 6vw, 3.2rem), 1): tiêu đề trang phụ (Gói, Nhật ký, Điều khoản…).
 - **Title** (400, 1.7rem, 1.1): tiêu đề mục trong trang phụ, tên gói.
 - **Label** (400, 1.35rem, 1): chữ trên nút, thẻ tên người nói, thanh trên cùng (cả thương hiệu và liên kết dùng Label nhỏ trên mobile), tiêu đề "Sổ của Bấc", thông báo ngôi nhà đóng cửa, nhãn ghi chú và danh sách lá trong nhật ký.
-- **Label vừa** (400, 1.2rem, 1.05): tên lá dưới lá bài, nút đổi góc máy, nút "Gập sổ", tên lá và tiêu đề mục trong sổ, bộ đếm "Đã chọn n/3", dãy tên lá trong danh sách nhật ký.
+- **Label lớn** (400, 1.45rem, 1): tiêu đề "Sổ của Bấc" và tên lá ở đầu mục trong sổ, tên lá trên trang sổ của trang một lá; to hơn chữ đọc trên giấy để đầu mục nhận ra trong một liếc.
+- **Label vừa** (400, 1.2rem, 1.05): tên lá dưới lá bài (desktop có sổ ghim thì tên lá dưới hình trải chính lên Label 1.35rem, tách khỏi dòng vị trí Label nhỏ), nút đổi góc máy, nút "Gập sổ", tên lá và tiêu đề mục trong sổ, bộ đếm "Đã chọn n/3", dãy tên lá trong danh sách nhật ký.
 - **Label nhỏ** (400, 1.15rem): chip, gợi ý, bộ đếm ký tự và hạn mức, nhãn vị trí dưới lá, nút ▼, ngày trong danh sách nhật ký, nhãn trong trang tổng kết của sổ.
 - **Body** (400, 1rem, 1.7): đoạn văn trong trang phụ.
-- **Body hội thoại** (400, clamp(0.98rem, 2.3vw, 1.08rem), 1.6): lời Nguyệt trong hộp thoại, chữ chạy từng ký tự.
-- **Body sổ** (400, 0.94rem, 1.6): lời giải từng lá và trang tổng kết trong sổ của Bấc; câu hỏi của khách ở đầu trang dùng bản 600.
+- **Body hội thoại** (400, clamp(1rem, 2.3vw, 1.08rem), 1.6): lời Nguyệt trong hộp thoại, lời mời ở form câu hỏi, lời riêng ở trang một lá; chữ chạy từng ký tự, không dưới 16px vì đây là chữ đọc chính. Không dùng `text-wrap: pretty` ở hộp thoại: chữ đang chạy sẽ làm từ nhảy dòng.
+- **Body sổ** (400, 0.94rem, 1.6): lời giải từng lá và trang tổng kết trong sổ của Bấc; câu hỏi của khách ở đầu trang dùng bản 600. Cột sổ hẹp nên dùng `text-wrap: pretty`.
 - **Body nhỏ** (400, 0.86rem, 1.35): chữ phụ: ghi chú pháp lý ở bìa rừng, lỗi ngay dưới nút, mép trang thò ra dưới bìa sổ (tối đa 2 dòng), ghi chú dưới giá gói, tóm tắt trong danh sách nhật ký.
 
 Mọi cỡ chữ trong giao diện đều thuộc một vai trên; riêng số và dải tên trên mặt lá co theo bề rộng lá (VT323, 20% và 13% bề rộng), và giá gói ở /goi dùng cỡ nhỏ nhất của Headline (2.2rem). Bề mặt mới chọn vai có sẵn, không thêm cỡ lẻ.

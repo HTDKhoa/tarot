@@ -623,7 +623,7 @@ img {
   width: 100%;
   text-align: left;
   min-height: 4.8em;
-  font-size: clamp(0.98rem, 2.3vw, 1.08rem);
+  font-size: clamp(1rem, 2.3vw, 1.08rem);
   line-height: 1.6;
   color: var(--cream);
   cursor: pointer;
@@ -721,7 +721,7 @@ img {
 .question-invite {
   display: block;
   margin-bottom: 0.6rem;
-  font-size: clamp(0.98rem, 2.3vw, 1.08rem);
+  font-size: clamp(1rem, 2.3vw, 1.08rem);
   line-height: 1.6;
   color: var(--cream);
 }
@@ -1165,6 +1165,13 @@ img {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  /* tên hai dòng ngắt cân ("Knight of / Swords" thay vì một chữ lẻ dòng dưới) */
+  text-wrap: balance;
+}
+/* desktop có sổ ghim: lá lớn (~150px) nên tên lá lên cỡ Label, tách hẳn khỏi dòng vị trí (Label nhỏ, khói sương),
+   để tên lá là thứ đọc trước trong chú thích chứ không chỉ khác nhau bằng màu */
+.table-field.has-notebook > .table-spread:not(.spread-clarifiers) .tarot-name {
+  font-size: 1.35rem;
 }
 /* Cánh tay Nguyệt (TableView Arms): một lớp phủ cả màn, mỗi tay đặt gốc ở khuỷu tay thật của nàng (chiếu từ cảnh 3D),
    xoay quanh gốc ấy về phía lá; cỡ theo cơ thể nàng (bàn tay bằng bàn tay ở góc mặt Nguyệt), không theo cỡ lá.
@@ -1588,6 +1595,8 @@ img {
   font-size: 0.94rem;
   line-height: 1.6;
   margin-bottom: 0.4rem;
+  /* cột sổ hẹp (~36 ký tự): tránh một chữ lẻ ở dòng cuối */
+  text-wrap: pretty;
 }
 .notebook-question {
   font-weight: 600;
@@ -2129,7 +2138,7 @@ img {
 }
 .card-nguyet p {
   margin: 0;
-  font-size: clamp(0.98rem, 2.3vw, 1.08rem);
+  font-size: clamp(1rem, 2.3vw, 1.08rem);
   line-height: 1.6;
   color: var(--cream);
 }
