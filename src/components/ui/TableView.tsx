@@ -4,6 +4,7 @@ import { armRig } from "@/lib/armRig";
 import { assetUrl } from "@/lib/assets";
 import type { SpreadId } from "@/lib/tarot/spreads";
 import type { DrawnCard } from "@/lib/tarot/types";
+import { cardMood, type CardMood } from "@/lib/tarot/mood";
 import { TarotCard } from "./TarotCard";
 
 /** Cả bộ 78 lá úp trải thành một dải dài để khách tự chọn. Chọn ô nào cũng không đổi lá: lá đã rút ở máy chủ. */
@@ -216,8 +217,10 @@ function Ribbon({ picked, onPick }: { picked: number[]; onPick: (i: number) => v
 }
 
 function Slot({ c, i, revealed, active }: { c: DrawnCard; i: number; revealed: boolean; active: boolean }) {
+  // quầng sáng trên khăn và quầng viền lá đổi theo tâm trạng của lá khi Nguyệt đang nói tới nó
+  const mood = revealed ? cardMood(c.card.slug, c.reversed) : "candle";
   return (
-    <div className={`table-slot ${active ? "is-active" : ""}`} data-pos={i}>
+    <div className={`table-slot ${active ? "is-active" : ""} mood-${mood}`} data-pos={i}>
       <TarotCard drawn={c} revealed={revealed} label={c.positionLabel} highlight={active} size="table" />
     </div>
   );
@@ -263,8 +266,14 @@ export function TableView({ spread, cards, revealed, active, shuffling, picking,
     );
   }
 
+  // lá đang được nói đã lật thì cả bàn mang tâm trạng của lá ấy: lá nặng hay ngược tối và lạnh đi, lá sáng ấm lên
+  const activeCard = active !== null && revealed.has(active) ? cards[active] : null;
+  const mood: CardMood = activeCard ? cardMood(activeCard.card.slug, activeCard.reversed) : "candle";
   return (
     <div className={field(extra.length ? "has-extra" : "")}>
+      {/* hai lớp ánh sáng phủ cảnh (dưới lá, chú thích và hộp thoại), mờ vào mờ ra khi đổi lá */}
+      <div className="table-mood is-moon" data-on={mood === "moon"} aria-hidden />
+      <div className="table-mood is-warm" data-on={mood === "warm"} aria-hidden />
       <Arms mode="point" />
       <div className={`table-spread ${SHAPE[spread]}`}>
         {main.map(({ c, i }) => (

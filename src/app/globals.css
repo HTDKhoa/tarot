@@ -836,6 +836,65 @@ img {
 .table-slot .tarot-card.is-highlight .tarot-face {
   box-shadow: 0 0 12px rgba(243, 214, 139, 0.55), -2px 2px 0 rgba(8, 6, 13, 0.7), -4px 4px 0 rgba(8, 6, 13, 0.28);
 }
+/* ---------- ánh sáng theo lá (Persona Bible: lá nặng thì phòng tối đi, lá khó ánh trăng lạnh, tin tốt ánh vàng ấm) ----------
+   Màu là ánh sáng của bàn, không là mảng sơn: quầng trên khăn quanh lá đang được nói, quầng viền lá, và một lớp phủ cảnh.
+   Trăng dùng đúng Xanh Trăng của chữ "ngược"; ấm là vàng nến cháy đậm hơn. */
+.table-slot {
+  --pool: rgba(255, 196, 120, 0.16);
+}
+.table-slot.mood-warm {
+  --pool: rgba(255, 168, 78, 0.26);
+}
+.table-slot.mood-moon {
+  --pool: rgba(150, 188, 255, 0.3);
+}
+/* quầng sáng đổ xuống khăn quanh lá đang được nói, nằm dưới lá và chú thích */
+.table-slot::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: calc(var(--w) * 181 / 97 / 2);
+  width: calc(var(--w) * 2.8);
+  height: calc(var(--w) * 2.4);
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, var(--pool), transparent);
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  pointer-events: none;
+}
+.table-slot.is-active::before {
+  opacity: 1;
+}
+.table-slot.mood-moon .tarot-card.is-highlight .tarot-face {
+  box-shadow: 0 0 16px rgba(158, 195, 255, 0.75), -2px 2px 0 rgba(8, 6, 13, 0.7), -4px 4px 0 rgba(8, 6, 13, 0.28);
+}
+.table-slot.mood-moon .tarot-card.is-highlight::after {
+  background: linear-gradient(215deg, rgba(158, 195, 255, 0.16), rgba(8, 6, 13, 0) 55%, rgba(8, 6, 13, 0.22));
+}
+.table-slot.mood-warm .tarot-card.is-highlight .tarot-face {
+  box-shadow: 0 0 16px rgba(255, 190, 100, 0.75), -2px 2px 0 rgba(8, 6, 13, 0.7), -4px 4px 0 rgba(8, 6, 13, 0.28);
+}
+.table-slot.mood-warm .tarot-card.is-highlight::after {
+  background: linear-gradient(215deg, rgba(255, 190, 110, 0.24), rgba(8, 6, 13, 0) 60%, rgba(8, 6, 13, 0.12));
+}
+/* lớp phủ cảnh: trăng làm cả bàn tối và lạnh đi một chút (mép tối hơn giữa), ấm thì ánh nến loang rộng hơn */
+.table-mood {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.table-mood[data-on="true"] {
+  opacity: 1;
+}
+.table-mood.is-moon {
+  background: radial-gradient(ellipse 80% 75% at 45% 42%, rgba(40, 62, 128, 0.12), rgba(6, 9, 26, 0.46));
+}
+.table-mood.is-warm {
+  background: radial-gradient(ellipse 65% 60% at 45% 42%, rgba(255, 172, 88, 0.12), transparent 75%);
+}
 .tarot-card.is-highlight .tarot-face {
   box-shadow: 0 0 14px rgba(243, 214, 139, 0.7), 0 6px 0 rgba(0, 0, 0, 0.45);
 }

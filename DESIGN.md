@@ -238,7 +238,7 @@ Bảng màu đêm, gần đơn sắc: xanh mũ trùm và tím mận làm nền, 
 - **Tím Mận** (plum-dusk): nền thẻ tên "Nguyệt" và các nhãn nhô lên mép khung; màu áo của người giữ đèn.
 
 ### Tertiary
-- **Xanh Trăng** (moonlit-blue): chữ "ngược" của lá ngược (trên bàn, trong dải và trong nhật ký), và ánh mắt trăng khuyết của Nguyệt khi lo lắng; tức ánh trăng lạnh đối lại ánh nến.
+- **Xanh Trăng** (moonlit-blue): chữ "ngược" của lá ngược (trên bàn, trong dải và trong nhật ký), ánh mắt trăng khuyết của Nguyệt khi lo lắng, và ánh sáng trên bàn khi Nguyệt nói tới một lá ngược hay lá nặng (xem Luật Ánh Sáng Theo Lá); tức ánh trăng lạnh đối lại ánh nến.
 - **Gạch Hồng** (brick-ember, nền brick-deep sẫm lên thành brick-deep-lit khi hover, chữ brick-cream): chỉ cho hành động không hoàn tác được (xóa dữ liệu).
 - **Tro Hồng** (rose-ash): viền thẻ hỗ trợ khi khủng hoảng và chữ báo lỗi. Ấm và rõ, không báo động đỏ.
 
@@ -261,6 +261,8 @@ Sprite trong `public/assets` dùng chung một bảng khoảng 43 màu (`art/com
 
 ### Named Rules
 **Luật Một Ngọn Nến.** Vàng là ánh sáng, không phải sơn. Chỉ thứ đang được chọn, đang nói hoặc vừa lật mới mang Ngọn Lửa; vàng không phủ những mảng lớn.
+
+**Luật Ánh Sáng Theo Lá.** Ở bàn trải bài, lá đang được Nguyệt nói tới quyết định ánh sáng của bàn, theo bảng tag trong Persona Bible (`src/lib/tarot/mood.ts`). Lá ngược hoặc lá nặng (Death, Devil, Tower, Ba/Chín/Mười Kiếm): trăng, cả bàn tối và lạnh đi một chút (lớp phủ cảnh mép tối hơn giữa), quầng trên khăn và quầng viền lá màu Xanh Trăng. Lá sáng (Sun, Star, World, Empress, Lovers, Mười/Chín Cốc, Át/Hai Cốc, Sáu/Bốn Gậy): ánh nến ấm và loang rộng hơn. Còn lại: ánh nến thường. Đổi lá thì ánh sáng mờ chuyển trong 0.7–0.9s. Màu ở đây là ánh sáng của cảnh, nằm dưới lá, chú thích và hộp thoại; không tô lên chữ, không thành mảng sơn.
 
 **Luật Không Tím Hồng.** Không gradient tím-hồng, không màu neon "huyền bí". Bí ẩn đến từ bóng tối, không đến từ sắc độ.
 

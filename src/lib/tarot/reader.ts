@@ -10,12 +10,11 @@ import type { CardData, EmotionTag, Orientation, ReaderLine, Topic } from "./typ
 import { TOPIC_LABELS } from "./types";
 import type { Spread } from "./spreads";
 import { MAX_CLARIFIERS } from "./spreads";
+import { SOLEMN, WARM } from "./mood";
 
 const pick = <T,>(arr: readonly T[]): T => arr[randomInt(arr.length)];
 const orient = (d: Draw): Orientation => (d.reversed ? "nguoc" : "xuoi");
 
-const SOLEMN = new Set(["death", "the-devil", "the-tower", "ten-of-swords", "three-of-swords", "nine-of-swords"]);
-const WARM = new Set(["the-sun", "the-star", "the-world", "the-empress", "the-lovers", "ten-of-cups", "nine-of-cups", "six-of-wands", "four-of-wands", "ace-of-cups", "two-of-cups"]);
 const SURPRISE = new Set(["wheel-of-fortune", "the-fool", "the-magician"]);
 
 function tagFor(card: CardData, reversed: boolean): EmotionTag {
