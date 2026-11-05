@@ -2,6 +2,7 @@
 import dynamic from "next/dynamic";
 import { sessionGet, sessionSet, storageGet, storageSet } from "@/lib/storage";
 import { EMERGENCY, SUPPORT_LINES, isCrisis } from "@/lib/safety";
+import { captureFlight } from "@/lib/cardFlight";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Dialogue } from "./Dialogue";
@@ -350,11 +351,11 @@ export default function HomeClient() {
         target?.focus({ preventScroll: true });
       });
     }
-    if (next.length === cards.length) setTimeout(showReading, 500);
+    if (next.length === cards.length) setTimeout(() => showReading(next), 500);
   };
 
   /** Chọn đủ lá: đọc bài ngay nếu lời đã tới; chưa thì Nguyệt nhìn bài một lúc rồi mới đọc. */
-  const showReading = async () => {
+  const showReading = async (pickedOrder: number[]) => {
     const pending = readingLines.current;
     if (!pending) return;
     if (!pending.lines && !pending.failed) {
@@ -363,7 +364,11 @@ export default function HomeClient() {
       await pending.wait;
       setBusy(false);
     }
-    if (pending.lines) return say(pending.lines, "reading");
+    if (pending.lines) {
+      // ghi chỗ các lá đã chọn trong dải ngay trước khi dải nhường chỗ cho hình trải, để lá bay về đúng ô
+      captureFlight(pickedOrder);
+      return say(pending.lines, "reading");
+    }
     toFace();
     say([{ tag: "concern", text: FAIL.askNetwork }], "message");
   };

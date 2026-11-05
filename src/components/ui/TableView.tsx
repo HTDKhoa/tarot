@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { armRig } from "@/lib/armRig";
+import { cardFlight } from "@/lib/cardFlight";
 import { assetUrl } from "@/lib/assets";
 import type { SpreadId } from "@/lib/tarot/spreads";
 import type { DrawnCard } from "@/lib/tarot/types";
@@ -227,8 +228,40 @@ function Slot({ c, i, revealed, active }: { c: DrawnCard; i: number; revealed: b
 }
 
 /** Lớp DOM của cảnh mặt bàn: lá, dải bài để chọn, tay Nguyệt. Khăn và nến nằm ở cảnh 3D phía sau. */
+/**
+ * Lá bay về bàn: hình trải vừa dựng thì mỗi lá khách đã chọn trượt từ chỗ của nó trong dải về đúng ô trên khăn,
+ * lớn dần lên cỡ lá bàn, nối đuôi nhau; chú thích hiện sau khi lá đã đặt xuống. Chạy trên vỏ ngoài của lá (.tarot-slot)
+ * nên không đụng tới nhịp lật lá. Giảm chuyển động thì bỏ hẳn.
+ */
+function flyCardsIn() {
+  const from = cardFlight.from;
+  cardFlight.from = [];
+  if (!from.length || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+  from.forEach((f, k) => {
+    const shell = document.querySelector<HTMLElement>(`.table-spread:not(.spread-clarifiers) .table-slot[data-pos="${k}"] .tarot-slot`);
+    const card = shell?.querySelector<HTMLElement>(".tarot-card");
+    if (!f || !shell || !card) return;
+    const to = card.getBoundingClientRect();
+    const box = shell.getBoundingClientRect();
+    // lá cuộn khuất khỏi dải thì bay vào từ mép màn gần nhất, không từ quá xa
+    const fx = Math.min(Math.max(f.left, -f.width), window.innerWidth);
+    const delay = k * 120;
+    shell.style.transformOrigin = `${to.left - box.left}px ${to.top - box.top}px`;
+    shell.animate(
+      [{ transform: `translate(${fx - to.left}px, ${f.top - to.top}px) scale(${f.width / to.width}) rotate(-4deg)` }, { transform: "none" }],
+      { duration: 620, delay, easing: "cubic-bezier(0.16, 1, 0.3, 1)", fill: "backwards" },
+    );
+    shell.querySelector<HTMLElement>(".tarot-caption")?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, delay: delay + 460, fill: "backwards" });
+  });
+}
+
 export function TableView({ spread, cards, revealed, active, shuffling, picking, picked, onPick, docked, children }: Props) {
   const field = (extra = "") => `table-field ${docked ? "has-notebook" : ""} ${extra}`;
+  // hình trải vừa thay chỗ dải bài: cho lá bay về (chạy trước khi trình duyệt vẽ, để lá không chớp ở ô đích)
+  const settled = !shuffling && !picking;
+  useLayoutEffect(() => {
+    if (settled) flyCardsIn();
+  }, [settled]);
   const main = cards.map((c, i) => ({ c, i })).filter(({ c }) => !c.clarifier);
   const extra = cards.map((c, i) => ({ c, i })).filter(({ c }) => c.clarifier);
 
