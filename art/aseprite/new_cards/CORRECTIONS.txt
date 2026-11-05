@@ -1,0 +1,3 @@
+Corrected cards: Seven Of Swords.
+All other 77 card files are unchanged from the preceding deck.
+Original Frame and Rank layers are preserved on the corrected cards.
