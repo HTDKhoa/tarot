@@ -127,9 +127,13 @@ export function Dialogue({ lines, onLine, onShown, onDone, children, busy, portr
   const visible = reduce ? full : full.slice(0, shown);
   // khung chữ có chiều cao cố định ở góc mặt bàn: câu dài thì giữ dòng đang chạy trong tầm nhìn
   const textRef = useRef<HTMLDivElement>(null);
+  // đã cuộn thì dòng trên cùng mờ dần, để dòng cũ trôi đi dưới ô chân dung chứ không bị cắt ngang
+  const markScrolled = (el: HTMLElement) => el.classList.toggle("is-scrolled", el.scrollTop > 1);
   useEffect(() => {
     const el = textRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    markScrolled(el);
   }, [visible]);
   return (
     <div ref={rootRef} className={`dialogue pixel-frame ${portrait ? "has-portrait" : ""}`}>
@@ -138,7 +142,7 @@ export function Dialogue({ lines, onLine, onShown, onDone, children, busy, portr
       </div>
       {portrait}
       {/* chữ chạy chỉ để nhìn; chạm vào đâu trong khung cũng là "tiếp" */}
-      <div ref={textRef} className="dialogue-text" onClick={advance} aria-hidden>
+      <div ref={textRef} className="dialogue-text" onClick={advance} onScroll={(e) => markScrolled(e.currentTarget)} aria-hidden>
         {portrait && <span className="portrait-spacer" />}
         {busy && !line ? <span className="dialogue-wait">Nguyệt đang xào bài…</span> : visible}
       </div>

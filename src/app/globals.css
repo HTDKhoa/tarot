@@ -494,6 +494,11 @@ img {
     max-height: 4.8em;
   }
 }
+/* câu dài đã cuộn: dòng trên cùng mờ dần lên mép khung, nên phần dòng nằm dưới ô chân dung tan đi chứ không bị cắt ngang */
+.play-zone.is-table .dialogue-text.is-scrolled {
+  mask-image: linear-gradient(to bottom, transparent 0.3em, #000 1.8em);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0.3em, #000 1.8em);
+}
 /* desktop có sổ ghim: hộp thoại đứng giữa cột bàn (cùng trục với hình trải và vòng chấm), không giữa màn */
 .play-zone.is-table:has(.notebook.is-docked) > .dialogue-zone {
   --col: calc(min(30vw, 360px) + 24px);
@@ -1341,8 +1346,8 @@ img {
 .notebook.is-docked {
   top: 15vh;
   right: 0;
-  /* chừa chỗ cho ô chân dung nhô lên trên hộp thoại */
-  bottom: 1.6rem;
+  /* hộp thoại đứng ở cột bàn bên trái nên sổ xuống sát mép bàn, trang tổng kết có thêm chỗ */
+  bottom: 0;
   width: min(30vw, 360px);
 }
 .notebook-head {
