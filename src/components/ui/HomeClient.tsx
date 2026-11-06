@@ -535,7 +535,8 @@ export default function HomeClient() {
       }
     : {};
 
-  const quotaText = me?.status ? `${Math.max(0, me.status.limit - me.status.used)}/${me.status.limit} lượt tháng này` : null;
+  // "còn 2 lượt tháng này" (không "2/3": khách cần biết còn bao nhiêu, không cần phép chia)
+  const quotaText = me?.status ? `còn ${Math.max(0, me.status.limit - me.status.used)} lượt tháng này` : null;
 
   return (
     <main className="stage-root" {...gestures}>
@@ -623,7 +624,7 @@ export default function HomeClient() {
                     <button className="btn-pixel" onClick={daily}>Lá bài của ngày</button>
                     {me?.user && <Link className="btn-pixel" href="/nhat-ky">Nhật ký</Link>}
                     <button className="btn-pixel btn-ghost" onClick={leave}>Ra về</button>
-                    {quotaText && <span className="quota-chip">{quotaText}</span>}
+                    {quotaText && <span className="quota-chip">{quotaText.charAt(0).toUpperCase() + quotaText.slice(1)}</span>}
                   </>
                 )}
                 {phase === "login" && (
@@ -673,7 +674,9 @@ export default function HomeClient() {
                 )}
                 {phase === "quota" && (
                   <>
-                    <Link className="btn-pixel btn-gold" href="/goi">Xem các gói</Link>
+                    {/* chỉ mời xem gói khi đang là khách miễn phí; ai cũng còn lá bài của ngày */}
+                    {(!me?.status || me.status.plan === "free") && <Link className="btn-pixel btn-gold" href="/goi">Xem các gói</Link>}
+                    <button className="btn-pixel" onClick={daily}>Lá bài của ngày</button>
                     <button className="btn-pixel btn-ghost" onClick={backToMenu}>Quay lại</button>
                   </>
                 )}
@@ -808,7 +811,7 @@ function QuestionForm({
         <span id="form-goi-y" className="hint">
           {tooShort ? "Viết vài chữ trước đã" : `${q.length}/500`}
         </span>
-        {quotaText && <span className="quota-chip">Tốn 1 lượt · còn {quotaText}</span>}
+        {quotaText && <span className="quota-chip">Tốn 1 lượt · {quotaText}</span>}
       </div>
     </form>
   );

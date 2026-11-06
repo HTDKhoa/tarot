@@ -26,7 +26,7 @@ export default async function PricingPage() {
           name={PLANS.month.name}
           price={formatVnd(PLANS.month.price)}
           note="30 ngày"
-          features={[`${PLANS.month.readingsPerMonth} lần trải bài mỗi tháng`, "Mọi kiểu trải bài", "Nhật ký lưu các phiên", "Nguyệt nhớ chuyện cũ của cậu (sắp có)"]}
+          features={[`${PLANS.month.readingsPerMonth} lần trải bài mỗi tháng`, "Nhật ký lưu các phiên", "Nguyệt nhớ chuyện cũ của cậu (sắp có)"]}
           action={<BuyButton plan="month" loggedIn={!!user} />}
         />
         <PlanCard
@@ -41,6 +41,8 @@ export default async function PricingPage() {
       <div className="prose-dark plan-faq">
         <h2>Thanh toán thế nào?</h2>
         <p>Quét mã VietQR bằng app ngân hàng bất kỳ. Gói kích hoạt ngay khi tiền về, không tự gia hạn, không lưu thẻ. Hết hạn thì cậu tự quay về gói khách ghé chơi, nhật ký vẫn còn nguyên.</p>
+        <h2>Lượt trải bài tính thế nào?</h2>
+        <p>Mỗi lần trải bài tốn một lượt; rút thêm lá làm rõ trong cùng phiên không tốn thêm. Lượt tính theo tháng dương lịch và làm mới vào ngày 1 hằng tháng. Lá bài của ngày không tốn lượt.</p>
       </div>
     </PageShell>
   );

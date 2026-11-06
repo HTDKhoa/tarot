@@ -45,8 +45,8 @@ export async function POST(req: Request) {
           error: "quota",
           message:
             status.plan === "free"
-              ? "Tháng này cậu đã dùng hết lượt trải bài của khách ghé chơi rồi. Nếu muốn ghé thường xuyên, xem các gói nhé."
-              : "Tháng này ta đã đọc cho cậu đủ nhiều rồi. Nến cũng cần nghỉ. Đầu tháng sau cậu quay lại nhé.",
+              ? `Tháng này cậu đã dùng hết ${status.limit} lượt trải bài của khách ghé chơi. Ngày 1 tháng sau lượt mới sẽ có. Lá bài của ngày thì vẫn rút được, còn nếu muốn ghé thường xuyên, cậu xem các gói nhé.`
+              : `Tháng này ta đã đọc cho cậu đủ ${status.limit} lần rồi. Nến cũng cần nghỉ. Ngày 1 tháng sau cậu quay lại nhé, lá bài của ngày thì vẫn rút được.`,
         },
         { status: 429 },
       );
