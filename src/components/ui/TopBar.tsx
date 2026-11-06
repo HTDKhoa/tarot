@@ -3,7 +3,6 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { storageSet } from "@/lib/storage";
 import { sceneStore, useScene } from "@/lib/store";
-import { useMedia } from "@/lib/useMedia";
 import { NavLinks } from "./NavLinks";
 import type { ReaderLine } from "@/lib/tarot/types";
 import type { PlanId } from "@/lib/plans";
@@ -18,12 +17,13 @@ export interface Me {
 /**
  * Thanh trên cùng. Màn rộng: các liên kết nằm một hàng. Điện thoại: gộp vào nút "Menu" mở một khung pixel,
  * vì khi đã đăng nhập (Gói, Nhật ký, Đồ họa, Tên · Thoát) một hàng không còn vừa.
+ * Cả hai dạng cùng có trong HTML và CSS chọn dạng nào hiện (điểm ngắt 640 px), để máy chủ dựng đúng ngay từ đầu:
+ * trước đây JS mới quyết định sau khi tải, nên trên điện thoại thanh dựng dạng rộng (2 hàng) rồi co lại.
  */
 export function TopBar({ me, onLogin }: { me: Me | null; onLogin: () => void }) {
   const quality = useScene((s) => s.quality);
   // đang ở bàn trải bài thì không mời sang trang tra cứu: khách cần tập trung vào buổi đọc
   const reading = useScene((s) => s.stage === "table");
-  const compact = useMedia("(max-width: 640px)");
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -55,7 +55,7 @@ export function TopBar({ me, onLogin }: { me: Me | null; onLogin: () => void }) 
     };
   }, [open]);
 
-  const items = (
+  const items = (compact: boolean) => (
     <>
       {/* ở bàn trải bài không mời sang Bộ bài hay Gói: khách đang tập trung, và Nguyệt không chào gói giữa lúc giải bài */}
       <NavLinks show={[...(reading ? [] : (["deck", "plans"] as const)), ...(me?.user ? (["journal"] as const) : [])]} />
@@ -79,30 +79,28 @@ export function TopBar({ me, onLogin }: { me: Me | null; onLogin: () => void }) 
         ))}
     </>
   );
+  const demo = me && !me.configured && <span className="demo-badge">Demo</span>;
 
   return (
     <header className="topbar">
       <Link href="/" className="brand">
         <span className="brand-moon" aria-hidden>☾</span> Ngôi Nhà Trong Rừng
       </Link>
-      {compact ? (
-        <div className="topnav">
-          {me && !me.configured && <span className="demo-badge">Demo</span>}
-          <button ref={buttonRef} type="button" className="menu-button" aria-expanded={open} aria-controls="menu-chinh" onClick={() => setOpen((o) => !o)}>
-            Menu
-          </button>
-          {open && (
-            <div id="menu-chinh" ref={menuRef} className="topmenu pixel-frame" onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}>
-              {items}
-            </div>
-          )}
-        </div>
-      ) : (
-        <nav className="topnav">
-          {items}
-          {me && !me.configured && <span className="demo-badge">Demo</span>}
-        </nav>
-      )}
+      <nav className="topnav topnav-wide">
+        {items(false)}
+        {demo}
+      </nav>
+      <div className="topnav topnav-compact">
+        {demo}
+        <button ref={buttonRef} type="button" className="menu-button" aria-expanded={open} aria-controls="menu-chinh" onClick={() => setOpen((o) => !o)}>
+          Menu
+        </button>
+        {open && (
+          <div id="menu-chinh" ref={menuRef} className="topmenu pixel-frame" onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}>
+            {items(true)}
+          </div>
+        )}
+      </div>
     </header>
   );
 }

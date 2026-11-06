@@ -249,6 +249,10 @@ img {
   flex-wrap: wrap;
   justify-content: flex-end;
 }
+/* thanh rộng hay nút Menu: CSS chọn theo bề ngang, máy chủ dựng đúng ngay từ đầu (TopBar) */
+.topnav-compact {
+  display: none;
+}
 .topnav a,
 .topnav button {
   color: var(--cream);
@@ -1718,6 +1722,12 @@ img {
   }
   .topnav {
     gap: 0.75rem;
+  }
+  .topnav-wide {
+    display: none;
+  }
+  .topnav-compact {
+    display: flex;
   }
 }
 
