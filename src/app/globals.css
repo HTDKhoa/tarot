@@ -15,8 +15,9 @@
   --ink: #3a2410;
   --ink-soft: #74501d;
   --leather: #5a3c2e;
-  --font-pixel: "VT323", ui-monospace, monospace;
-  --font-body: "Be Vietnam Pro", system-ui, sans-serif;
+  /* next/font đặt --font-vt323 / --font-be-vietnam (kèm font dự phòng đã chỉnh cỡ); bản demo một file dùng tên gốc */
+  --font-pixel: var(--font-vt323, "VT323"), ui-monospace, monospace;
+  --font-body: var(--font-be-vietnam, "Be Vietnam Pro"), system-ui, sans-serif;
 
   /* các màu còn lại của DESIGN.md, tên biến theo slug trong DESIGN.md */
   --hood-navy-lit: #2a3463;
