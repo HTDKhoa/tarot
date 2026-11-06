@@ -267,6 +267,8 @@ Sprite trong `public/assets` dùng chung một bảng khoảng 43 màu (`art/com
 ### Named Rules
 **Luật Một Ngọn Nến.** Vàng là ánh sáng, không phải sơn. Chỉ thứ đang được chọn, đang nói hoặc vừa lật mới mang Ngọn Lửa; vàng không phủ những mảng lớn.
 
+**Luật Nến Và Trăng Ở Bìa Rừng.** Bìa rừng chia hai nhiệt độ: rừng, sương và trăng lạnh (xanh đêm, oải hương); chỉ ngôi nhà ấm. Ô kính phát sáng màu hổ phách nến (glow `#ff7a52` nhân 2.4 để sau khi cắt trần vẫn ra hổ phách, không trôi về vàng chanh), và ánh nến từ cửa loang thành hai vũng cộng sáng: một vũng sau chân nhà trên sương xa, một vệt nhạt hơn trên lối mòn trước cửa. Hai vũng chập chờn cùng nhịp đèn cửa và bừng lên khi khách bước tới cửa. Chữ trên vùng ấm vẫn phải đủ tương phản: ghi chú nhỏ dưới nút dùng khói sương sáng `#ebe5f2` cộng quầng tối quanh nét (≥4.5:1 ngay trên chỗ sương sáng nhất).
+
 **Luật Ánh Sáng Theo Lá.** Ở bàn trải bài, lá đang được Nguyệt nói tới quyết định ánh sáng của bàn, theo bảng tag trong Persona Bible (`src/lib/tarot/mood.ts`). Lá ngược hoặc lá nặng (Death, Devil, Tower, Ba/Chín/Mười Kiếm): trăng, cả bàn tối và lạnh đi một chút (lớp phủ cảnh mép tối hơn giữa), quầng trên khăn và quầng viền lá màu Xanh Trăng. Lá sáng (Sun, Star, World, Empress, Lovers, Mười/Chín Cốc, Át/Hai Cốc, Sáu/Bốn Gậy): ánh nến ấm và loang rộng hơn. Còn lại: ánh nến thường. Đổi lá thì ánh sáng mờ chuyển trong 0.7–0.9s. Màu ở đây là ánh sáng của cảnh, nằm dưới lá, chú thích và hộp thoại; không tô lên chữ, không thành mảng sơn.
 
 **Luật Không Tím Hồng.** Không gradient tím-hồng, không màu neon "huyền bí". Bí ẩn đến từ bóng tối, không đến từ sắc độ.

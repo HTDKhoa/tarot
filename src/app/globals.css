@@ -446,8 +446,9 @@ img {
 .hero-note {
   margin-top: 1rem;
   font-size: 0.86rem;
-  color: var(--muted);
-  text-shadow: 0 1px 3px #000;
+  /* chữ nhỏ trên sương (và vệt ánh nến trước cửa): khói sương sáng (≥4.5:1 ngay cả trên chỗ sương sáng nhất) và quầng tối quanh nét */
+  color: #ebe5f2;
+  text-shadow: 0 1px 3px #000, 0 0 8px rgba(8, 6, 13, 0.9);
 }
 
 /* ---------- vùng chơi: bàn bài + hộp thoại ---------- */
